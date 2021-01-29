@@ -1,0 +1,9 @@
+.dockerignore
+.gitignore
+Dockerfile*
+README*
+spec/
+.shellspec
+report/
+coverage/
+workspace/
