@@ -1,4 +1,4 @@
-version: 3.9
+version: "3.8"
 # Define app infrastructure
 
 volumes: 
@@ -8,7 +8,7 @@ volumes:
 services:
 # backend
   # API - interfaces with db and dispatches jobs to worker containers
-  queenBee:
+  queenbee:
     container_name: queenBee_container
     build: queenBee
     ports:
@@ -16,31 +16,30 @@ services:
     links: 
       - database
       - keys
+      - busybee
     depends_on:
       - database
       - keys
+      - busybee
     volumes: 
       - type: volume
-      - source: hive
-      - target: /app/workspace
+        source: hive
+        target: /app/workspace
     environment:
       - NODE_ENV=development
     command: ["npm", "start"]
 
   # Worker that runs processing jobs
-  busyBee:
+  busybee:
     container_name: busyBee_container
     build: busyBee
     ports:
       - "3001:3000"
-    links:
-      - queenBee
-    depends_on:
-      - queenBee
     volumes: 
-      - type: volume
-      - source: hive
-      - target: /app/workspace
+      # - type: volume
+        # source: hive
+        # target: /app/workspace
+      - "./busyBee:/app"
     
   # Persistent DB
   database:
@@ -86,7 +85,7 @@ services:
     environment:
       - NODE_ENV=development
     links:
-      - "express"
+      - "queenbee"
     depends_on:
-      - "express"
+      - "queenbee"
     command: ["npm", "start"]
