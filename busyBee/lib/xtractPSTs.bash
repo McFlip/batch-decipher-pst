@@ -18,7 +18,6 @@ do
   # -> output to the DIR from argument
   # -> parse only emails
   # -> mirror folder structure; add the '.eml' extension to ea file
-  # -> max paralellization
-  # -> ignore console output
-  readpst -o "$outDIR" -t e -e -j $NPROC "$pst" &> /dev/null
+  # -> max parallelization
+  readpst -o "$outDIR" -t e -e -j $NPROC "$pst"
 done
