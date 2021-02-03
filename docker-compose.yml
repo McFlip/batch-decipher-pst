@@ -7,85 +7,84 @@ volumes:
 
 services:
 # backend
-  # API - interfaces with db and dispatches jobs to worker containers
-  queenbee:
-    container_name: queenBee_container
-    build: queenBee
-    ports:
-      - "3000:3000"
-    links: 
-      - database
-      - keys
-      - busybee
-    depends_on:
-      - database
-      - keys
-      - busybee
-    volumes: 
-      - type: volume
-        source: hive
-        target: /app/workspace
-    environment:
-      - NODE_ENV=development
-    command: ["npm", "start"]
+  # # API - interfaces with db and dispatches jobs to worker containers
+  # queenbee:
+  #   container_name: queenBee_container
+  #   build: queenBee
+  #   ports:
+  #     - "3000:3000"
+  #   links: 
+  #     - database
+  #     - keys
+  #     - busybee
+  #   depends_on:
+  #     - database
+  #     - keys
+  #     - busybee
+  #   volumes: 
+  #     - type: volume
+  #       source: hive
+  #       target: /app/workspace
+  #   environment:
+  #     - NODE_ENV=development
+  #   command: ["npm", "start"]
 
   # Worker that runs processing jobs
   busybee:
     container_name: busyBee_container
     build: busyBee
-    ports:
-      - "3001:3000"
+    network: "none"
     volumes: 
       # - type: volume
         # source: hive
         # target: /app/workspace
       - "./busyBee:/app"
     
-  # Persistent DB
-  database:
-    container_name: db_container
-    image: mongo 
-    ports:
-      - "27017:27017"
-    volumes:
-      - type: volume
-        source: dbvol
-        target: /data/db
-    command: ["mongod", "--bind_ip", "localhost,database"]
+  # # Persistent DB
+  # database:
+  #   container_name: db_container
+  #   image: mongo 
+  #   ports:
+  #     - "27017:27017"
+  #   volumes:
+  #     - type: volume
+  #       source: dbvol
+  #       target: /data/db
+  #   command: ["mongod", "--bind_ip", "localhost,database"]
 
-  # Database admin
-  mongoku:
-    container_name: mongoku
-    image: huggingface/mongoku
-    ports: 
-      - "3100:3100"
-    links:
-      - "database"
-    depends_on:
-      - "database"
+  # # Database admin
+  # mongoku:
+  #   container_name: mongoku
+  #   image: huggingface/mongoku
+  #   ports: 
+  #     - "3100:3100"
+  #   links:
+  #     - "database"
+  #   depends_on:
+  #     - "database"
   
-  # In-Mem DB - stores passwords to private keys
-  keys:
-    container_name: key_container
-    image: redis
-    ports: 
-      - "6379:6379"
-    # command: 
+  # # In-Mem DB - stores passwords to private keys
+  # keys:
+  #   container_name: key_container
+  #   image: redis
+  #   ports: 
+  #     - "6379:6379"
+  #   # command: 
 
-# front end
-  # React Client App dev environment
-  client:
-    container_name: client_container
-    build: client
-    ports:
-      - "8080:8080"
-    volumes:
-      - './client/src:/app/src'
-      - './client/style:/app/style'
-    environment:
-      - NODE_ENV=development
-    links:
-      - "queenbee"
-    depends_on:
-      - "queenbee"
-    command: ["npm", "start"]
+# # front end
+#   # React Client App dev environment
+#   client:
+#     container_name: client_container
+#     build: client
+#     ports:
+#       - "8080:8080"
+#     volumes:
+#       - './client/src:/app/src'
+#       - './client/style:/app/style'
+#     environment:
+#       - NODE_ENV=development
+#     links:
+#       - "queenbee"
+#     depends_on:
+#       - "queenbee"
+#     command: ["npm", "start"]

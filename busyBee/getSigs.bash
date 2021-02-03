@@ -54,8 +54,7 @@ emlList=$(find "$inDIR" -name "*.eml")
 # Iterate through the list using parallel processing
 export -f getSig pipline parseCert getCert decodeSignedData getSignedData
 export inDIR outDIR
-parallel --record-env
-parallel --env _ --bar getSig {} $outDIR ::: "$emlList"
+parallel getSig {} $outDIR ::: "$emlList"
 
 # Output all certs
 find "$outDIR" -type f -name "*.cert.txt" -exec cat {} \; | tee "${2%/}/allCerts.txt"

@@ -5,5 +5,6 @@ services:
   busybee_test:
       container_name: busybee_test_container
       build: busyBee/spec
+      image: batch-decipher-pst_busybee_test
       volumes: 
         - "./busyBee:/app"
