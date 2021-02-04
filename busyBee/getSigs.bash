@@ -1,5 +1,5 @@
 #!/bin/bash
-# Gets certificate info from signed emails. This info is sent in the request email to Army/DISA.
+# Gets certificate info from signed emails. This info is sent in the request email to RA/CA.
 # Usage: getSigs.bash inputDirectory outputDirectory
 
 inDIR=$1

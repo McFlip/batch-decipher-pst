@@ -33,7 +33,6 @@ services:
   busybee:
     container_name: busyBee_container
     build: busyBee
-    network: "none"
     volumes: 
       # - type: volume
         # source: hive
