@@ -6,14 +6,20 @@
 # Passwords will never be stored to the FS.
 # Decrypted mail will be stored unencrypted!
 # Use proper security measures to safeguard the Plain Text output.
-# Usage: decipher.bash inputDirectory outputDirectory secretsPath
+# Usage: decipher.bash inputDirectory outputDirectory secretsPath exceptionsDirectory
 
-inDIR=$1
-outDIR=$2
-secretsPath=$3
+inDIR="$1"
+outDIR="$2"
+secretsPath="$3"
+exceptionsDIR="$4"
 
 # Cleanup previous runs
-find "$outDIR" -type f -exec rm -f {} \;
+find "$outDIR" -mindepth 1 -maxdepth 1 -type d -exec rm -rf {} \;
 
+# Extract PSTs
+bash lib/xtractPSTs.bash "$inDIR" "$inDIR"
 
-# Extract the PSTs
+# *** FUNCTIONS ***
+
+# *** MAIN PROCEDURE ***
+
