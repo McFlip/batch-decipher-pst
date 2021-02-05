@@ -7,9 +7,6 @@ NPROC=$(nproc)
 inDIR=$1
 outDIR=$2
 
-# Cleanup previous runs
-rm -rf ${2%/}/*
-
 # Get list of PST files to process
 pstList=$(find "$inDIR" -name "*.pst")
 for pst in $pstList

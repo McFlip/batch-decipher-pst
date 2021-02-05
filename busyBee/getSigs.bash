@@ -8,6 +8,9 @@ outDIR=$2
 # Cleanup previous runs
 find "$outDIR" -type f -exec rm -f {} \;
 
+# Extract PSTs
+bash lib/xtractPSTs.bash "$inDIR" "$inDIR"
+
 # *** FUNCTIONS ***
 
 # Get inner envelope of multipart/signed data
