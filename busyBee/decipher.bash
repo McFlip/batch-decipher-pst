@@ -70,8 +70,9 @@ getSerial() {
 }
 
 getPW() {
-  serial=$1
-  cat "$secretsPath" | grep ^$1 | cut -f 2
+  serial="$1"
+  secretsPath="$2"
+  cat "$secretsPath" | grep ^"$1" | cut -f 2
 }
 
 decipher() {
@@ -128,6 +129,8 @@ pipline() {
     exit 1
   fi
   # Get the password for the key
+  pw="$(getPW "$serial" "$secretsPath")"
+  # echo "$pw"
   # Decipher
   # keypath="$keysDIR/$serial"
   # If successful output to PT
