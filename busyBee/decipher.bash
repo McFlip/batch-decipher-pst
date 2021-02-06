@@ -79,17 +79,22 @@ assemble() {
   echo "$head$body"
 }
 
+joinPath() {
+  rootPath="$1"
+  filename=$(echo "$2" | sed "s/ /_/g")
+  echo "$rootPath/$filename"
+}
+
 output() {
   path="$1"
-  filename="$2"
-  data="$3"
+  data="$2"
   mkdir -p $(dirname "$path")
-  echo "$data" > "$path/$filename"
+  echo "$data" > "$path"
   exit
 }
 
 pipline() {
-  filename=$(echo "$1" | sed "s/^\.\///")
+  filename=$(echo "$1" | sed -e "s/^\.\///")
   inDIR="$2"
   outDIR="$3"
   secretsPath="$4"
@@ -102,8 +107,8 @@ pipline() {
   # If PT then output to PT
   if [ $encryption == "PT" ]
   then
-    echo "$filename NOT encrypted"
-    output "$outDIR" "$filename" "$eml"
+    # echo "$filename NOT encrypted"
+    output $(joinPath "$outDIR" "$filename") "$eml"
   else
     echo "$filename is encrypted"
   fi
@@ -119,7 +124,7 @@ pipline() {
 # *** MAIN PROCEDURE ***
 
 export inDIR outDIR secretsPath exceptionsDIR
-export -f pipline assemble getHeader output decipher getPW getSerial getP7m isCT
+export -f pipline assemble getHeader output decipher getPW getSerial getP7m isCT joinPath
 # parallel -0 --bar pipline {} $inDIR $outDIR $secretsPath $keysDIR $exceptionsDIR :::: "$emailList"
 parallel -0 pipline {} $inDIR $outDIR $secretsPath $keysDIR $exceptionsDIR :::: "$emailList"
 
