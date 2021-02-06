@@ -1,6 +1,4 @@
-fDescribe "decipher.bash"
-  Pending "Work in Progress"
-
+Describe "decipher.bash"
   cleanup() {
     find "workspace/tests/decipherIn/" -mindepth 1 -maxdepth 1 -type d -exec rm -rf {} \;
   }
@@ -10,13 +8,12 @@ fDescribe "decipher.bash"
     inDir="workspace/tests/decipherIn"
     outDir="workspace/tests/decipherOut"
     secretsPath="workspace/tests/decipherSecrets/keyPasswords"
-    keysDir="workspace/tests/decipherKeys"
+    keysDIR="workspace/tests/decipherKeys"
     exceptionsDir="workspace/tests/cecipherExceptions"
-    # expected=$(cat spec/expectedPT.txt)
-    expected="FUBAR"
+    expected=$(cat spec/expectedPT.txt)
     actual="workspace/tests/decipherOut/TEST/Inbox/buried/deep/down/1.eml"
 
-    When run source decipher.bash $inDir $outDir $secretsPath $keysDIR $exceptionsDIR
+    When run source decipher.bash "$inDir" "$outDir" "$secretsPath" "$keysDIR" "$exceptionsDIR"
     The contents of file $actual should equal "$expected"
     The line 5 of output should end with 'TEST" - 3 items done, 0 items skipped.'
   End

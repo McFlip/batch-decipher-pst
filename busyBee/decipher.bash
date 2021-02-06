@@ -16,14 +16,13 @@ exceptionsDIR="${5%/}"
 emailList="${1%/}/emailList"
 
 # Cleanup previous runs
-# find "$outDIR" -mindepth 1 -maxdepth 1 -type d -exec rm -rf {} \;
+find "$outDIR" -mindepth 1 -maxdepth 1 -type d -exec rm -rf {} \;
 
 # Extract PSTs
 bash lib/xtractPSTs.bash "$inDIR" "$inDIR"
 
 # Get list of emails with relative paths
 pushd "$inDIR"
-# find . -type f -name "*.eml" -print0 > "$emailList"
 find . -type f -name "*.eml" -print0 > emailList
 popd
 
@@ -32,7 +31,7 @@ popd
 # Check if the email is encrypted aka Cypher Text
 isCT() {
   eml="$1"
-  pattern='Content-Type: application/pkcs7-mime'
+  pattern='^Content-Type: application/pkcs7-mime'
   echo "$eml" | grep "$pattern" > /dev/null
   if [[ $? -eq 0 ]]
   then
@@ -47,9 +46,7 @@ getP7m() {
   email="$1"
   start='Content-Type: application\x2Fpkcs7-mime\n'
   stop="----boundary-LibPST-iamunique-"
-  echo "$email" | bbe -s --block="/$start/:/$stop/" #\
-    # | bbe -s --block="/\n\n/:/\n\n/" \
-    # | sed -r '/^\s*$/d'
+  echo "$email" | bbe -s --block="/$start/:/$stop/"
 }
 
 # Parse the key serial #s from the eml and find a matching key
@@ -65,16 +62,18 @@ getSerial() {
       return 0
     fi
   done
-  >&2 echo "No matching key"
+  >&2 echo "No matching key for $serials"
   return 1
 }
 
+# Look up the password for a given serial #
 getPW() {
   serial="$1"
   secretsPath="$2"
   cat "$secretsPath" | grep ^"$1" | cut -f 2
 }
 
+# Decipher the email body
 decipher() {
   p7m="$1"
   keyPath="$2"
@@ -82,17 +81,23 @@ decipher() {
   echo "$p7m" | openssl cms -decrypt -inkey "$keyPath" -passin pass:"$keyPW"
 }
 
+# Get the header from the original email
 getHeader() {
   eml="$1"
+  start="From"
+  stop="Content-Disposition"
+  echo "$eml" | bbe -s --block="/$start/:/$stop/" | head -n -1
 }
 
+# Stick the original header on top of the deciphered body
 assemble() {
   eml="$1"
   body="$2"
   head=$(getHeader "$1")
-  echo "$head$body"
+  echo -e "$head\n$body"
 }
 
+# Write out to the filesystem
 output() {
   path="$1"
   data="$2"
@@ -101,7 +106,8 @@ output() {
   exit
 }
 
-pipline() {
+# Process 1 email
+pipeline() {
   filename=$(echo "$1" | sed -e "s/^\.\///")
   inDIR="$2"
   outDIR="$3"
@@ -115,34 +121,39 @@ pipline() {
   # If PT then output to PT
   if [ $encryption == "PT" ]
   then
-    # echo "$filename NOT encrypted"
     output "$outDIR/$filename" "$eml"
   fi
   # Get the smime.p7m attachment
   p7m="$(getP7m "$eml")"
-  # echo "$p7m"
   # Get the serial for the key
   serial="$(getSerial "$p7m" "$keysDIR")"
-  # echo "$serial"
   if [[ $? -eq 1 ]]
   then
     exit 1
   fi
   # Get the password for the key
   pw="$(getPW "$serial" "$secretsPath")"
-  # echo "$pw"
   # Decipher
-  # keypath="$keysDIR/$serial"
+  keyPath="$keysDIR/$serial.key"
+  PT="$(decipher "$p7m" "$keyPath" "$pw")"
   # If successful output to PT
+  if [[ $? -eq 0 ]]
+  then
+    output "$outDIR/$filename" "$(assemble "$eml" "$PT")"
+    exit 0
   # Else output to exceptions
+  else
+    output "$exceptionsDIR/$filename" "$eml"
+    exit 1
+  fi
 }
 
 # *** MAIN PROCEDURE ***
 
 export inDIR outDIR secretsPath exceptionsDIR
-export -f pipline assemble getHeader output decipher getPW getSerial getP7m isCT
-# parallel -0 --bar pipline {} $inDIR $outDIR $secretsPath $keysDIR $exceptionsDIR :::: "$emailList"
-parallel -0 pipline {} $inDIR $outDIR $secretsPath $keysDIR $exceptionsDIR :::: "$emailList"
+export -f pipeline assemble getHeader output decipher getPW getSerial getP7m isCT
+# parallel -0 --bar pipeline {} $inDIR $outDIR $secretsPath $keysDIR $exceptionsDIR :::: "$emailList"
+parallel -0 pipeline {} $inDIR $outDIR $secretsPath $keysDIR $exceptionsDIR :::: "$emailList"
 
 # housekeeping
 rm "$emailList"
