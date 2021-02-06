@@ -32,10 +32,7 @@ popd
 # Check if the email is encrypted aka Cypher Text
 isCT() {
   eml="$1"
-  # pattern='_-_-
-# Content-Type: application/pkcs7-mime'
   pattern='Content-Type: application/pkcs7-mime'
-  # pattern='Content-Type'
   echo "$eml" | grep "$pattern" > /dev/null
   if [[ $? -eq 0 ]]
   then
@@ -47,13 +44,29 @@ isCT() {
 
 # The smime.p7m attachment contains the actual CT
 getP7m() {
-  eml="$1"
+  email="$1"
+  start='Content-Type: application\x2Fpkcs7-mime\n'
+  stop="----boundary-LibPST-iamunique-"
+  echo "$email" | bbe -s --block="/$start/:/$stop/" #\
+    # | bbe -s --block="/\n\n/:/\n\n/" \
+    # | sed -r '/^\s*$/d'
 }
 
 # Parse the key serial #s from the eml and find a matching key
 getSerial() {
-  eml="$1"
-  keyList="$2"
+  p7m="$1"
+  keysDIR="$2"
+  serials="$(echo "$p7m" | openssl cms -cmsout -print -noout | grep serial | cut -f 2 -d 'x')"
+  for s in "$serials"
+  do
+    if [ -f "$keysDIR/$s.key" ]
+      then
+        echo "$s"
+      return 0
+    fi
+  done
+  >&2 echo "No matching key"
+  return 1
 }
 
 getPW() {
@@ -103,11 +116,17 @@ pipline() {
   then
     # echo "$filename NOT encrypted"
     output "$outDIR/$filename" "$eml"
-  else
-    echo "$filename is encrypted"
   fi
   # Get the smime.p7m attachment
+  p7m="$(getP7m "$eml")"
+  # echo "$p7m"
   # Get the serial for the key
+  serial="$(getSerial "$p7m" "$keysDIR")"
+  # echo "$serial"
+  if [[ $? -eq 1 ]]
+  then
+    exit 1
+  fi
   # Get the password for the key
   # Decipher
   # keypath="$keysDIR/$serial"
