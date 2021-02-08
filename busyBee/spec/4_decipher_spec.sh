@@ -10,11 +10,12 @@ Describe "decipher.bash"
     secretsPath="workspace/tests/decipherSecrets/keyPasswords"
     keysDIR="workspace/tests/decipherKeys"
     exceptionsDir="workspace/tests/cecipherExceptions"
-    expected=$(cat spec/expectedPT.txt)
-    actual="workspace/tests/decipherOut/TEST/Inbox/buried/deep/down/1.eml"
+    # Force both expected and actual to Linux line ending by deleting "Carriage Return"
+    expected=$(cat spec/expectedPT.txt | sed 's/\x0d//g')
+    actual=$(cat "workspace/tests/decipherOut/TEST/Inbox/buried/deep/down/1.eml" | sed 's/\x0d//g')
 
     When run source decipher.bash "$inDir" "$outDir" "$secretsPath" "$keysDIR" "$exceptionsDIR"
-    The contents of file $actual should equal "$expected"
+    The variable actual should equal "$expected"
     The line 5 of output should end with 'TEST" - 3 items done, 0 items skipped.'
   End
 End
