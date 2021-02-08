@@ -1,0 +1,4 @@
+.shellspec-*
+report/
+coverage/
+workspace/
