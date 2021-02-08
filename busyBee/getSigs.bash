@@ -44,6 +44,13 @@ pipline() {
 # process 1 email. Use this as the mapping function and the filesystem as the reducer.
 getSig() {
   cert=$(pipline "$1")
+  if [[ -z "$cert" ]]
+  then
+    >&2 echo -e "ERROR: Failed to get cert for:\n $1"
+    outPath="${2%/}/exceptions.txt"
+    echo "$1" >> "$outPath"
+    exit 1
+  fi
   serial=$(echo "$cert" | head -n 1 | cut -f 2 -d '=')
   outPath="${2%/}/$serial.cert.txt"
   echo "$cert" > "$outPath"
