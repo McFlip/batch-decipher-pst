@@ -1,5 +1,10 @@
 module.exports = {
     root: true,
+    "settings": {
+        "node": {
+            "resolvePaths": [__dirname]
+        }
+    },
     parserOptions: {
         "ecmaVersion": 2020
     },
@@ -16,6 +21,7 @@ module.exports = {
             "ignores": [
                 "modules"
             ]
-        }]
+        }],
+        "node/no-missing-import": "off"
     }
   };

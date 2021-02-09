@@ -28,6 +28,7 @@ services:
       - "./queenBee:/app"
     environment:
       - NODE_ENV=development
+      - DEBUG=app
     command: ["npm", "start"]
 
   # Worker that runs processing jobs
