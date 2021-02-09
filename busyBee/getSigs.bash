@@ -29,7 +29,22 @@ decodeSignedData () {
 }
 
 getCert() {
-  openssl smime -pk7out | openssl pkcs7 -print_certs
+  certs="$(openssl smime -pk7out | openssl pkcs7 -print_certs -text)"
+  keyUsage="Digital Signature, Non Repudiation"
+  beginCert="-----BEGIN CERTIFICATE-----"
+  endCert="-----END CERTIFICATE-----"
+
+  # Just 1 cert or full cert chain?
+  certCnt=$(echo "$certs" | grep "BEGIN CERTIFICATE" | wc -l)
+  # >&2 echo $certCnt
+  if [[ $certCnt -gt 1 ]]
+  then
+    echo "$certs" \
+    | bbe -s --block="/$keyUsage/:/$endCert/" \
+    | bbe -s --block="/$beginCert/:/$endCert/"
+  else
+    echo "$certs" | bbe -s --block="/$beginCert/:/$endCert/"
+  fi
 }
 
 parseCert() {
