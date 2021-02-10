@@ -4,12 +4,19 @@
 
 inDIR=$1
 outDIR=$2
+# Set up tmpfs in RAM
+# Custom
+# mkdir -p /tmp/PST
+# chown user:group /tmp/PST
+# mount -t tmpfs -o size=100M,mode=0755 tmpfs /tmp/PST
+# unmount when done
+
+# DEFAULT
+tmpfsPath="/dev/shm/PST/"
+mkdir -p "$tmpfsPath"
 
 # Cleanup previous runs
 find "$outDIR" -type f -exec rm -f {} \;
-
-# Extract PSTs
-bash lib/xtractPSTs.bash "$inDIR" "$inDIR"
 
 # *** FUNCTIONS ***
 
@@ -73,13 +80,29 @@ getSig() {
 
 # *** MAIN PROCEDURE ***
 
-# Get list of emails to process
-emlList=$(find "$inDIR" -name "*.eml")
+# Get list of PST files to process
+pstList=$(find "$inDIR" -name "*.pst")
 
-# Iterate through the list using parallel processing
-export -f getSig pipline parseCert getCert decodeSignedData getSignedData
-export inDIR outDIR
-parallel getSig {} $outDIR ::: "$emlList"
+for pst in "$pstList"
+do
+  # Extract PST to RAM
+  bash lib/xtractPSTs.bash "$pst" "$tmpfsPath"
+
+  # Free up space in RAM. We only need signed emails in 'Sent Items'
+  # Delete everything not in 'Sent Items'
+  find "$tmpfsPath" -maxdepth 2 -mindepth 2 -type d -not -name 'Sent Items' -exec rm -rf {} \;
+
+  # Delete emails that are not signed
+  find "$tmpfsPath" -type f -print0 | parallel --null bash lib/filterEml.bash 'Content-Type\\x3A\\x20multipart\\x2Fsigned' "{}"
+
+  # Iterate through the dir using parallel processing
+  export -f getSig pipline parseCert getCert decodeSignedData getSignedData
+  export inDIR outDIR
+  find "$tmpfsPath" -type f -print0 | parallel --null getSig {} $outDIR
+
+  # Cleanup
+  find "$tmpfsPath" -maxdepth 1 -mindepth 1 -type d -exec rm -rf {} \;
+done
 
 # Output all certs
 find "$outDIR" -type f -name "*.cert.txt" -exec cat {} \; | tee "${2%/}/allCerts.txt"
