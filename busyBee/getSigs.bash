@@ -59,13 +59,13 @@ parseCert() {
 }
 
 # compose the above functions
-pipline() {
+pipeline() {
   getSignedData "$1" | decodeSignedData | getCert | parseCert
 }
 
 # process 1 email. Use this as the mapping function and the filesystem as the reducer.
 getSig() {
-  cert=$(pipline "$1")
+  cert=$(pipeline "$1")
   if [[ -z "$cert" ]]
   then
     >&2 echo -e "ERROR: Failed to get cert for:\n $1"
@@ -80,10 +80,11 @@ getSig() {
 
 # *** MAIN PROCEDURE ***
 
-# Get list of PST files to process
-pstList=$(find "$inDIR" -name "*.pst")
+# Rename PST files to Unix friendly paths
+bash lib/rename.bash "$inDIR"
 
-for pst in "$pstList"
+echo "***STARTED PROCESSING    $(date)"
+for pst in $(find "$inDIR" -name "*.pst")
 do
   # Extract PST to RAM
   bash lib/xtractPSTs.bash "$pst" "$tmpfsPath"
@@ -96,7 +97,7 @@ do
   find "$tmpfsPath" -type f -print0 | parallel --null bash lib/filterEml.bash 'Content-Type\\x3A\\x20multipart\\x2Fsigned' "{}"
 
   # Iterate through the dir using parallel processing
-  export -f getSig pipline parseCert getCert decodeSignedData getSignedData
+  export -f getSig pipeline parseCert getCert decodeSignedData getSignedData
   export inDIR outDIR
   find "$tmpfsPath" -type f -print0 | parallel --null getSig {} $outDIR
 
@@ -106,3 +107,5 @@ done
 
 # Output all certs
 find "$outDIR" -type f -name "*.cert.txt" -exec cat {} \; | tee "${2%/}/allCerts.txt"
+
+echo "***FINISHED PROCESSING    $(date)"
