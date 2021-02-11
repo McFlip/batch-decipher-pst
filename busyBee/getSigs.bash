@@ -1,9 +1,12 @@
 #!/bin/bash
 # Gets certificate info from signed emails. This info is sent in the request email to RA/CA.
-# Usage: getSigs.bash inputDirectory outputDirectory
+# Usage: getSigs.bash inputDirectory outputDirectory custodianFile
+# Custodian file is last name of each custodian in ALL CAPS; 1 per line
 
-inDIR=$1
-outDIR=$2
+inDIR="$1"
+outDIR="$2"
+custodians="$3"
+
 # Set up tmpfs in RAM
 # Custom
 # mkdir -p /tmp/PST
@@ -81,11 +84,17 @@ getSig() {
 # *** MAIN PROCEDURE ***
 
 # Rename PST files to Unix friendly paths
-bash lib/rename.bash "$inDIR"
+# bash lib/rename.bash "$inDIR"
+
+# Get list of PSTs to process
+pstList=$(find "$inDIR" -type f -name "*.pst")
 
 echo "***STARTED PROCESSING    $(date)"
-for pst in $(find "$inDIR" -name "*.pst")
+i=1
+total=$(echo "$pstList" | wc -l)
+for pst in $(echo "$pstList")
 do
+  echo "***Processing $i/$total    $(date)  "$pst""
   # Extract PST to RAM
   bash lib/xtractPSTs.bash "$pst" "$tmpfsPath"
 
@@ -103,7 +112,11 @@ do
 
   # Cleanup
   find "$tmpfsPath" -maxdepth 1 -mindepth 1 -type d -exec rm -rf {} \;
+  i=$((i+1))
 done
+
+# Delete false positives
+bash lib/filterCert.bash "$custodians" "$outDIR"
 
 # Output all certs
 find "$outDIR" -type f -name "*.cert.txt" -exec cat {} \; | tee "${2%/}/allCerts.txt"

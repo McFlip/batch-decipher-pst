@@ -8,8 +8,9 @@ inPST="$1"
 outDIR=$2
 
 # read in the pst file
+# -> quiet mode
 # -> output to the DIR from argument
 # -> parse only emails
 # -> mirror folder structure; add the '.eml' extension to ea file
 # -> max parallelization
-readpst -o "$outDIR" -t e -e -j $NPROC "$inPST"
+readpst -q -o "$outDIR" -t e -e -j $NPROC "$inPST"
