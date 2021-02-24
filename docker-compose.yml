@@ -13,12 +13,12 @@ services:
     build: queenBee
     ports:
       - "3000:3000"
-    # links: 
-    #   - database
+    links: 
+      - database
     #   - keys
     #   - busybee
-    # depends_on:
-    #   - database
+    depends_on:
+      - database
     #   - keys
     #   - busybee
     volumes: 
@@ -41,17 +41,17 @@ services:
         target: /app/workspace
       # - "./busyBee:/app"
     
-  # # Persistent DB
-  # database:
-  #   container_name: db_container
-  #   image: mongo 
-  #   ports:
-  #     - "27017:27017"
-  #   volumes:
-  #     - type: volume
-  #       source: dbvol
-  #       target: /data/db
-  #   command: ["mongod", "--bind_ip", "localhost,database"]
+  # Persistent DB
+  database:
+    container_name: db_container
+    image: mongo 
+    ports:
+      - "27017:27017"
+    volumes:
+      - type: volume
+        source: dbvol
+        target: /data/db
+    command: ["mongod", "--bind_ip", "localhost,database"]
 
   # # Database admin
   # mongoku:

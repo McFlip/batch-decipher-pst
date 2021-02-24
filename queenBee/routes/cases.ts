@@ -6,8 +6,8 @@ import * as caseController from '../controllers/cases'
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const router: any = Router()
 
-// // CREATE case
-// router.post('/', caseController.create)
+// CREATE case
+router.post('/', caseController.create)
 // READ all cases
 router.get('/', caseController.getAll)
 // READ one case

@@ -15,20 +15,12 @@ describe('API tests', function () {
     this.apiURL = apiURL as Express.Application
     done()
   })
-  /*
   after(function (done) {
-    chai.request(apiURL)
-      .delete('/mockmongoose')
-      .end((err, res) => {
-        if (err) console.log(err)
-        res.should.have.status(200)
-        done()
-      })
+    done()
   })
-  */
   it('should return hello', async function () {
   const res = await chai.request(apiURL).get('/')
   expect(res).to.have.status(200)
   })
-  describe('CASES tests', cases.bind(this))
+  // describe('CASES tests', cases.bind(this))
 })

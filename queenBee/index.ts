@@ -2,6 +2,8 @@ import express from 'express'
 import bodyParser from 'body-parser'
 import { caseRte } from './routes/cases'
 import debug from 'debug'
+import mongoose from 'mongoose'
+// import { MockMongoose } from 'mock-mongoose'
 
 const app = express()
 const debugApp = debug('app')
@@ -11,6 +13,17 @@ const PORT = 3000
 // Config for CORS - set to Domain or http://localhost:8080 if deploying full stack
 // Leave as '*' for public API
 const ACAO = process.env.ALLOW_ORIGIN || '*'
+const dbName = 'decipherDB'
+const dbHost = `mongodb+srv://database:27017${dbName}`
+const dbOpts = {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+  useCreateIndex: true,
+  useFindAndModify: false
+}
+
+// Database connection
+mongoose.connect(dbHost, dbOpts)
 
 // Middlewares
 app.use(bodyParser.json())
@@ -23,8 +36,8 @@ app.use(function (req, res, next) {
   next()
 })
 
-app.get('/', (req, res) => res.send('Healthy :)\r\n'))
 app.use('/cases', caseRte)
+app.get('/', (req, res) => res.send('Healthy :)\r\n'))
 
 app.listen(PORT, () => {
   debugApp(`⚡️[server]: Server is running at https://localhost:${PORT}`)
