@@ -19,8 +19,8 @@ describe('API tests', function () {
     done()
   })
   it('should return hello', async function () {
-  const res = await chai.request(apiURL).get('/')
-  expect(res).to.have.status(200)
+    const res = await chai.request(apiURL).get('/')
+    expect(res).to.have.status(200)
   })
-  // describe('CASES tests', cases.bind(this))
+  describe('CASES tests', cases.bind(this))
 })

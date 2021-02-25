@@ -14,7 +14,7 @@ const PORT = 3000
 // Leave as '*' for public API
 const ACAO = process.env.ALLOW_ORIGIN || '*'
 const dbName = 'decipherDB'
-const dbHost = `mongodb+srv://database:27017${dbName}`
+const dbHost = `mongodb://database:27017/${dbName}`
 const dbOpts = {
   useNewUrlParser: true,
   useUnifiedTopology: true,
@@ -24,6 +24,8 @@ const dbOpts = {
 
 // Database connection
 mongoose.connect(dbHost, dbOpts)
+const db = mongoose.connection
+db.once('open', () => debugApp('Mongoose is connected'))
 
 // Middlewares
 app.use(bodyParser.json())
