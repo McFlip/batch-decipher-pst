@@ -4,20 +4,26 @@ import chaiHttp from 'chai-http'
 import chai from 'chai'
 import apiURL from '../index' // Comment out if using URL string
 import cases from './suites/cases.test'
+import { MongoClient } from 'mongodb'
 
 chai.use(chaiHttp)
 const expect = chai.expect
+const dbName = 'decipherDB'
+const mongoURI = `mongodb://database:27017/${dbName}`
+const dbOpts = { useUnifiedTopology: true }
+const client = new MongoClient(mongoURI, dbOpts)
 
 describe('API tests', function () {
-  before(function (done) {
+  before(async function () {
     // In DEV, set apiURL to actual app
     // If using Staging env, add logic to check env & get URL string for staging
-    this.apiURL = apiURL as Express.Application
-    this.fubar = 'baz'
-    done()
+    // this.apiURL = apiURL as Express.Application
+    await client.connect()
+    await client.db("admin").command({ ping: 1 })
+    this.client = client
   })
-  after(function (done) {
-    done()
+  after(async function () {
+    client.close()
   })
   it('should return hello', async function () {
     const res = await chai.request(apiURL).get('/')
