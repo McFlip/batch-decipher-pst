@@ -1,6 +1,8 @@
 import { NextFunction, Request, Response } from 'express'
-import testCase from '../tests/data/cases'
 import { Case } from '../models/case'
+import debug from 'debug'
+
+const debugCase  = debug('cases')
 
 export const create = (req: Request, res: Response, next: NextFunction): void => {
   const { name, forensicator, status } = req.body
@@ -9,6 +11,12 @@ export const create = (req: Request, res: Response, next: NextFunction): void =>
     .then(c => res.status(201).json({ caseId: c._id }))
     .catch(err => next(err))
 }
-export const getAll = (req: Request, res: Response): void => {
-    res.status(200).json([testCase])
+export const getAll = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const cases = await Case.find({})
+      // debugCase(cases)
+      res.send(cases)
+    } catch (error) {
+      next(error)
+    }
   }
