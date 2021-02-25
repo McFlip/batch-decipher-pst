@@ -1,5 +1,5 @@
 // TODO: Delete this if I end up not using test context
-interface Context extends Mocha.Context {
-  apiURL: Express.Application | string
+interface myContext extends Mocha.Context {
+  apiURL: Express.Application | string | undefined
 }
-export default Context
+export default myContext

@@ -13,6 +13,7 @@ describe('API tests', function () {
     // In DEV, set apiURL to actual app
     // If using Staging env, add logic to check env & get URL string for staging
     this.apiURL = apiURL as Express.Application
+    this.fubar = 'baz'
     done()
   })
   after(function (done) {

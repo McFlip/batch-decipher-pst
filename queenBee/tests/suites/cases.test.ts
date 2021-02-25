@@ -1,6 +1,7 @@
 /* eslint-env mocha, chai, node */
-import {} from 'mocha'
+import { Context, Runnable } from 'mocha'
 import chai, { expect } from 'chai'
+import ChaiHttp from 'chai-http'
 import { MongoClient } from 'mongodb'
 import debug from 'debug'
 import apiURL from '../../index'
@@ -8,7 +9,7 @@ import apiURL from '../../index'
 // import data
 import testCase from '../data/cases'
 // import types
-// import Context from '../../types/context'
+import myContext from '../../types/context'
 import { ObjectId } from 'mongoose'
 
 const debugCaseTest = debug('cases')
@@ -36,7 +37,11 @@ export default function cases (this: Mocha.Suite): void {
     cases.drop()
   })
   it('should create a case', async function (): Promise<void> {
-    // debugCaseTest(this.test.ctx)
+    interface myFubar extends Context {
+      fubar?: string
+    }
+    const fubar: myFubar = this.test?.ctx?.fubar
+    debugCaseTest(fubar)
     const cases = client.db(dbName).collection('cases')
     const sentCase = {
       name: 'test case',
