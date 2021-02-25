@@ -12,11 +12,25 @@ export const create = (req: Request, res: Response, next: NextFunction): void =>
     .catch(err => next(err))
 }
 export const getAll = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    try {
-      const cases = await Case.find({})
-      // debugCase(cases)
-      res.send(cases)
-    } catch (error) {
-      next(error)
-    }
+  try {
+    const cases = await Case.find({})
+    // debugCase(cases)
+    res.send(cases)
+  } catch (error) {
+    next(error)
   }
+}
+
+export const getOne = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const { caseId } = req.params
+    const myCase = await Case.findById(caseId)
+    if (!myCase) {
+      res.status(404).json({error: 'Case ID not found'})
+    } else {
+      res.send(myCase)
+    }
+  } catch (error) {
+    next(error)
+  }
+}

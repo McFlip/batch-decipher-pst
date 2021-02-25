@@ -43,4 +43,12 @@ export default function cases (this: Mocha.Suite): void {
     // debugCaseTest(res.body[0])
     checkCase(res.body[0], testCase)
   })
+  it('should get a case by ID', async function () {
+    const { client } = this.test?.ctx as myContext
+    const cases = client.db(dbName).collection('cases')
+    const c = await cases.findOne({ name: 'test case' })
+    const res: ChaiHttp.Response = await chai.request(apiURL).get(`/cases/${c?._id}`)
+    expect(res).to.have.status(200)
+    checkCase(res.body, testCase)
+  })
 }
