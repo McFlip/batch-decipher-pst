@@ -5,7 +5,7 @@ import apiURL from '../../index'
 // import utilities
 import { checkCase } from '../util/checkCase'
 // import data
-import testCase from '../data/cases'
+import { testCase, testInactiveCase} from '../data/cases'
 // import types
 import type {} from 'mocha'
 import type {} from 'chai-http'
@@ -38,6 +38,14 @@ export default function cases (this: Mocha.Suite): void {
     const c = await cases.findOne(new ObjectId(caseId))
     checkCase(c, testCase)
   })
+  it('should FAIL to create a case missing required data', async function (): Promise<void> {
+    const badCase = { forensicator: 'Sherlock Holmes' }
+    const res: ChaiHttp.Response = await chai.request(apiURL)
+      .post('/cases')
+      .send(badCase)
+    expect(res).to.have.status(500)
+    expect(res.text).to.match(/ValidationError: Case validation failed: name: Case name is required/)
+  })
   it('should get all cases', async function () {
     const res: ChaiHttp.Response = await chai.request(apiURL).get('/cases/')
     expect(res).to.have.status(200)
@@ -51,5 +59,58 @@ export default function cases (this: Mocha.Suite): void {
     const res: ChaiHttp.Response = await chai.request(apiURL).get(`/cases/${c?._id}`)
     expect(res).to.have.status(200)
     checkCase(res.body, testCase)
+  })
+  it('should FAIL to get a case by bad ID', async function () {
+    const res500: ChaiHttp.Response = await chai.request(apiURL).get('/cases/FUBAR')
+    expect(res500).to.have.status(500)
+    expect(res500.text).to.match(/CastError: Cast to ObjectId failed for value &quot;FUBAR&quot; at path &quot;_id&quot; for model &quot;Case&quot;/)
+    const res404: ChaiHttp.Response = await chai.request(apiURL).get('/cases/aaaaaaaaaaaa')
+    expect(res404).to.have.status(404)
+  })
+  it('should search & find the test case', async function () {
+    const queries = [
+      'name=test',
+      'forensicator=Holmes',
+      'status=active'
+    ]
+    const results = queries.map(async (q) => {
+      // debugCaseTest(`/cases/search?${q}`)
+      const res: ChaiHttp.Response = await chai.request(apiURL)
+      .get(`/cases/search?${q}`)
+      expect(res).to.have.status(200)
+      checkCase(res.body[0], testCase)
+    })
+    await Promise.all(results)
+  })
+  it('should search & FAIL to find the test case', async function () {
+    const queries = [
+      'name=FUBAR',
+      'forensicator=FUBAR',
+      'status=inactive'
+    ]
+    queries.forEach(async (q) => {
+      const res: ChaiHttp.Response = await chai.request(apiURL)
+      .get(`/cases/search?${q}`)
+      expect(res).to.have.status(200)
+      expect(res.body).to.eql([])
+    })
+  })
+  it('should filter on active cases', async function () {
+    // create an inactive case
+    const resInactive: ChaiHttp.Response = await chai.request(apiURL)
+      .post('/cases/')
+      .send(testInactiveCase)
+    expect(resInactive).to.have.status(201)
+    // filter
+    const res: ChaiHttp.Response = await chai.request(apiURL)
+      .get('/cases/search?status=active')
+    expect(res).to.have.status(200)
+    checkCase(res.body[0], testCase)
+  })
+  it('should filter on inactive cases', async function () {
+    const res: ChaiHttp.Response = await chai.request(apiURL)
+      .get('/cases/search?status=inactive')
+    expect(res).to.have.status(200)
+    checkCase(res.body[0], testInactiveCase)
   })
 }

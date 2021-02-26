@@ -8,8 +8,8 @@ const router: any = Router()
 
 // CREATE case
 router.post('/', caseController.create)
-// // READ by query string
-// router.get('/search', caseController.search)
+// READ by query string
+router.get('/search', caseController.search)
 // READ one case
 router.get('/:caseId', caseController.getOne)
 // READ all cases

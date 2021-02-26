@@ -17,10 +17,10 @@ export const getAll = async (req: Request, res: Response, next: NextFunction): P
     // debugCase(cases)
     res.send(cases)
   } catch (error) {
+    /* istanbul ignore next */
     next(error)
   }
 }
-
 export const getOne = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { caseId } = req.params
@@ -31,6 +31,18 @@ export const getOne = async (req: Request, res: Response, next: NextFunction): P
       res.send(myCase)
     }
   } catch (error) {
+    next(error)
+  }
+}
+export const search = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    // debugCase(req.query)
+    const qKeyVal = Object.entries(req.query)[0]
+    const query = {[qKeyVal[0]]: { $regex: qKeyVal[1], $options: 'i' } }
+    const cases = await Case.find(query)
+    res.send(cases)
+  } catch (error) {
+    /* istanbul ignore next */
     next(error)
   }
 }

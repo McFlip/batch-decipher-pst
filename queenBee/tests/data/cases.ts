@@ -5,4 +5,10 @@ const testCase = {
   status: 'active'
 }
 
-export default testCase
+const testInactiveCase = {
+  name: 'inactive case',
+  forensicator: 'Sherlock Holmes',
+  status: 'inactive'
+}
+
+export {testCase, testInactiveCase}
