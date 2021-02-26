@@ -1,6 +1,5 @@
 /* eslint-env mocha, chai, node */
 import chai, { expect } from 'chai'
-import {} from 'chai-http'
 import debug from 'debug'
 import apiURL from '../../index'
 // import utilities
@@ -8,6 +7,8 @@ import { checkCase } from '../util/checkCase'
 // import data
 import testCase from '../data/cases'
 // import types
+import type {} from 'mocha'
+import type {} from 'chai-http'
 import myContext from '../../types/context'
 import { ObjectId } from 'mongodb'
 

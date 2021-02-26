@@ -1,5 +1,5 @@
 // TODO: Delete this if I end up not using test context
-import { MongoClient } from 'mongodb'
+import type { MongoClient } from 'mongodb'
 interface myContext extends Mocha.Context {
   // apiURL: Express.Application | string | undefined,
   client: MongoClient

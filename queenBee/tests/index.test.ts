@@ -1,5 +1,5 @@
 /* eslint-env mocha, chai, node */
-import {} from 'mocha'
+import type {} from 'mocha'
 import chaiHttp from 'chai-http'
 import chai from 'chai'
 import apiURL from '../index' // Comment out if using URL string
