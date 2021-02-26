@@ -14,8 +14,8 @@ router.get('/search', caseController.search)
 router.get('/:caseId', caseController.getOne)
 // READ all cases
 router.get('/', caseController.getAll)
-// // UPDATE case - merge
-// router.patch('/:caseId', caseController.modify)
+// UPDATE case - merge
+router.patch('/:caseId', caseController.modify)
 // // UPDATE case - replace
 // router.put('/:caseId', caseController.overwrite)
 // // DELETE case

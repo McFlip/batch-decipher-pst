@@ -113,4 +113,44 @@ export default function cases (this: Mocha.Suite): void {
     expect(res).to.have.status(200)
     checkCase(res.body[0], testInactiveCase)
   })
+  it('should change case from active to inactive', async function () {
+    const sentCase = {
+      name: 'deactivate me',
+      forensicator: 'Sherlock Holmes',
+    }
+    const resCreate: ChaiHttp.Response = await chai.request(apiURL)
+      .post('/cases/')
+      .send(sentCase)
+    expect(resCreate).to.have.status(201)
+    const { caseId }: { caseId: ObjectId } = resCreate.body
+    // debugCaseTest(caseId)
+    const resUpdate: ChaiHttp.Response = await chai.request(apiURL)
+      .patch(`/cases/${caseId}`)
+      .send({status: 'inactive'})
+    // debugCaseTest(resUpdate.body)
+    expect(resUpdate.body?.status).to.eql('inactive')
+  })
+  it('should FAIL to update a case with bad ID', async function () {
+    const res: ChaiHttp.Response = await chai.request(apiURL)
+      .patch('/cases/aaaaaaaaaaaa')
+      .send({status: 'inactive'})
+    expect(res).to.have.status(404)
+  })
+  it('should FAIL to update with bad value', async function () {
+    const sentCase = {
+      name: 'deactivate me',
+      forensicator: 'Sherlock Holmes',
+    }
+    const resCreate: ChaiHttp.Response = await chai.request(apiURL)
+      .post('/cases/')
+      .send(sentCase)
+    expect(resCreate).to.have.status(201)
+    const { caseId }: { caseId: ObjectId } = resCreate.body
+    // debugCaseTest(caseId)
+    const resUpdate: ChaiHttp.Response = await chai.request(apiURL)
+      .patch(`/cases/${caseId}`)
+      .send({status: 'FUBAR'})
+    expect(resUpdate).to.have.status(500)
+    expect(resUpdate.text).to.match(/<pre>ValidationError: Validation failed: status: `FUBAR` is not a valid enum value for path `status`/)
+  })
 }

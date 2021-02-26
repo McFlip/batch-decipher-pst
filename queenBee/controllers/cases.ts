@@ -46,3 +46,18 @@ export const search = async (req: Request, res: Response, next: NextFunction): P
     next(error)
   }
 }
+export const modify = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    // debugCase(req.params.caseId)
+    // debugCase(req.body)
+    const updatedCase = await Case.findByIdAndUpdate(req.params.caseId, { $set: req.body }, { new: true, runValidators: true })
+    // debugCase(updatedCase)
+    if(!updatedCase) {
+      res.status(404).json({error: 'Case ID not found'})
+    } else {
+      res.send(updatedCase)
+    }
+  } catch (error) {
+    next(error)
+  }
+}
