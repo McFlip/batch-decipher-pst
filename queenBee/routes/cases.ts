@@ -18,7 +18,7 @@ router.get('/', caseController.getAll)
 router.patch('/:caseId', caseController.modify)
 // // UPDATE case - replace
 // router.put('/:caseId', caseController.overwrite)
-// // DELETE case
-// router.delete('/:caseId', caseController.delete)
+// DELETE case
+router.delete('/:caseId', caseController.remove)
 
 export { router as caseRte }

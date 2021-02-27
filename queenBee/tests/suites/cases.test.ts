@@ -153,4 +153,20 @@ export default function cases (this: Mocha.Suite): void {
     expect(resUpdate).to.have.status(500)
     expect(resUpdate.text).to.match(/<pre>ValidationError: Validation failed: status: `FUBAR` is not a valid enum value for path `status`/)
   })
+  it('should delete a case by ID', async function () {
+    const sentCase = {
+      name: 'delete me',
+      forensicator: 'Sherlock Holmes'
+    }
+    const resCreate: ChaiHttp.Response = await chai.request(apiURL)
+      .post('/cases/')
+      .send(sentCase)
+    expect(resCreate).to.have.status(201)
+    const { caseId }: { caseId: ObjectId } = resCreate.body
+    const resDel: ChaiHttp.Response = await chai.request(apiURL).delete(`/cases/${caseId}`)
+    expect(resDel).to.have.status(200)
+    const { caseId: deletedId }: { caseId: ObjectId } = resDel.body
+    const resGet: ChaiHttp.Response = await chai.request(apiURL).get(`/cases/${deletedId}`)
+    expect(resGet).to.have.status(404)
+  })
 }

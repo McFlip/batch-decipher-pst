@@ -61,3 +61,15 @@ export const modify = async (req: Request, res: Response, next: NextFunction): P
     next(error)
   }
 }
+export const remove = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const delCase = await Case.findByIdAndDelete(req.params.caseId)
+    if(!delCase) {
+      res.status(404).json({error: 'Case ID not found'})
+    } else {
+      res.status(200).json({ caseId: delCase._id })
+    }
+  } catch (error) {
+    next(error)
+  }
+}
