@@ -169,4 +169,8 @@ export default function cases (this: Mocha.Suite): void {
     const resGet: ChaiHttp.Response = await chai.request(apiURL).get(`/cases/${deletedId}`)
     expect(resGet).to.have.status(404)
   })
+  it('should FAIL to delete a case with a bad ID', async function () {
+    const res: ChaiHttp.Response = await chai.request(apiURL).delete('/cases/aaaaaaaaaaaa')
+    expect(res).to.have.status(404)
+  })
 }

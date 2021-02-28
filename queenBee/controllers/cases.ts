@@ -70,6 +70,7 @@ export const remove = async (req: Request, res: Response, next: NextFunction): P
       res.status(200).json({ caseId: delCase._id })
     }
   } catch (error) {
+    /* istanbul ignore next */
     next(error)
   }
 }
