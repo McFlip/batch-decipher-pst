@@ -2,8 +2,10 @@
 import chai, { expect } from 'chai'
 import debug from 'debug'
 import apiURL from '../../index'
+import path from 'path'
 // import utilities
 import { checkCase } from '../util/checkCase'
+import {pathValidator} from '../../util/pathvalidator'
 // import data
 import { testCase, testInactiveCase} from '../data/cases'
 // import types
@@ -37,6 +39,11 @@ export default function cases (this: Mocha.Suite): void {
     // debugCaseTest(caseId)
     const c = await cases.findOne(new ObjectId(caseId))
     checkCase(c, testCase)
+    // Test folder structure
+    const subDirs = ['sigs', 'p12', 'keys']
+    const isDirExist = subDirs.map(d => pathValidator(path.join('/app/workspace',c._id.toString(),d)))
+      .reduce((prev, curr) => prev && curr)
+    expect(isDirExist).to.eql(true)
   })
   it('should FAIL to create a case missing required data', async function (): Promise<void> {
     const badCase = { forensicator: 'Sherlock Holmes' }
@@ -130,6 +137,30 @@ export default function cases (this: Mocha.Suite): void {
     // debugCaseTest(resUpdate.body)
     expect(resUpdate.body?.status).to.eql('inactive')
   })
+  it('should set pstPath', async function () {
+    const resGet: ChaiHttp.Response = await chai.request(apiURL)
+      .get('/cases/search?name=test')
+    const caseId = resGet.body[0]._id
+    const resSetPath: ChaiHttp.Response = await chai.request(apiURL)
+      .patch(`/cases/${caseId}`)
+      .send({
+        pstPath: '/app/tests/data/pst'
+      })
+    expect(resSetPath).to.have.status(200)
+  })
+  it('should FAIL to set pstPath to a dir without write permission', async function () {
+    const resGet: ChaiHttp.Response = await chai.request(apiURL)
+      .get('/cases/search?name=test')
+    const caseId = resGet.body[0]._id
+    // debugCaseTest(resGet.body)
+    const resSetPath: ChaiHttp.Response = await chai.request(apiURL)
+      .patch(`/cases/${caseId}`)
+      .send({
+        pstPath: '/app/tests/data/pst_readOnly'
+      })
+    expect(resSetPath).to.have.status(500)
+    // debugCaseTest(resSetPath.text)
+  })
   it('should FAIL to update a case with bad ID', async function () {
     const res: ChaiHttp.Response = await chai.request(apiURL)
       .patch('/cases/aaaaaaaaaaaa')
@@ -168,6 +199,11 @@ export default function cases (this: Mocha.Suite): void {
     const { caseId: deletedId }: { caseId: ObjectId } = resDel.body
     const resGet: ChaiHttp.Response = await chai.request(apiURL).get(`/cases/${deletedId}`)
     expect(resGet).to.have.status(404)
+    // Delete workspace
+    const subDirs = ['sigs', 'p12', 'keys']
+    const isDirExist = subDirs.map(d => pathValidator(path.join('/app/workspace',deletedId.toString(),d)))
+      .reduce((prev, curr) => prev || curr)
+    expect(isDirExist).to.eql(false)
   })
   it('should FAIL to delete a case with a bad ID', async function () {
     const res: ChaiHttp.Response = await chai.request(apiURL).delete('/cases/aaaaaaaaaaaa')

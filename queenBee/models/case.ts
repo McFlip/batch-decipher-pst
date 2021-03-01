@@ -1,6 +1,7 @@
 import mongoose from 'mongoose'
 const Schema = mongoose.Schema
-const ObjectId = mongoose.Schema.Types.ObjectId
+import {pathValidator} from '../util/pathvalidator'
+// const ObjectId = mongoose.Schema.Types.ObjectId
 
 const caseSchema = new Schema({
   name: {
@@ -16,6 +17,27 @@ const caseSchema = new Schema({
     type: String,
     enum: ['active', 'inactive'],
     default: 'active'
+  },
+  pstPath: {
+    type: String,
+    validate: {
+      validator: pathValidator,
+      message: 'Cannot access path'
+    }
+  },
+  p12Path: {
+    type: String,
+    validate: {
+      validator: pathValidator,
+      message: 'Cannot access path'
+    }
+  },
+  ptPath: {
+    type: String,
+    validate: {
+      validator: pathValidator,
+      message: 'Cannot access path'
+    }
   }
 })
 

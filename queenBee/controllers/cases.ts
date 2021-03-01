@@ -1,4 +1,6 @@
 import { NextFunction, Request, Response } from 'express'
+import fs from 'fs'
+import path from 'path'
 import { Case } from '../models/case'
 import debug from 'debug'
 
@@ -8,7 +10,13 @@ export const create = (req: Request, res: Response, next: NextFunction): void =>
   const { name, forensicator, status } = req.body
   const myCase = new Case({ name, forensicator, status })
   myCase.save()
-    .then(c => res.status(201).json({ caseId: c._id }))
+    .then(c => {
+      const casePath = path.join('/app/workspace',c._id.toString() as string)
+      fs.mkdirSync(casePath)
+      const subDirs = ['sigs', 'p12', 'keys']
+      subDirs.forEach(s => fs.mkdirSync(path.join(casePath, s)))
+      res.status(201).json({ caseId: c._id })
+    })
     .catch(err => next(err))
 }
 export const getAll = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -67,6 +75,7 @@ export const remove = async (req: Request, res: Response, next: NextFunction): P
     if(!delCase) {
       res.status(404).json({error: 'Case ID not found'})
     } else {
+      fs.rmdirSync(path.join('/app/workspace', delCase._id.toString()), {recursive: true})
       res.status(200).json({ caseId: delCase._id })
     }
   } catch (error) {
