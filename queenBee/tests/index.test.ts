@@ -4,6 +4,7 @@ import chaiHttp from 'chai-http'
 import chai from 'chai'
 import apiURL from '../index' // Comment out if using URL string
 import cases from './suites/cases.test'
+import sigs from './suites/sigs.test'
 import { MongoClient } from 'mongodb'
 import fs from 'fs'
 import path from 'path'
@@ -42,5 +43,6 @@ describe('API tests', function () {
     const res = await chai.request(apiURL).get('/')
     expect(res).to.have.status(200)
   })
-  describe('CASES tests', cases.bind(this))
+  describe.skip('CASES', cases.bind(this))
+  describe('Get CERTS from signed email', sigs.bind(this))
 })

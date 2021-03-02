@@ -1,6 +1,7 @@
 import express from 'express'
 import bodyParser from 'body-parser'
 import { caseRte } from './routes/cases'
+import {sigsRte} from './routes/sigs'
 import debug from 'debug'
 import mongoose from 'mongoose'
 // import { MockMongoose } from 'mock-mongoose'
@@ -39,6 +40,7 @@ app.use(function (req, res, next) {
 })
 
 app.use('/cases', caseRte)
+app.use('/sigs', sigsRte)
 app.get('/', (req, res) => res.send('Healthy :)\r\n'))
 
 app.listen(PORT, () => {

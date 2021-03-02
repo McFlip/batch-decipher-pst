@@ -26,9 +26,11 @@ services:
         source: hive
         target: /app/workspace
       - "./queenBee:/app"
+      - /var/run/docker.sock:/var/run/docker.sock
     environment:
       - NODE_ENV=development
-      - DEBUG=app,cases
+      - DEBUG=app,cases,sig
+    privileged: true
     command: ["npm", "start"]
 
   # Worker that runs processing jobs
@@ -39,6 +41,7 @@ services:
       - type: volume
         source: hive
         target: /app/workspace
+      - ./queenBee/tests:/app/tests
       # - "./busyBee:/app"
     
   # Persistent DB

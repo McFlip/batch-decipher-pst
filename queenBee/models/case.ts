@@ -38,7 +38,8 @@ const caseSchema = new Schema({
       validator: pathValidator,
       message: 'Cannot access path'
     }
-  }
+  },
+  custodians: String
 })
 
 export const Case = mongoose.model('Case', caseSchema)
