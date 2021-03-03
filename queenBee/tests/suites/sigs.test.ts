@@ -27,10 +27,13 @@ export default function sigs(this: Mocha.Suite): void {
     expect(createdRes).to.have.status(201)
     const { caseId }: { caseId: ObjectId } = createdRes.body
     debugSig(caseId)
+    // Copy the pst
+    fs.mkdirSync('/app/workspace/pst')
+    fs.copyFileSync('/app/tests/data/pst/TEST.pst', '/app/workspace/pst/TEST.pst')
     // Set the pst path
     const setPstRes: ChaiHttp.Response = await chai.request(apiURL)
       .patch(`/cases/${caseId}`)
-      .send({pstPath: '/app/tests/data/pst'})
+      .send({pstPath: '/app/workspace/pst'})
     expect(setPstRes).to.have.status(200)
     // Custodian list
     const setCustodiansRes: ChaiHttp.Response = await chai.request(apiURL)
@@ -40,6 +43,7 @@ export default function sigs(this: Mocha.Suite): void {
     // Run getSigs
     const getSigsRes: ChaiHttp.Response = await chai.request(apiURL).post('/sigs').send({caseId})
     expect(getSigsRes).to.have.status(201)
+    expect(getSigsRes.text).to.eql(fs.readFileSync('/app/tests/data/allCerts.txt').toString("ascii"))
     // const getCertsRes: ChaiHttp.Response = await chai.request(apiURL).get(`/sigs/${caseId}`)
     // expect(getCertsRes).to.have.status(200)
     // expect(getCertsRes.text).to.eql(fs.readFileSync('/app/tests/data/allCerts.txt'))

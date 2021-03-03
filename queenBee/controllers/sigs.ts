@@ -1,12 +1,10 @@
 import { NextFunction, Request, Response } from 'express'
 import fs from 'fs'
 import path from 'path'
-// TODO: remove axios?
-// import axios from 'axios'
 import dockerode from 'dockerode'
 import { Case } from '../models/case'
 import debug from 'debug'
-import { Model, Document, Date } from 'mongoose'
+import { Document, Date } from 'mongoose'
 
 const debugSig = debug('sig')
 const dockerAPI = new dockerode({socketPath: '/var/run/docker.sock'})
@@ -20,12 +18,6 @@ interface CaseType extends Document {
     ptPath: string,
     custodians: string
 }
-/*
-const dockerAPI = axios.create({
-    socketPath: '/var/run/docker.sock',
-    baseURL: 'http://localhost/v1.41'
-})
-*/
 export const processSigs = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
         const {caseId}: {caseId: string} = req.body
@@ -45,32 +37,17 @@ export const processSigs = async (req: Request, res: Response, next: NextFunctio
             // create container
             const inPath = caseMeta?.pstPath
             const outPath = path.join(basePath, 'sigs')
-            // TODO: add binding for input data
-            // TODO: is 'Volumes' key even necessary?
             const container = await dockerAPI.run(
                 'batch-decipher-pst_busybee',
                 ['bash', 'getSigs.bash', inPath, outPath, custodianPath],
                 process.stdout,
-                {
-                    Volumes: { '/app/workspace': {} },
-                    HostConfig: {
-                        Binds: ['batch-decipher-pst_hive:/app/workspace']
-                    }
-                })
+                { HostConfig: { Binds: ['batch-decipher-pst_hive:/app/workspace'] } }
+                )
                 .then(data => data[1])
             await container.remove()
-            // const dockerRes = await dockerAPI.post('/containers/create', {
-            //     Image: 'batch-decipher-pst_busybee',
-            //     Cmd: ['getSigs.bash', inPath, outPath, custodianPath],
-            //     Volumes: {
-            //         '/app/workspace': {
-            //             Source: 'hive'
-            //         }
-            //     }
-            // })
             const certs = fs.readFileSync(path.join(outPath, 'allCerts.txt'))
-            debugSig(certs)
-            res.status(201).send(certs)
+            // debugSig(certs.toString("ascii"))
+            res.status(201).send(certs.toString('ascii'))
         }
     } catch (error) {
         next(error)
