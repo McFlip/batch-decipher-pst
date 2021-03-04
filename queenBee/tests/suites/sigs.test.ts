@@ -17,7 +17,7 @@ export default function sigs(this: Mocha.Suite): void {
     const cases = client.db(dbName).collection('cases')
     cases.drop()
   })
-  it('gets custodian cert info from signed emails', async function () {
+  it('should get custodian cert info from signed emails', async function () {
     // Create a test case
     const testCase = {
       name: 'test case',
@@ -44,8 +44,12 @@ export default function sigs(this: Mocha.Suite): void {
     const getSigsRes: ChaiHttp.Response = await chai.request(apiURL).post('/sigs').send({caseId})
     expect(getSigsRes).to.have.status(201)
     expect(getSigsRes.text).to.eql(fs.readFileSync('/app/tests/data/allCerts.txt').toString("ascii"))
-    // const getCertsRes: ChaiHttp.Response = await chai.request(apiURL).get(`/sigs/${caseId}`)
-    // expect(getCertsRes).to.have.status(200)
-    // expect(getCertsRes.text).to.eql(fs.readFileSync('/app/tests/data/allCerts.txt'))
+  })
+  it('should read certs from an already processed case', async function () {
+    const caseRes: ChaiHttp.Response = await chai.request(apiURL).get('/cases')
+    const caseId: ObjectId = caseRes.body[0]?._id
+    const getCertsRes: ChaiHttp.Response = await chai.request(apiURL).get(`/sigs/${caseId}`)
+    expect(getCertsRes).to.have.status(200)
+    expect(getCertsRes.text).to.eql(fs.readFileSync('/app/tests/data/allCerts.txt').toString("ascii"))
   })
 }

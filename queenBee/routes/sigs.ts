@@ -6,6 +6,6 @@ const router = Router()
 // Process Signed Email
 router.post('/', sigsController.processSigs)
 // Get certs from allCerts.txt
-router.get('/', sigsController.getCerts)
+router.get('/:caseId', sigsController.getCerts)
 
 export {router as sigsRte}

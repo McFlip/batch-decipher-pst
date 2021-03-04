@@ -56,4 +56,17 @@ export const processSigs = async (req: Request, res: Response, next: NextFunctio
 
 export const getCerts = (req: Request, res: Response, next: NextFunction): void => {
     const {caseId} = req.params
+    const certPath = path.join('/app/workspace', caseId, '/sigs/', 'allCerts.txt')
+    // debugSig(certPath)
+    try {
+       fs.accessSync(certPath, fs.constants.R_OK) 
+    } catch (err) {
+        res.status(404).json({error: 'cannot find or cannot open allCerts.txt'})
+    }
+    try {
+        const certs = fs.readFileSync(certPath)
+        res.status(200).send(certs.toString('ascii'))
+    } catch (err) {
+        next(err)
+    }
 }
