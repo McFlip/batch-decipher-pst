@@ -45,11 +45,49 @@ export default function sigs(this: Mocha.Suite): void {
     expect(getSigsRes).to.have.status(201)
     expect(getSigsRes.text).to.eql(fs.readFileSync('/app/tests/data/allCerts.txt').toString("ascii"))
   })
+  it('should FAIL to process emails with a bad case id', async function () {
+    const res404: ChaiHttp.Response = await chai.request(apiURL).post('/sigs').send({caseId: 'aaaaaaaaaaaa'})
+    expect(res404).to.have.status(404)
+  })
+  it('should FAIL to process email with no case id', async function () {
+    const res500: ChaiHttp.Response = await chai.request(apiURL).post('/sigs').send({})
+    expect(res500).to.have.status(500)
+  })
   it('should read certs from an already processed case', async function () {
     const caseRes: ChaiHttp.Response = await chai.request(apiURL).get('/cases')
     const caseId: ObjectId = caseRes.body[0]?._id
     const getCertsRes: ChaiHttp.Response = await chai.request(apiURL).get(`/sigs/${caseId}`)
     expect(getCertsRes).to.have.status(200)
     expect(getCertsRes.text).to.eql(fs.readFileSync('/app/tests/data/allCerts.txt').toString("ascii"))
+  })
+  it('should FAIL to read certs with a bad case id', async function () {
+    const getCertsRes: ChaiHttp.Response = await chai.request(apiURL).get('/sigs/aaaaaaaaaaaa')
+    expect(getCertsRes).to.have.status(404)
+  })
+  it('should FAIL to process emails with no custodian list', async function () {
+    const testCase = {
+      name: 'test case',
+      forensicator: 'Sherlock Holmes',
+      pstPath: '/app/workspace/pst',
+      custodians: ''
+    }
+    const createdRes: ChaiHttp.Response = await chai.request(apiURL).post('/cases').send(testCase)
+    expect(createdRes).to.have.status(201)
+    const { caseId }: { caseId: ObjectId } = createdRes.body
+    const getSigsRes: ChaiHttp.Response = await chai.request(apiURL).post('/sigs').send({caseId})
+    expect(getSigsRes).to.have.status(500)
+  })
+  it('should FAIL to process emails with no pst path', async function () {
+    const testCase = {
+      name: 'test case',
+      forensicator: 'Sherlock Holmes',
+      pstPath: '',
+      custodians: '123'
+    }
+    const createdRes: ChaiHttp.Response = await chai.request(apiURL).post('/cases').send(testCase)
+    expect(createdRes).to.have.status(201)
+    const { caseId }: { caseId: ObjectId } = createdRes.body
+    const getSigsRes: ChaiHttp.Response = await chai.request(apiURL).post('/sigs').send({caseId})
+    expect(getSigsRes).to.have.status(500)
   })
 }

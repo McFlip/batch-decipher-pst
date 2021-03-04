@@ -43,6 +43,6 @@ describe('API tests', function () {
     const res = await chai.request(apiURL).get('/')
     expect(res).to.have.status(200)
   })
-  describe.skip('CASES', cases.bind(this))
+  describe('CASES', cases.bind(this))
   describe('Get CERTS from signed email', sigs.bind(this))
 })

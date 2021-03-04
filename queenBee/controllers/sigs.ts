@@ -36,6 +36,7 @@ export const processSigs = async (req: Request, res: Response, next: NextFunctio
             fs.writeFileSync(custodianPath, custodians)
             // create container
             const inPath = caseMeta?.pstPath
+            if (!inPath) throw new Error('No PST path set')
             const outPath = path.join(basePath, 'sigs')
             const container = await dockerAPI.run(
                 'batch-decipher-pst_busybee',
@@ -67,6 +68,7 @@ export const getCerts = (req: Request, res: Response, next: NextFunction): void 
         const certs = fs.readFileSync(certPath)
         res.status(200).send(certs.toString('ascii'))
     } catch (err) {
+        /* Istanbul ignore next */
         next(err)
     }
 }
