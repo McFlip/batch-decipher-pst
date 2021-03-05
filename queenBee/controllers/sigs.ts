@@ -4,20 +4,11 @@ import path from 'path'
 import dockerode from 'dockerode'
 import { Case } from '../models/case'
 import debug from 'debug'
-import { Document, Date } from 'mongoose'
+import CaseType from '../types/case'
 
 const debugSig = debug('sig')
 const dockerAPI = new dockerode({socketPath: '/var/run/docker.sock'})
 
-interface CaseType extends Document {
-    name: string,
-    dateCreated: Date,
-    status: string,
-    pstPath: string,
-    p12Path: string,
-    ptPath: string,
-    custodians: string
-}
 export const processSigs = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
         const {caseId}: {caseId: string} = req.body

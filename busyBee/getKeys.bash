@@ -18,12 +18,15 @@ find "$2" -type f -exec rm -f {} \;
 
 # Get list of p12 files to unpack
 p12List=$(find "$p12DIR" -name "*.p12")
+# echo "$p12List"
 
 for p in "$p12List"
 do
   filename=$(basename "$p")
   # Look up the password from secrets table
-  password=$(grep ^"$filename" "$secretsPath" | cut -f 2)
+  # password=$(grep ^"$filename" "$secretsPath" | cut -f 2)
+  password=$(printenv 'PW_'$(basename "$filename" ".p12"))
+  # echo "$password"
   # Get serial number of the embedded key - used in output filename
   serial=$(openssl pkcs12 -in "$p" -nokeys -password pass:"$password" | openssl x509 -serial -noout | cut -f 2 -d '=')
   # Extract the key
@@ -35,5 +38,5 @@ do
     -out "$outPath/$serial.key"
   # append serial number to output table
   # this table will be used by the API later to pass in the correct password for each key
-  echo -e "$filename\t$serial" >> "$outPath/serials.tsv"
+  echo -e "$filename\t$serial" | tee -a "$outPath/serials.tsv"
 done

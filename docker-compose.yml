@@ -29,7 +29,8 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
       - NODE_ENV=development
-      - DEBUG=app,cases,sig
+      # - DEBUG=app,cases,sig,keys
+      - DEBUG=keys
     privileged: true
     command: ["npm", "start"]
 

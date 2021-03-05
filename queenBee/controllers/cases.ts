@@ -7,8 +7,9 @@ import debug from 'debug'
 const debugCase  = debug('cases')
 
 export const create = (req: Request, res: Response, next: NextFunction): void => {
-  const { name, forensicator, status } = req.body
-  const myCase = new Case({ name, forensicator, status })
+  // const { name, forensicator, status } = req.body
+  // const myCase = new Case({ name, forensicator, status })
+  const myCase = new Case(req.body)
   myCase.save()
     .then(c => {
       const casePath = path.join('/app/workspace',c._id.toString() as string)
