@@ -5,6 +5,7 @@ import {sigsRte} from './routes/sigs'
 import {keysRte} from './routes/keys'
 import debug from 'debug'
 import mongoose from 'mongoose'
+import { decipherRte } from './routes/decipher'
 // import { MockMongoose } from 'mock-mongoose'
 
 const app = express()
@@ -43,6 +44,7 @@ app.use(function (req, res, next) {
 app.use('/cases', caseRte)
 app.use('/sigs', sigsRte)
 app.use('/keys', keysRte)
+app.use('/decipher', decipherRte)
 app.get('/', (req, res) => res.send('Healthy :)\r\n'))
 
 app.listen(PORT, () => {

@@ -81,7 +81,6 @@ export default function sigs(this: Mocha.Suite): void {
     const testCase = {
       name: 'test case',
       forensicator: 'Sherlock Holmes',
-      pstPath: '',
       custodians: '123'
     }
     const createdRes: ChaiHttp.Response = await chai.request(apiURL).post('/cases').send(testCase)

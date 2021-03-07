@@ -39,6 +39,13 @@ const caseSchema = new Schema({
       message: 'Cannot access path'
     }
   },
+  exceptionsPath: {
+    type: String,
+    validate: {
+      validator: pathValidator,
+      message: 'Cannot access path'
+    }
+  },
   custodians: String
 })
 

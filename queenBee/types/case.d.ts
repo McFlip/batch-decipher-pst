@@ -7,6 +7,7 @@ interface CaseType extends Document {
     pstPath: string,
     p12Path: string,
     ptPath: string,
+    exceptionsPath: string,
     custodians: string
 }
 
