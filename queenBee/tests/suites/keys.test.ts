@@ -38,4 +38,12 @@ export default function keys(this: Mocha.Suite): void {
     // debugKeys(keysRes.body)
     expect(keysRes.body).to.eql([[ 'TEST.p12', '12C3905B55296E401270C0CEB18B5BA660DB9A1F' ]])
   })
+  it('should read key serial #s from a previous run', async function () {
+    const caseRes: ChaiHttp.Response = await chai.request(apiURL).get('/cases')
+    debugKeys(caseRes.body)
+    const caseId: ObjectId = caseRes.body[0]?._id
+    const getkeysRes: ChaiHttp.Response = await chai.request(apiURL).get(`/keys/${caseId}`)
+    expect(getkeysRes).to.have.status(200)
+    expect(getkeysRes.body).to.eql([[ 'TEST.p12', '12C3905B55296E401270C0CEB18B5BA660DB9A1F' ]])
+  })
 }

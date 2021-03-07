@@ -53,3 +53,18 @@ export const extractKeys = async (req: Request, res: Response, next: NextFunctio
       next(err) 
   }
 }
+export const getSerials = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const {caseId}  = req?.params
+    if (!caseId) throw new Error("no case ID")
+    const keysPath = path.join('/app/workspace/', caseId, 'keys/')
+    const serialTuples = fs.readFileSync(path.join(keysPath, 'serials.tsv'))
+      .toString('ascii')
+      .split('\n')
+      .map(s => s.split('\t'))
+      .filter(arr => arr.length === 2)
+    res.status(200).send(serialTuples)
+  } catch (err) {
+    next(err)
+  }
+}
