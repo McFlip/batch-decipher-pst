@@ -1,28 +1,54 @@
 #!/bin/bash
 # Deciphers a batch of PSTs containing encrypted mail. Outputs RFC eml files in a directory structure that mirrors the PSTs.
-# Key passwords will be passed using Docker Secrets.
-# In production set secretsPath to "/run/secrets/<caseName>_keyPWs"
-# The input secret is a tsv file in the form "keySerial#    keyPassword"
+# Key passwords will be passed using local env vars in the form 'PW_<serial>=<password>'
 # Passwords will never be stored to the FS.
 # Decrypted mail will be stored unencrypted!
 # Use proper security measures to safeguard the Plain Text output.
-# Usage: decipher.bash inputDir outputDir secretsPath keysDir exceptionsDir
+# Usage: decipher.bash inputDir outputDir keysDir exceptionsDir
+
+# TODO: extract PSTs to tmpfs in RAM instead of inDIR
 
 inDIR="$1"
 outDIR="${2%/}"
-secretsPath="$3"
-keysDIR="${4%/}"
-exceptionsDIR="${5%/}"
+# secretsPath="$3"
+keysDIR="${3%/}"
+exceptionsDIR="${4%/}"
 emailList="${1%/}/emailList"
+
+# Set up tmpfs in RAM
+# Custom
+# mkdir -p /tmp/PST
+# chown user:group /tmp/PST
+# mount -t tmpfs -o size=100M,mode=0755 tmpfs /tmp/PST
+# unmount when done
+
+# DEFAULT
+tmpfsPath="/dev/shm/PST/"
+mkdir -p "$tmpfsPath"
 
 # Cleanup previous runs
 find "$outDIR" -mindepth 1 -maxdepth 1 -type d -exec rm -rf {} \;
 
 # Extract PSTs
-bash lib/xtractPSTs.bash "$inDIR" "$inDIR"
+# Get list of PSTs to process
+pstList=$(find "$inDIR" -type f -name "*.pst")
+
+echo "***Extracting PSTs    $(date)"
+i=1
+total=$(echo "$pstList" | wc -l)
+for pst in $(echo "$pstList")
+do
+  echo "***Processing $i/$total    $(date)  "$pst""
+  # Extract PST to RAM
+  # bash lib/xtractPSTs.bash "$pst" "$tmpfsPath"
+  bash lib/xtractPSTs.bash "$pst" "$inDIR"
+
+  i=$((i+1))
+done
 
 # Get list of emails with relative paths
 pushd "$inDIR"
+# pushd "$tmpfsPath"
 find . -type f -name "*.eml" -print0 > emailList
 popd
 
@@ -68,9 +94,7 @@ getSerial() {
 
 # Look up the password for a given serial #
 getPW() {
-  serial="$1"
-  secretsPath="$2"
-  cat "$secretsPath" | grep ^"$1" | cut -f 2
+  printenv PW_"$1"
 }
 
 # Decipher the email body
@@ -111,9 +135,9 @@ pipeline() {
   filename=$(echo "$1" | sed -e "s/^\.\///")
   inDIR="$2"
   outDIR="$3"
-  secretsPath="$4"
-  keysDIR="$5"
-  exceptionsDIR="$6"
+  # secretsPath="$4"
+  keysDIR="$4"
+  exceptionsDIR="$5"
   fullPath="$inDIR/$filename"
   eml=$(cat "$fullPath")
   # Check if the eml is encrypted
@@ -153,7 +177,8 @@ pipeline() {
 export inDIR outDIR secretsPath exceptionsDIR
 export -f pipeline assemble getHeader output decipher getPW getSerial getP7m isCT
 # parallel -0 --bar pipeline {} $inDIR $outDIR $secretsPath $keysDIR $exceptionsDIR :::: "$emailList"
-parallel -0 pipeline {} $inDIR $outDIR $secretsPath $keysDIR $exceptionsDIR :::: "$emailList"
+parallel -0 pipeline {} $inDIR $outDIR $keysDIR $exceptionsDIR :::: "$emailList"
 
 # housekeeping
 rm "$emailList"
+find "$tmpfsPath" -maxdepth 1 -mindepth 1 -type d -exec rm -rf {} \;

@@ -1,15 +1,25 @@
 #!/bin/bash
 # Gets certificate info from signed emails. This info is sent in the request email to RA/CA.
-# Usage: getSigs.bash inputDirectory outputDirectory
+# Usage: getSigs.bash inputDirectory outputDirectory custodianFile
+# Custodian file is last name of each custodian in ALL CAPS; 1 per line
 
-inDIR=$1
-outDIR=$2
+inDIR="$1"
+outDIR="$2"
+custodians="$3"
+
+# Set up tmpfs in RAM
+# Custom
+# mkdir -p /tmp/PST
+# chown user:group /tmp/PST
+# mount -t tmpfs -o size=100M,mode=0755 tmpfs /tmp/PST
+# unmount when done
+
+# DEFAULT
+tmpfsPath="/dev/shm/PST/"
+mkdir -p "$tmpfsPath"
 
 # Cleanup previous runs
 find "$outDIR" -type f -exec rm -f {} \;
-
-# Extract PSTs
-bash lib/xtractPSTs.bash "$inDIR" "$inDIR"
 
 # *** FUNCTIONS ***
 
@@ -29,7 +39,22 @@ decodeSignedData () {
 }
 
 getCert() {
-  openssl smime -pk7out | openssl pkcs7 -print_certs
+  certs="$(openssl smime -pk7out | openssl pkcs7 -print_certs -text)"
+  keyUsage="Digital Signature"
+  beginCert="-----BEGIN CERTIFICATE-----"
+  endCert="-----END CERTIFICATE-----"
+
+  # Just 1 cert or full cert chain?
+  certCnt=$(echo "$certs" | grep "BEGIN CERTIFICATE" | wc -l)
+  # >&2 echo $certCnt
+  if [[ $certCnt -gt 1 ]]
+  then
+    echo "$certs" \
+    | bbe -s --block="/$keyUsage/:/$endCert/" \
+    | bbe -s --block="/$beginCert/:/$endCert/"
+  else
+    echo "$certs" | bbe -s --block="/$beginCert/:/$endCert/"
+  fi
 }
 
 parseCert() {
@@ -37,13 +62,13 @@ parseCert() {
 }
 
 # compose the above functions
-pipline() {
+pipeline() {
   getSignedData "$1" | decodeSignedData | getCert | parseCert
 }
 
 # process 1 email. Use this as the mapping function and the filesystem as the reducer.
 getSig() {
-  cert=$(pipline "$1")
+  cert=$(pipeline "$1")
   if [[ -z "$cert" ]]
   then
     >&2 echo -e "ERROR: Failed to get cert for:\n $1"
@@ -58,13 +83,42 @@ getSig() {
 
 # *** MAIN PROCEDURE ***
 
-# Get list of emails to process
-emlList=$(find "$inDIR" -name "*.eml")
+# Rename PST files to Unix friendly paths
+# bash lib/rename.bash "$inDIR"
 
-# Iterate through the list using parallel processing
-export -f getSig pipline parseCert getCert decodeSignedData getSignedData
-export inDIR outDIR
-parallel getSig {} $outDIR ::: "$emlList"
+# Get list of PSTs to process
+pstList=$(find "$inDIR" -type f -name "*.pst")
+
+echo "***STARTED PROCESSING    $(date)"
+i=1
+total=$(echo "$pstList" | wc -l)
+for pst in $(echo "$pstList")
+do
+  echo "***Processing $i/$total    $(date)  "$pst""
+  # Extract PST to RAM
+  bash lib/xtractPSTs.bash "$pst" "$tmpfsPath"
+
+  # Free up space in RAM. We only need signed emails in 'Sent Items'
+  # Delete everything not in 'Sent Items'
+  find "$tmpfsPath" -maxdepth 2 -mindepth 2 -type d -not -name 'Sent Items' -exec rm -rf {} \;
+
+  # Delete emails that are not signed
+  find "$tmpfsPath" -type f -print0 | parallel --null bash lib/filterEml.bash 'Content-Type\\x3A\\x20multipart\\x2Fsigned' "{}"
+
+  # Iterate through the dir using parallel processing
+  export -f getSig pipeline parseCert getCert decodeSignedData getSignedData
+  export inDIR outDIR
+  find "$tmpfsPath" -type f -print0 | parallel --null getSig {} $outDIR
+
+  # Cleanup
+  find "$tmpfsPath" -maxdepth 1 -mindepth 1 -type d -exec rm -rf {} \;
+  i=$((i+1))
+done
+
+# Delete false positives
+bash lib/filterCert.bash "$custodians" "$outDIR"
 
 # Output all certs
 find "$outDIR" -type f -name "*.cert.txt" -exec cat {} \; | tee "${2%/}/allCerts.txt"
+
+echo "***FINISHED PROCESSING    $(date)"

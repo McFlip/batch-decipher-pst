@@ -8,48 +8,54 @@ volumes:
 services:
 # backend
   # # API - interfaces with db and dispatches jobs to worker containers
-  # queenbee:
-  #   container_name: queenBee_container
-  #   build: queenBee
-  #   ports:
-  #     - "3000:3000"
-  #   links: 
-  #     - database
-  #     - keys
-  #     - busybee
-  #   depends_on:
-  #     - database
-  #     - keys
-  #     - busybee
-  #   volumes: 
-  #     - type: volume
-  #       source: hive
-  #       target: /app/workspace
-  #   environment:
-  #     - NODE_ENV=development
-  #   command: ["npm", "start"]
+  queenbee:
+    container_name: queenBee_container
+    build: queenBee
+    ports:
+      - "3000:3000"
+    links: 
+      - database
+    #   - keys
+    #   - busybee
+    depends_on:
+      - database
+    #   - keys
+    #   - busybee
+    volumes: 
+      - type: volume
+        source: hive
+        target: /app/workspace
+      - "./queenBee:/app"
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - NODE_ENV=development
+      # - DEBUG=app,cases,sig,keys,decipher
+      # - DEBUG=
+    privileged: true
+    command: ["npm", "start"]
 
   # Worker that runs processing jobs
   busybee:
     container_name: busyBee_container
     build: busyBee
     volumes: 
-      # - type: volume
-        # source: hive
-        # target: /app/workspace
-      - "./busyBee:/app"
+      - type: volume
+        source: hive
+        target: /app/workspace
+      - ./queenBee/tests:/app/tests
+      # - "./busyBee:/app"
     
-  # # Persistent DB
-  # database:
-  #   container_name: db_container
-  #   image: mongo 
-  #   ports:
-  #     - "27017:27017"
-  #   volumes:
-  #     - type: volume
-  #       source: dbvol
-  #       target: /data/db
-  #   command: ["mongod", "--bind_ip", "localhost,database"]
+  # Persistent DB
+  database:
+    container_name: db_container
+    image: mongo 
+    ports:
+      - "27017:27017"
+    volumes:
+      - type: volume
+        source: dbvol
+        target: /data/db
+    command: ["mongod", "--bind_ip", "localhost,database"]
 
   # # Database admin
   # mongoku:

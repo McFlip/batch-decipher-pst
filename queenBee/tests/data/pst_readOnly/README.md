@@ -1,0 +1,1 @@
+The parent folder is set to Read Only in order to cause path validation to fail.

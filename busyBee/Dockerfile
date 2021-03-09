@@ -1,5 +1,5 @@
 FROM debian
-RUN mkdir -p /app/workspace/{0..15}/{getSigsPST,getSigsRFC,p7m,p12,keys,ctPST,CT,PT,exceptions,signedPST,signedRFC,unsigned}
+# RUN mkdir -p /app/workspace/{0..15}/{getSigsPST,getSigsRFC,p7m,p12,keys,ctPST,CT,PT,exceptions,signedPST,signedRFC,unsigned}
 WORKDIR /app
 RUN apt-get update \
 && apt-get install -y \
