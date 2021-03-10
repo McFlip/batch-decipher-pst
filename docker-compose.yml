@@ -87,6 +87,7 @@ services:
       - './beeKeeper:/app'
     environment:
       - NODE_ENV=development
+      - DEBUG=newcase
     links:
       - "queenbee"
     depends_on:
