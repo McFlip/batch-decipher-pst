@@ -57,16 +57,16 @@ services:
         target: /data/db
     command: ["mongod", "--bind_ip", "localhost,database"]
 
-  # # Database admin
-  # mongoku:
-  #   container_name: mongoku
-  #   image: huggingface/mongoku
-  #   ports: 
-  #     - "3100:3100"
-  #   links:
-  #     - "database"
-  #   depends_on:
-  #     - "database"
+  # Database admin
+  mongoku:
+    container_name: db_admin_container
+    image: huggingface/mongoku
+    ports: 
+      - "3100:3100"
+    links:
+      - "database"
+    depends_on:
+      - "database"
   
   # # In-Mem DB - stores passwords to private keys
   # keys:
@@ -77,19 +77,18 @@ services:
   #   # command: 
 
 # # front end
-#   # React Client App dev environment
-#   client:
-#     container_name: client_container
-#     build: client
-#     ports:
-#       - "8080:8080"
-#     volumes:
-#       - './client/src:/app/src'
-#       - './client/style:/app/style'
-#     environment:
-#       - NODE_ENV=development
-#     links:
-#       - "queenbee"
-#     depends_on:
-#       - "queenbee"
-#     command: ["npm", "start"]
+  # Nextjs Client App dev environment
+  beekeeper:
+    container_name: beekeeper_container
+    build: beeKeeper
+    ports:
+      - "8080:8080"
+    volumes:
+      - './beeKeeper:/app'
+    environment:
+      - NODE_ENV=development
+    links:
+      - "queenbee"
+    depends_on:
+      - "queenbee"
+    command: ["npm", "run", "dev"]
