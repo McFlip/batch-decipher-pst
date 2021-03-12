@@ -1,5 +1,6 @@
 import Head from 'next/head'
 import Link from 'next/link'
+import Menu from 'components/menu'
 
 export default function Home() {
   return (
@@ -10,6 +11,7 @@ export default function Home() {
       </Head>
 
       <main>
+        <Menu currentPg='Home' />
         <h1>A: Create a new case</h1>
         <p>
           Click <Link href='/new-case'><a>here</a></Link> to create a new case.
