@@ -1,8 +1,32 @@
 import Head from 'next/head'
 import Link from 'next/link'
+import {useState, useEffect} from 'react'
 import Menu from 'components/menu'
+import SearchBar from 'components/searchbar'
+import debug from 'debug'
+
+const HomeDebug = debug('home')
+debug.enable('home')
 
 export default function Home() {
+  const [cases, setCases] = useState()
+  const handlSearch = async (searchCategory, searchTerm) => {
+    HomeDebug(`Search by ${searchCategory} for ${searchTerm}`)
+    const url = `http://localhost:3000/cases/search?${searchCategory}=${encodeURI(searchTerm)}`
+    try {
+      const res = await fetch(url, {
+        method: 'GET',
+        mode: 'cors',
+        // cache: 'no-cache',
+        headers: {'Content-Type': 'application/json'}
+      })
+      const fetchedCases = await res.json()
+      HomeDebug(fetchedCases)
+      setCases(fetchedCases)
+    } catch (err) {
+      HomeDebug(err)
+    }
+  }
   return (
     <div className='container'>
       <Head>
@@ -22,6 +46,7 @@ export default function Home() {
           Searching with a blank name will list all cases.
           You can filter by active or inactive.
         </p>
+        <SearchBar onSearch={handlSearch} />
       </main>
     </div>
   )
