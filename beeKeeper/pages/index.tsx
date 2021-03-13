@@ -22,6 +22,7 @@ export default function Home() {
         headers: {'Content-Type': 'application/json'}
       })
       const fetchedCases = await res.json()
+      if (fetchedCases.length === 0) alert('no cases found')
       HomeDebug(fetchedCases)
       setCases(fetchedCases)
     } catch (err) {

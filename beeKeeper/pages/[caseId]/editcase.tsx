@@ -84,6 +84,28 @@ export default function EditCase({myCase}: {myCase: CaseType}) {
     }
   }
 
+  const handleDelete = async (e: FormEvent, caseId: string) => {
+    e.preventDefault()
+    if(confirm('Are you sure? This cannot be undone!')) {
+      const url = `http://localhost:3000/cases/${caseId}`
+      try {
+        const res = await fetch(url, {
+          method: 'DELETE',
+          mode: 'cors',
+          cache: 'no-cache',
+          headers: {'Content-Type': 'application/json'}
+        })
+        if(res.ok) {
+          router.push('/')
+        } else {
+          alert('Failed to delete case')
+        }
+      } catch (err) {
+        EditDebug(err)
+      }
+    }
+  }
+
   return(
     <div className='container'>
       <Menu caseId={myCase._id} currentPg='Case Details' />
@@ -116,7 +138,7 @@ export default function EditCase({myCase}: {myCase: CaseType}) {
           <label htmlFor='custodians'>Custodians:</label>
           <textarea id='custodians' className='form-control' rows={12} value={custodians} onChange={e => setCustodians(e.target.value)} />
         </div>
-        <button className='btn btn-danger'>Delete</button>
+        <button className='btn btn-danger' onClick={e => handleDelete(e, myCase._id)}>Delete</button>
         <button type='submit' className='btn btn-primary'>Update</button>
         <Link href={`/${myCase._id}/custodians`}>
           <a><button className='btn btn-success'>Look's good, Continue</button></a>
