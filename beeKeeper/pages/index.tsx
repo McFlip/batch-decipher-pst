@@ -1,9 +1,10 @@
 import Head from 'next/head'
 import Link from 'next/link'
 import {useState, useEffect} from 'react'
+import debug from 'debug'
 import Menu from 'components/menu'
 import SearchBar from 'components/searchbar'
-import debug from 'debug'
+import ListCases from 'components/listcases'
 
 const HomeDebug = debug('home')
 debug.enable('home')
@@ -47,6 +48,7 @@ export default function Home() {
           You can filter by active or inactive.
         </p>
         <SearchBar onSearch={handlSearch} />
+        <ListCases cases={cases} />
       </main>
     </div>
   )
