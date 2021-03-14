@@ -1,13 +1,12 @@
+import Menu from 'components/menu'
 import Head from 'next/head'
-import Link from 'next/link'
 import {useRouter} from 'next/router'
 import {GetServerSideProps} from 'next'
 import {FormEvent, useState} from 'react'
-import Menu from 'components/menu'
 import debug from 'debug'
 
-const custodiansDebug = debug('custodians')
-debug.enable('custodians')
+const CertsDebug = debug('certs')
+debug.enable('certs')
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const {caseId} = context.params
@@ -19,20 +18,24 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       // cache: 'no-cache',
       headers: {'Content-Type': 'application/json'}
     })
-    const {custodians}: {custodians: string} = await res.json()
+    const {pstPath}: {pstPath: string} = await res.json()
+    if (!pstPath) return { props: { pstPath: '' } }
     return {
-      props: { custodians }
+      props: { pstPath }
     }
   } catch (err) {
-    custodiansDebug(err)
+    CertsDebug(err)
   }
 }
 
-export default function Custodians({custodians}: {custodians: string}) {
-  const [myCustodians, setMyCustodians] = useState(custodians)
+interface propsType {
+  pstPath: string
+}
+
+export default function Certs (props: propsType) {
   const router = useRouter()
   const {caseId}: {caseId?: string} = router.query
-  custodiansDebug(caseId)
+  const [pstPath, setPstPath] = useState(props.pstPath)
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
@@ -43,33 +46,34 @@ export default function Custodians({custodians}: {custodians: string}) {
         mode: 'cors',
         // cache: 'no-cache',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ custodians: myCustodians })
+        body: JSON.stringify({ pstPath })
       })
       if (res.ok) {
-        router.push(`/${caseId}/certs`)
+        alert('Path is valid')
       }
     } catch (err) {
-      custodiansDebug(err)
+      CertsDebug(err)
+      alert('Path is not valid')
     }
   }
 
-  return (
+  return(
     <div className='container'>
       <Head>
-        <title>Custodians</title>
+        <title>Get Cert Info</title>
       </Head>
       <main>
-        <Menu currentPg='Custodians' caseId={caseId} />
-        <h1>Enter Custodians one per line</h1>
-        <p>Each line is a REGEX that will be used to filter the results</p>
-        <p><em>PRO TIP:</em> I strongly recommend you use the EDIPI number</p>
+        <Menu currentPg='Get Cert Info' caseId={caseId} />
+        <h1>Set input PST path</h1>
+        <p>Set the path before running to ensure propper permissions</p>
         <form onSubmit={handleSubmit}>
           <div className='form-group'>
-            <label htmlFor='myCustodians'>Custodians</label>
-            <textarea id='myCustodians' className='form-control' rows={12} value={myCustodians} onChange={e => setMyCustodians(e.target.value)} />
+            <label htmlFor='pstPath'>PST Path</label>
+            <input id='pstPath' type='text' className='form-control' value={pstPath} onChange={e => setPstPath(e.target.value)} />
           </div>
-          <button className='btn btn-primary' type='submit'>Next</button>
+          <button type='submit' className='btn btn-info'>Set Path & Validate</button>
         </form>
+        <h2>Launch Script</h2>
       </main>
     </div>
   )
