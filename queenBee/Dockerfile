@@ -1,8 +1,7 @@
 FROM node
-RUN mkdir /app
+RUN mkdir -p /app/workspace; mkdir -p /srv/public
+RUN chown node:node /app/workspace && chown node:node /srv/public
 WORKDIR /app
-RUN mkdir workspace
-RUN chown 1001:1001 workspace
 # COPY package.json package-lock.json /app/
 # RUN npm ci
 EXPOSE 3000

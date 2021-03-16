@@ -21,7 +21,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     })
     const {custodians}: {custodians: string} = await res.json()
     return {
-      props: { custodians }
+      props: { custodians: custodians || '' }
     }
   } catch (err) {
     custodiansDebug(err)
