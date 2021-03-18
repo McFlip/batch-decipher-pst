@@ -1,8 +1,9 @@
 import Menu from 'components/menu'
+import SetPath from 'components/setpath'
 import Head from 'next/head'
 import {useRouter} from 'next/router'
 import {GetServerSideProps} from 'next'
-import {FormEvent, useState} from 'react'
+import { useState } from 'react'
 import debug from 'debug'
 
 const CertsDebug = debug('certs')
@@ -46,30 +47,8 @@ interface propsType {
 export default function Certs (props: propsType) {
   const router = useRouter()
   const {caseId}: {caseId?: string} = router.query
-  const [pstPath, setPstPath] = useState(props.pstPath)
-  // TODO: get certs server side
   const [certs, setCerts] = useState(props.certTxt)
   const [isRunning, setIsRunning] = useState(false)
-
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault()
-    const url = `http://localhost:3000/cases/${caseId}`
-    try {
-      const res = await fetch(url, {
-        method: 'PATCH',
-        mode: 'cors',
-        // cache: 'no-cache',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ pstPath })
-      })
-      if (res.ok) {
-        alert('Path is valid')
-      }
-    } catch (err) {
-      CertsDebug(err)
-      alert('Path is not valid')
-    }
-  }
 
   const handleRun = async (caseId: string) => {
     setIsRunning(true)
@@ -105,13 +84,7 @@ export default function Certs (props: propsType) {
         <Menu currentPg='Get Cert Info' caseId={caseId} />
         <h1>Set input PST path</h1>
         <p>Set the path before running to ensure propper permissions</p>
-        <form onSubmit={handleSubmit}>
-          <div className='form-group'>
-            <label htmlFor='pstPath'>PST Path</label>
-            <input id='pstPath' type='text' className='form-control' value={pstPath} onChange={e => setPstPath(e.target.value)} />
-          </div>
-          <button type='submit' className='btn btn-info'>Set Path & Validate</button>
-        </form>
+        <SetPath path={props.pstPath} pathName='pstPath' caseId={caseId} labelTxt='PST Path:' />
         <h2>Launch Script</h2>
         <button className='btn btn-primary' disabled={isRunning} onClick={() => handleRun(caseId)}>
           { isRunning ?
