@@ -23,14 +23,14 @@ export const decipher = async (req: Request, res: Response, next: NextFunction):
           const {pstPath, ptPath, exceptionsPath} = caseMeta
           const keysPath = path.join(basePath, 'keys')
           // create the secret
-          // validate pw exists for each p12
+          // validate pw exists for each key
           const secretNames = secrets.map(s => s[0])
           decipherDebug(secrets)
           decipherDebug(keysPath)
           decipherDebug(fs.readdirSync(keysPath).filter(f => f.match(/$\.key/)?.length))
           if (!fs.readdirSync(keysPath)
             .filter(f => f.match(/\.key$/)?.length)
-            .map(p => secretNames.includes(p))
+            .map(p => secretNames.includes(path.basename(p, '.key')))
             .reduce((p,c) => p && c)
           ) throw new Error('Missing password')
           // Pass secrets as env array in form 'PW_TEST=MrGlitter'
@@ -41,7 +41,12 @@ export const decipher = async (req: Request, res: Response, next: NextFunction):
                 ['bash', 'decipher.bash', pstPath, ptPath, keysPath, exceptionsPath],
                 process.stdout,
                 { 
-                  HostConfig: { Binds: ['batch-decipher-pst_hive:/app/workspace'] },
+                  HostConfig: { 
+                      Binds: [
+                      'batch-decipher-pst_hive:/app/workspace',
+                      'batch-decipher-pst_public:/srv/public',
+                      // '/home/denton/batch-decipher-pst/busyBee:/app'
+                  ]},
                   Env
                 })
                 .then(data => data[1])

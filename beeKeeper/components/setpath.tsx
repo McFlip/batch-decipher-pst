@@ -6,7 +6,7 @@ debug.enable('setPath')
 
 interface propsType {
   path: string,
-  pathName: 'pstPath' | 'p12Path',
+  pathName: 'pstPath' | 'p12Path' | 'ptPath' | 'exceptionsPath',
   caseId: string,
   labelTxt: string
 }
