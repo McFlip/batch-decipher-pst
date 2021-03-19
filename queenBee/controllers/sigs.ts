@@ -33,8 +33,13 @@ export const processSigs = async (req: Request, res: Response, next: NextFunctio
                 'batch-decipher-pst_busybee',
                 ['bash', 'getSigs.bash', inPath, outPath, custodianPath],
                 process.stdout,
-                { HostConfig: { Binds: ['batch-decipher-pst_hive:/app/workspace'] } }
-                )
+                { 
+                    HostConfig: { 
+                        Binds: [
+                        'batch-decipher-pst_hive:/app/workspace',
+                        'batch-decipher-pst_public:/srv/public'
+                    ]}
+                })
                 .then(data => data[1])
             await container.remove()
             const certs = fs.readFileSync(path.join(outPath, 'allCerts.txt'))

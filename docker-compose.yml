@@ -4,10 +4,15 @@ version: "3.8"
 volumes: 
   dbvol: # database
   hive: # shared volume between queenBee and busyBee
+  public: # SAMBA share for IO of data
+    driver_opts: 
+      type: "cifs"
+      device: "//127.0.0.1/public"
+      o: "username=${SAMBA_UNAME},password=${SAMBA_PW}"
 
 services:
 # backend
-  # # API - interfaces with db and dispatches jobs to worker containers
+  # API - interfaces with db and dispatches jobs to worker containers
   queenbee:
     container_name: queenBee_container
     build: queenBee
@@ -26,12 +31,13 @@ services:
         source: hive
         target: /app/workspace
       - "./queenBee:/app"
-      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/run/docker.sock:/var/run/docker.sock # Must set perms on host
+      - "./public:/srv/public" # Must mount CIFS because contents of volume are owned by ROOT
     environment:
       - NODE_ENV=development
       # - DEBUG=app,cases,sig,keys,decipher
       # - DEBUG=
-    privileged: true
+    privileged: true # TODO: test removal or replacement with capabilities
     command: ["npm", "start"]
 
   # Worker that runs processing jobs
@@ -68,16 +74,8 @@ services:
     depends_on:
       - "database"
   
-  # # In-Mem DB - stores passwords to private keys
-  # keys:
-  #   container_name: key_container
-  #   image: redis
-  #   ports: 
-  #     - "6379:6379"
-  #   # command: 
-
-# # front end
-  # Nextjs Client App dev environment
+# front end
+  # Nextjs Client App 
   beekeeper:
     container_name: beekeeper_container
     build: beeKeeper
@@ -87,6 +85,7 @@ services:
       - './beeKeeper:/app'
     environment:
       - NODE_ENV=development
+      - DEBUG=*
     links:
       - "queenbee"
     depends_on:

@@ -13,7 +13,7 @@ outDIR="${2%/}"
 # secretsPath="$3"
 keysDIR="${3%/}"
 exceptionsDIR="${4%/}"
-emailList="${1%/}/emailList"
+# emailList="${1%/}/emailList"
 
 # Set up tmpfs in RAM
 # Custom
@@ -23,8 +23,9 @@ emailList="${1%/}/emailList"
 # unmount when done
 
 # DEFAULT
-tmpfsPath="/dev/shm/PST/"
+tmpfsPath="/dev/shm/PST"
 mkdir -p "$tmpfsPath"
+emailList="$tmpfsPath/emailList"
 
 # Cleanup previous runs
 find "$outDIR" -mindepth 1 -maxdepth 1 -type d -exec rm -rf {} \;
@@ -40,15 +41,15 @@ for pst in $(echo "$pstList")
 do
   echo "***Processing $i/$total    $(date)  "$pst""
   # Extract PST to RAM
-  # bash lib/xtractPSTs.bash "$pst" "$tmpfsPath"
-  bash lib/xtractPSTs.bash "$pst" "$inDIR"
+  bash lib/xtractPSTs.bash "$pst" "$tmpfsPath"
+  # bash lib/xtractPSTs.bash "$pst" "$inDIR"
 
   i=$((i+1))
 done
 
 # Get list of emails with relative paths
-pushd "$inDIR"
-# pushd "$tmpfsPath"
+# pushd "$inDIR"
+pushd "$tmpfsPath"
 find . -type f -name "*.eml" -print0 > emailList
 popd
 
@@ -177,7 +178,8 @@ pipeline() {
 export inDIR outDIR secretsPath exceptionsDIR
 export -f pipeline assemble getHeader output decipher getPW getSerial getP7m isCT
 # parallel -0 --bar pipeline {} $inDIR $outDIR $secretsPath $keysDIR $exceptionsDIR :::: "$emailList"
-parallel -0 pipeline {} $inDIR $outDIR $keysDIR $exceptionsDIR :::: "$emailList"
+# parallel -0 pipeline {} $inDIR $outDIR $keysDIR $exceptionsDIR :::: "$emailList"
+parallel -0 --bar pipeline {} $tmpfsPath $outDIR $keysDIR $exceptionsDIR :::: "$emailList"
 
 # housekeeping
 rm "$emailList"
