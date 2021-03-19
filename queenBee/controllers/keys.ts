@@ -37,8 +37,12 @@ export const extractKeys = async (req: Request, res: Response, next: NextFunctio
                 ['bash', 'getKeys.bash', p12Path, keysPath],
                 process.stdout,
                 { 
-                  HostConfig: { Binds: ['batch-decipher-pst_hive:/app/workspace'] },
-                  Env
+                    HostConfig: { 
+                        Binds: [
+                        'batch-decipher-pst_hive:/app/workspace',
+                        'batch-decipher-pst_public:/srv/public'
+                    ]},
+                    Env
                 })
                 .then(data => data[1])
           await container.remove()

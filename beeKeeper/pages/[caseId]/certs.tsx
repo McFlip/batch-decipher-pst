@@ -17,7 +17,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     const resPst = fetch(urlCase, {
       method: 'GET',
       mode: 'cors',
-      // cache: 'no-cache',
+      cache: 'default',
       headers: {'Content-Type': 'application/json'}
     })
     const resCerts = fetch(urlCerts, {
@@ -63,7 +63,7 @@ export default function Certs (props: propsType) {
         body: JSON.stringify(body)
       })
       if (res.status == 201) {
-        const result = await (await res.text())
+        const result = await res.text()
         CertsDebug(result)
         setCerts(result)
       }
