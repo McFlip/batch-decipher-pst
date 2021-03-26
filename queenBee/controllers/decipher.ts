@@ -39,7 +39,7 @@ export const decipher = async (req: Request, res: Response, next: NextFunction):
           const container = await dockerAPI.run(
                 'batch-decipher-pst_busybee',
                 ['bash', 'decipher.bash', pstPath, ptPath, keysPath, exceptionsPath],
-                process.stdout,
+                res,
                 { 
                   HostConfig: { 
                       Binds: [
@@ -51,7 +51,7 @@ export const decipher = async (req: Request, res: Response, next: NextFunction):
                 })
                 .then(data => data[1])
           await container.remove()
-          res.status(201).send('decryption complete')
+          res.end()
       } 
   } catch (err) {
       next(err) 
