@@ -1,11 +1,12 @@
 import Menu from 'components/menu'
 import SetPath from 'components/setpath'
 import Head from 'next/head'
-import Link from 'next/link'
 import {useRouter} from 'next/router'
 import {GetServerSideProps} from 'next'
 import { FormEvent, MouseEvent, useState } from 'react'
 import debug from 'debug'
+import ProgressBar from 'react-bootstrap/ProgressBar'
+import Alert from 'react-bootstrap/Alert'
 
 const DecipherDebug = debug('decipher')
 debug.enable('decipher')
@@ -57,7 +58,7 @@ export default function Keys ({ pstPath, ptPath, exceptionsPath, serialsProp }: 
   const [password, setPassword] = useState('')
   const [secrets, setSecrets] = useState([['','']])
   const [isRunning, setIsRunning] = useState(false)
-  const [result, setResult] = useState('')
+  const [result, setResult] = useState(0)
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault()
@@ -75,6 +76,7 @@ export default function Keys ({ pstPath, ptPath, exceptionsPath, serialsProp }: 
     setIsRunning(true)
     const url = 'http://localhost:3000/decipher'
     const body = { caseId, secrets }
+    const decoder = new TextDecoder()
     try {
       const res = await fetch(url, {
         method: 'POST',
@@ -83,9 +85,14 @@ export default function Keys ({ pstPath, ptPath, exceptionsPath, serialsProp }: 
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(body)
       })
-      const result = await res.text()
-      setResult(result)
-      // if (res.status == 201) { DecipherDebug(result) }
+      const reader = res.body.getReader()
+      let progress = 0
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        progress = Number(decoder.decode(value).match(/\d+%/).join().slice(0,-1))
+        setResult(progress)
+      }
       setIsRunning(false)
     } catch (err) {
       DecipherDebug(err)
@@ -145,7 +152,8 @@ export default function Keys ({ pstPath, ptPath, exceptionsPath, serialsProp }: 
           { isRunning? '    running...' : '    Run' }
         </button>
         <h2>Results</h2>
-        <div dangerouslySetInnerHTML={{ __html: result }} />
+        <ProgressBar  now={result} />
+        { result === 100 && <Alert variant='success'>DONE!</Alert>}
       </main>
     </div>
   )
