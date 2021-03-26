@@ -32,7 +32,7 @@ export const processSigs = async (req: Request, res: Response, next: NextFunctio
             const container = await dockerAPI.run(
                 'batch-decipher-pst_busybee',
                 ['bash', 'getSigs.bash', inPath, outPath, custodianPath],
-                process.stdout,
+                res,
                 { 
                     HostConfig: { 
                         Binds: [
@@ -42,9 +42,10 @@ export const processSigs = async (req: Request, res: Response, next: NextFunctio
                 })
                 .then(data => data[1])
             await container.remove()
-            const certs = fs.readFileSync(path.join(outPath, 'allCerts.txt'))
+            res.end()
+            // const certs = fs.readFileSync(path.join(outPath, 'allCerts.txt'))
             // debugSig(certs.toString("ascii"))
-            res.status(201).send(certs.toString('ascii'))
+            // res.status(201).send(certs.toString('ascii'))
         }
     } catch (error) {
         next(error)

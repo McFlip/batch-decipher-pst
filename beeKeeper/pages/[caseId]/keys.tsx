@@ -139,7 +139,7 @@ export default function Keys ({ p12Path, serialsProp }: { p12Path: string, seria
             <label htmlFor='password'>Password</label>
             <input id='password' type='password' className='form-control' value={password} onChange={({target: {value}}) => setPassword(value)} />
           </div>
-          <button className='btn btn-primary' type='submit'>Set Password</button>
+          <button className='btn btn-secondary' type='submit'>Set Password</button>
         </form>
         <h3>Passwords have been entered for the following</h3>
         {listSecrets(secrets)}

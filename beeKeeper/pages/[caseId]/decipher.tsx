@@ -123,14 +123,14 @@ export default function Keys ({ pstPath, ptPath, exceptionsPath, serialsProp }: 
         <h2>Enter Passwords</h2>
         <form onSubmit={handleSubmit}>
           <div className='form-group'>
-            <label htmlFor='password'>Password</label>
-            <input id='password' type='password' className='form-control' value={password} onChange={({target: {value}}) => setPassword(value)} disabled={!serial} />
-          </div>
-          <div className='form-group'>
             <label htmlFor='selectSerial'>Select a Key and Enter it's Password</label>
             {listKeys(serials)}
           </div>
-          <button type='submit' className='btn btn-info'>Set Password</button>
+          <div className='form-group'>
+            <label htmlFor='password'>Password</label>
+            <input id='password' type='password' className='form-control' value={password} onChange={({target: {value}}) => setPassword(value)} disabled={!serial} />
+          </div>
+          <button type='submit' className='btn btn-secondary'>Set Password</button>
         </form>
         <h2>Launch Script</h2>
         <button className='btn btn-primary' disabled={isRunning} onClick={() => handleRun()}>

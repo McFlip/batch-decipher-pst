@@ -138,8 +138,8 @@ export default function EditCase({myCase}: {myCase: CaseType}) {
           <label htmlFor='custodians'>Custodians:</label>
           <textarea id='custodians' className='form-control' rows={12} value={custodians} onChange={e => setCustodians(e.target.value)} />
         </div>
-        <button className='btn btn-danger' onClick={e => handleDelete(e, myCase._id)}>Delete</button>
-        <button type='submit' className='btn btn-primary'>Update</button>
+        <button className='btn btn-danger' onClick={e => handleDelete(e, myCase._id)}>Delete</button>{' '}
+        <button type='submit' className='btn btn-primary'>Update</button>{' '}
         <Link href={`/${myCase._id}/custodians`}>
           <a><button className='btn btn-success'>Look's good, Continue</button></a>
         </Link>

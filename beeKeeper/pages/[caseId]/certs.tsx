@@ -5,6 +5,8 @@ import {useRouter} from 'next/router'
 import {GetServerSideProps} from 'next'
 import { useState } from 'react'
 import debug from 'debug'
+import Modal from 'react-bootstrap/Modal'
+import Button from 'react-bootstrap/Button'
 
 const CertsDebug = debug('certs')
 debug.enable('certs')
@@ -28,7 +30,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     const [pst, cert] = await Promise.all([resPst, resCerts])
     let {pstPath}: {pstPath: string} = await pst.json()
     if (!pstPath) pstPath = ''
-    let certTxt = await cert.text()
+    let certTxt = cert.ok? await cert.text() : ''
     CertsDebug(certTxt)
     if (!certTxt) certTxt = ''
     return {
@@ -41,20 +43,26 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
 interface propsType {
   pstPath: string,
-  certTxt: string
+  certTxt?: string
 }
 
 export default function Certs (props: propsType) {
   const router = useRouter()
   const {caseId}: {caseId?: string} = router.query
-  const [certs, setCerts] = useState(props.certTxt)
+  const [certs, setCerts] = useState(props?.certTxt || '')
   const [isRunning, setIsRunning] = useState(false)
+  const [showTerminal, setShowTerminal] = useState(false)
+  const [terminalTxt, setTerminalTxt] = useState('')
 
   const handleRun = async (caseId: string) => {
     setIsRunning(true)
     const url = 'http://localhost:3000/sigs'
+    const urlCerts = `${url}/${caseId}`
     const body = { caseId }
+    const decoder = new TextDecoder()
+
     try {
+      // Run the container and send response stream to terminal modal
       const res = await fetch(url, {
         method: 'POST',
         mode: 'cors',
@@ -62,14 +70,27 @@ export default function Certs (props: propsType) {
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(body)
       })
-      if (res.status == 201) {
-        const result = await res.text()
-        CertsDebug(result)
-        setCerts(result)
+      const reader = res.body.getReader()
+      let decoded = ''
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        decoded = decoded + decoder.decode(value, {stream: true})
+        setTerminalTxt(decoded)
       }
+      decoded = decoded + decoder.decode()
+      setTerminalTxt(decoded)
       setIsRunning(false)
+      // Fetch the results
+      const resCerts = await fetch(urlCerts, {
+        method: 'GET',
+        mode: 'cors',
+        cache: 'no-cache'
+      })
+      if (resCerts.ok) setCerts(await resCerts.text())
     } catch (err) {
       CertsDebug(err)
+      // console.log(err)
       alert('Ohs Noes! Check the console for error msg')
       setIsRunning(false)
     }
@@ -98,13 +119,29 @@ export default function Certs (props: propsType) {
           { isRunning? '    running...' : '    Run' }
         </button>
         <h2>Results</h2>
-        <button className='btn btn-info' onClick={() => navigator.clipboard.writeText(certs)}>
+        <button className='btn btn-secondary' onClick={() => navigator.clipboard.writeText(certs)}>
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
             <path d="M16 10c3.469 0 2 4 2 4s4-1.594 4 2v6h-10v-12h4zm.827-2h-6.827v16h14v-8.842c0-2.392-4.011-7.158-7.173-7.158zm-8.827 12h-6v-16h4l2.102 2h3.898l2-2h4v2.145c.656.143 1.327.391 2 .754v-4.899h-3c-1.229 0-2.18-1.084-3-2h-8c-.82.916-1.771 2-3 2h-3v20h8v-2zm2-18c.553 0 1 .448 1 1s-.447 1-1 1-1-.448-1-1 .447-1 1-1zm4 18h6v-1h-6v1zm0-2h6v-1h-6v1zm0-2h6v-1h-6v1z"/>
           </svg>
           Copy to clipboard
         </button>
+        {' '}
+        <Button variant='info' onClick={() => setShowTerminal(true)}>
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+          <path d="M22 6v16h-20v-16h20zm2-6h-24v24h24v-24zm-11 11v1.649l3.229 1.351-3.229 1.347v1.653l5-2.201v-1.599l-5-2.2zm-7 2.201v1.599l5 2.2v-1.653l-3.229-1.347 3.229-1.351v-1.649l-5 2.201z"/>
+        </svg>
+        Show Terminal
+        </Button>
         <pre><code>{certs}</code></pre>
+        <Modal show={showTerminal} onHide={() => setShowTerminal(false)} size='lg' centered>
+          <Modal.Header closeButton>
+            Terminal Output
+          </Modal.Header>
+          <Modal.Body><pre><code>{terminalTxt}</code></pre></Modal.Body>
+          <Modal.Footer>
+            <Button variant='primary' onClick={() => setShowTerminal(false)}>Close</Button>
+          </Modal.Footer>
+        </Modal>
       </main>
     </div>
   )
