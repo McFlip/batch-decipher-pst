@@ -70,6 +70,12 @@ export default function Keys ({ pstPath, ptPath, exceptionsPath, serialsProp }: 
     const newSerials = [...serials].filter(([p12, sn]) => sn != serial)
     DecipherDebug(newSerials)
     setSerials(newSerials)
+    if (newSerials[0]) {
+      setSerial(newSerials[0][1])
+    } else {
+      setSerial('')
+    }
+    setPassword('')
   }
 
   const handleRun = async () => {
@@ -103,7 +109,7 @@ export default function Keys ({ pstPath, ptPath, exceptionsPath, serialsProp }: 
 
   const listKeys = (serials: SerialsType) => {
     return (
-      <select id='selectSerial' className='form-control' value={serial} onChange={({target: {value}}) => setSerial(value)}>
+      <select id='selectSerial' className='form-control' value={serial} onChange={({target: {value}}) => setSerial(value)} disabled={serial === ''}>
         <option value='' disabled>Choose p12 filename key was extracted from</option>
         {serials.map(([p12, s]) => <option value={s} key={s}>{p12}</option>)}
       </select>
@@ -137,7 +143,7 @@ export default function Keys ({ pstPath, ptPath, exceptionsPath, serialsProp }: 
             <label htmlFor='password'>Password</label>
             <input id='password' type='password' className='form-control' value={password} onChange={({target: {value}}) => setPassword(value)} disabled={!serial} />
           </div>
-          <button type='submit' className='btn btn-secondary'>Set Password</button>
+          <button type='submit' className='btn btn-secondary' disabled={serial === ''}>Set Password</button>
         </form>
         <h2>Launch Script</h2>
         <button className='btn btn-primary' disabled={isRunning} onClick={() => handleRun()}>

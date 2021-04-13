@@ -18,9 +18,8 @@ find "$2" -type f -exec rm -f {} \;
 
 # Get list of p12 files to unpack
 p12List=$(find "$p12DIR" -name "*.p12")
-# echo "$p12List"
 
-for p in "$p12List"
+for p in $(echo "$p12List")
 do
   filename=$(basename "$p")
   # Look up the password from secrets table

@@ -6,14 +6,10 @@
 # Use proper security measures to safeguard the Plain Text output.
 # Usage: decipher.bash inputDir outputDir keysDir exceptionsDir
 
-# TODO: extract PSTs to tmpfs in RAM instead of inDIR
-
 inDIR="$1"
 outDIR="${2%/}"
-# secretsPath="$3"
 keysDIR="${3%/}"
 exceptionsDIR="${4%/}"
-# emailList="${1%/}/emailList"
 
 # Set up tmpfs in RAM
 # Custom
@@ -25,7 +21,6 @@ exceptionsDIR="${4%/}"
 # DEFAULT
 tmpfsPath="/dev/shm/PST"
 mkdir -p "$tmpfsPath"
-emailList="$tmpfsPath/emailList"
 
 # Cleanup previous runs
 find "$outDIR" -mindepth 1 -maxdepth 1 -type d -exec rm -rf {} \;
@@ -42,16 +37,11 @@ do
   echo "***Processing $i/$total    $(date)  "$pst""
   # Extract PST to RAM
   bash lib/xtractPSTs.bash "$pst" "$tmpfsPath"
-  # bash lib/xtractPSTs.bash "$pst" "$inDIR"
 
   i=$((i+1))
 done
 
-# Get list of emails with relative paths
-# pushd "$inDIR"
-pushd "$tmpfsPath"
-find . -type f -name "*.eml" -print0 > emailList
-popd
+echo "***Done extracting PSTs"
 
 # *** FUNCTIONS ***
 
@@ -80,16 +70,19 @@ getP7m() {
 getSerial() {
   p7m="$1"
   keysDIR="$2"
-  serials="$(echo "$p7m" | openssl cms -cmsout -print -noout | grep serial | cut -f 2 -d 'x')"
-  for s in "$serials"
+  # serials="$(echo "$p7m" | openssl cms -cmsout -print -noout | grep serial | cut -f 2 -d 'x')"
+  serials="$(echo "$p7m" | openssl cms -cmsout -print -noout | grep serial | cut -f 2 -d ':' | sed -e 's/^[[:space:]]*//')"
+  for s in $(echo "$serials")
   do
-    if [ -f "$keysDIR/$s.key" ]
+    # convert to hex
+    ser=$(printf "%X" "$s")
+    if [ -f "$keysDIR/$ser.key" ]
       then
-        echo "$s"
+        echo "$ser"
       return 0
     fi
   done
-  >&2 echo "No matching key for $serials"
+  # >&2 echo "No matching key for $serials"
   return 1
 }
 
@@ -110,8 +103,8 @@ decipher() {
 getHeader() {
   eml="$1"
   start="From"
-  stop="Content-Disposition"
-  echo "$eml" | bbe -s --block="/$start/:/$stop/" | head -n -1
+  stop="MIME-Version: 1.0"
+  echo "$eml" | bbe -s --block="/$start/:/$stop/"
 }
 
 # Stick the original header on top of the deciphered body
@@ -136,17 +129,17 @@ pipeline() {
   filename=$(echo "$1" | sed -e "s/^\.\///")
   inDIR="$2"
   outDIR="$3"
-  # secretsPath="$4"
   keysDIR="$4"
   exceptionsDIR="$5"
   fullPath="$inDIR/$filename"
   eml=$(cat "$fullPath")
   # Check if the eml is encrypted
   encryption=$(isCT "$eml")
-  # If PT then output to PT
   if [ $encryption == "PT" ]
   then
-    output "$outDIR/$filename" "$eml"
+    # output "$outDIR/$filename" "$eml" # uncomment to include PT
+    # exclude PT from output
+    exit 0
   fi
   # Get the smime.p7m attachment
   p7m="$(getP7m "$eml")"
@@ -154,6 +147,7 @@ pipeline() {
   serial="$(getSerial "$p7m" "$keysDIR")"
   if [[ $? -eq 1 ]]
   then
+    output "$exceptionsDIR/$filename" "$eml"
     exit 1
   fi
   # Get the password for the key
@@ -177,10 +171,9 @@ pipeline() {
 
 export inDIR outDIR secretsPath exceptionsDIR
 export -f pipeline assemble getHeader output decipher getPW getSerial getP7m isCT
-# parallel -0 --bar pipeline {} $inDIR $outDIR $secretsPath $keysDIR $exceptionsDIR :::: "$emailList"
-# parallel -0 pipeline {} $inDIR $outDIR $keysDIR $exceptionsDIR :::: "$emailList"
-parallel -0 --bar pipeline {} $tmpfsPath $outDIR $keysDIR $exceptionsDIR :::: "$emailList"
+
+cd "$tmpfsPath"
+find . -type f -name "*.eml" -print0 | parallel -0 --bar pipeline {} $tmpfsPath $outDIR $keysDIR $exceptionsDIR
 
 # housekeeping
-rm "$emailList"
 find "$tmpfsPath" -maxdepth 1 -mindepth 1 -type d -exec rm -rf {} \;
