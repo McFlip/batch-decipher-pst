@@ -8,9 +8,10 @@ inPST="$1"
 outDIR=$2
 
 # read in the pst file
+# -> include "Deleted Items"
 # -> quiet mode
 # -> output to the DIR from argument
 # -> parse only emails
 # -> mirror folder structure; add the '.eml' extension to ea file
 # -> max parallelization
-readpst -q -o "$outDIR" -t e -e -j $NPROC "$inPST"
+readpst -D -o "$outDIR" -t e -e -j $NPROC "$inPST"

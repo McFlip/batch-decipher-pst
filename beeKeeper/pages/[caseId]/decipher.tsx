@@ -54,7 +54,7 @@ export default function Keys ({ pstPath, ptPath, exceptionsPath, serialsProp }: 
   const router = useRouter()
   const {caseId}: {caseId?: string} = router.query
   const [serials, setSerials] = useState(serialsProp)
-  const [serial, setSerial] = useState('')
+  const [serial, setSerial] = useState(serialsProp[0][1])
   const [password, setPassword] = useState('')
   const [secrets, setSecrets] = useState([['','']])
   const [isRunning, setIsRunning] = useState(false)
@@ -96,8 +96,12 @@ export default function Keys ({ pstPath, ptPath, exceptionsPath, serialsProp }: 
       while (true) {
         const { done, value } = await reader.read()
         if (done) break
-        progress = Number(decoder.decode(value).match(/\d+%/).join().slice(0,-1))
-        setResult(progress)
+        try {
+          progress = Number(decoder.decode(value)?.match(/\d+%/)?.join()?.slice(0,-1))
+        } catch (error) {
+          console.log(error)
+        }
+        if (progress) setResult(progress)
       }
       setIsRunning(false)
     } catch (err) {

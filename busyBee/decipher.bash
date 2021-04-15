@@ -19,7 +19,9 @@ exceptionsDIR="${4%/}"
 # unmount when done
 
 # DEFAULT
-tmpfsPath="/dev/shm/PST"
+# tmpfsPath="/dev/shm/PST"
+# Docker limits shared mem (default 64MB) - using tmp as a workaround
+tmpfsPath="/tmp/PST"
 mkdir -p "$tmpfsPath"
 
 # Cleanup previous runs
@@ -75,14 +77,14 @@ getSerial() {
   for s in $(echo "$serials")
   do
     # convert to hex
-    ser=$(printf "%X" "$s")
+    ser=$(printf "%06X" "$s")
     if [ -f "$keysDIR/$ser.key" ]
       then
         echo "$ser"
       return 0
     fi
   done
-  # >&2 echo "No matching key for $serials"
+  >&2 echo "No matching key for $serials"
   return 1
 }
 
@@ -137,8 +139,8 @@ pipeline() {
   encryption=$(isCT "$eml")
   if [ $encryption == "PT" ]
   then
-    # output "$outDIR/$filename" "$eml" # uncomment to include PT
-    # exclude PT from output
+    # avoid processing email that isn't encrypted
+    output "$exceptionsDIR/PT/$filename" "$eml" # comment to just drop PT
     exit 0
   fi
   # Get the smime.p7m attachment
@@ -147,7 +149,7 @@ pipeline() {
   serial="$(getSerial "$p7m" "$keysDIR")"
   if [[ $? -eq 1 ]]
   then
-    output "$exceptionsDIR/$filename" "$eml"
+    output "$exceptionsDIR/nokeys/$filename" "$eml"
     exit 1
   fi
   # Get the password for the key
@@ -162,7 +164,7 @@ pipeline() {
     exit 0
   # Else output to exceptions
   else
-    output "$exceptionsDIR/$filename" "$eml"
+    output "$exceptionsDIR/failed/$filename" "$eml"
     exit 1
   fi
 }
@@ -176,4 +178,4 @@ cd "$tmpfsPath"
 find . -type f -name "*.eml" -print0 | parallel -0 --bar pipeline {} $tmpfsPath $outDIR $keysDIR $exceptionsDIR
 
 # housekeeping
-find "$tmpfsPath" -maxdepth 1 -mindepth 1 -type d -exec rm -rf {} \;
+# find "$tmpfsPath" -maxdepth 1 -mindepth 1 -type d -exec rm -rf {} \;
