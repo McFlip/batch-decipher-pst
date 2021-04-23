@@ -6,7 +6,6 @@ import {keysRte} from './routes/keys'
 import debug from 'debug'
 import mongoose from 'mongoose'
 import { decipherRte } from './routes/decipher'
-// import { MockMongoose } from 'mock-mongoose'
 
 const app = express()
 const debugApp = debug('app')
@@ -47,8 +46,11 @@ app.use('/keys', keysRte)
 app.use('/decipher', decipherRte)
 app.get('/', (req, res) => res.send('Healthy :)\r\n'))
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   debugApp(`⚡️[server]: Server is running at https://localhost:${PORT}`)
 })
+
+// 30s timeout to avoid CORS failure while unpacking PSTs
+server.keepAliveTimeout = 30000
 
 export default app

@@ -36,6 +36,13 @@ export const decipher = async (req: Request, res: Response, next: NextFunction):
           // Pass secrets as env array in form 'PW_TEST=MrGlitter'
           const Env = secrets.map(s => `PW_${path.basename(s[0], '.key')}=${s[1]}`)
           decipherDebug(Env)
+          // hack to avoid CORS failure from timeout - send init progress update of 1%
+          res.writeHead(200, {
+            'Content-Type': 'text/plain',
+            'Transfer-Encoding': 'chunked'
+          })
+          res.write('1%\n')
+          // use 'Mounts' subsection of 'HostConfig' to create tmpfs mount
           const container = await dockerAPI.run(
                 'batch-decipher-pst_busybee',
                 ['bash', 'decipher.bash', pstPath, ptPath, keysPath, exceptionsPath],

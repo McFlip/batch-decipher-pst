@@ -102,10 +102,12 @@ export default function Keys ({ pstPath, ptPath, exceptionsPath, serialsProp }: 
           console.log(error)
         }
         if (progress) setResult(progress)
+        // console.log(progress)
       }
       setIsRunning(false)
     } catch (err) {
-      DecipherDebug(err)
+      // DecipherDebug(err)
+      console.log(err)
       alert('Ohs Noes! Check the console for error msg')
       setIsRunning(false)
     }
