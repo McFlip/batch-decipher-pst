@@ -108,3 +108,6 @@ dist
 
 # SAMBA share
 public/
+
+# podman OCI images
+images/

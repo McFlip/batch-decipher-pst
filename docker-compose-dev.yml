@@ -15,24 +15,42 @@ services:
   # API - interfaces with db and dispatches jobs to worker containers
   queenbee:
     container_name: queenBee_container
-    image: queenbee
+    build: queenBee
     ports:
       - "3000:3000"
     links: 
       - database
+    #   - keys
+    #   - busybee
     depends_on:
       - database
+    #   - keys
+    #   - busybee
     volumes: 
       - type: volume
         source: hive
         target: /app/workspace
-      # - /var/run/docker.sock:/var/run/docker.sock # Must set perms on host
-      # - "./public:/srv/public" # Must mount CIFS because contents of volume are owned by ROOT
+      - "./queenBee:/app"
+      - /var/run/docker.sock:/var/run/docker.sock # Must set perms on host
+      - "./public:/srv/public" # Must mount CIFS because contents of volume are owned by ROOT
     environment:
-      - NODE_ENV=production
-    # privileged: true # TODO: test removal or replacement with capabilities
-    # command: ["npm", "start"]
+      - NODE_ENV=development
+      # - DEBUG=app,cases,sig,keys,decipher
+      # - DEBUG=
+    privileged: true # TODO: test removal or replacement with capabilities
+    command: ["npm", "start"]
 
+  # Worker that runs processing jobs
+  busybee:
+    container_name: busyBee_container
+    build: busyBee
+    volumes: 
+      - type: volume
+        source: hive
+        target: /app/workspace
+      - ./queenBee/tests:/app/tests
+      # - "./busyBee:/app"
+    
   # Persistent DB
   database:
     container_name: db_container
@@ -45,17 +63,31 @@ services:
         target: /data/db
     command: ["mongod", "--bind_ip", "localhost,database"]
 
+  # Database admin
+  mongoku:
+    container_name: db_admin_container
+    image: huggingface/mongoku
+    ports: 
+      - "3100:3100"
+    links:
+      - "database"
+    depends_on:
+      - "database"
+  
 # front end
   # Nextjs Client App 
   beekeeper:
     container_name: beekeeper_container
-    image: : beekeeper
+    build: beeKeeper
     ports:
       - "8080:8080"
+    volumes:
+      - './beeKeeper:/app'
     environment:
-      - NODE_ENV=production
+      - NODE_ENV=development
+      - DEBUG=*
     links:
       - "queenbee"
     depends_on:
       - "queenbee"
-    # command: ["npm", "start"]
+    command: ["npm", "run", "dev"]

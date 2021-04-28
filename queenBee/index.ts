@@ -16,7 +16,8 @@ const PORT = 3000
 // Leave as '*' for public API
 const ACAO = process.env.ALLOW_ORIGIN || '*'
 const dbName = 'decipherDB'
-const dbHost = `mongodb://database:27017/${dbName}`
+const hostName = process.env.HOST_IP || 'database'
+const dbHost = `mongodb://${hostName}:27017/${dbName}`
 const dbOpts = {
   useNewUrlParser: true,
   useUnifiedTopology: true,
