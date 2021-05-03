@@ -7,6 +7,8 @@ import { useRouter } from 'next/router'
 
 const EditDebug = debug('editCase')
 debug.enable('editCase')
+const apiInternal = process.env.apiInternal || 'queenbee'
+const apiExternal = process.env.apiExternal || 'localhost'
 
 interface CaseType {
   _id: string,
@@ -23,7 +25,7 @@ interface CaseType {
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const {caseId} = context.params
-  const url = `http://queenbee:3000/cases/${caseId}`
+  const url = `http://${apiInternal}:3000/cases/${caseId}`
   try {
     const res = await fetch(url, {
       method: 'GET',
@@ -65,7 +67,7 @@ export default function EditCase({myCase}: {myCase: CaseType}) {
     values.filter(i => i[1] != i[2])
       .forEach(i => updates[i[0]] = i[1])
     EditDebug(updates)
-    const url = `http://localhost:3000/cases/${myCase._id}`
+    const url = `http://${apiExternal}:3000/cases/${myCase._id}`
     try {
       const res = await fetch(url, {
         method: 'PATCH',
@@ -87,7 +89,7 @@ export default function EditCase({myCase}: {myCase: CaseType}) {
   const handleDelete = async (e: FormEvent, caseId: string) => {
     e.preventDefault()
     if(confirm('Are you sure? This cannot be undone!')) {
-      const url = `http://localhost:3000/cases/${caseId}`
+      const url = `http://${apiExternal}:3000/cases/${caseId}`
       try {
         const res = await fetch(url, {
           method: 'DELETE',

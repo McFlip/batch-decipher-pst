@@ -21,7 +21,7 @@ buildah run $ctr chown -R nextjs:nodejs /app/.next
 buildah config --user nextjs $ctr
 buildah commit --format oci $ctr beekeeper
 popd
-podman save -o images/beeKeeper.tar --format oci-archive beekeeper
+podman save -o images/beekeeper.tar --format oci-archive beekeeper
 exit
 
 pushd queenBee
