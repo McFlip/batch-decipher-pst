@@ -22,7 +22,6 @@ buildah config --user nextjs $ctr
 buildah commit --format oci $ctr beekeeper
 popd
 podman save -o images/beekeeper.tar --format oci-archive beekeeper
-exit
 
 pushd queenBee
 ctr=$(buildah from node:alpine)
@@ -42,13 +41,14 @@ buildah copy $ctr dist /app/
 buildah config --port 3000 $ctr
 buildah config --entrypoint '"node" "index.js"' $ctr
 # inside a pod inter-container networking is over 'localhost'
-buildah config --env HOST_IP=localhost
+buildah config --env HOST_IP=localhost $ctr
 buildah commit --format oci $ctr queenbee
 popd
 podman save -o images/queenbee.tar --format oci-archive queenbee
+# exit
 
 pushd busyBee
-buildah bud -t busybee .
+buildah bud -t batch-decipher-pst_busybee .
 popd
 
-podman save -o images/busybee.tar --format oci-archive busybee 
+podman save -o images/busybee.tar --format oci-archive batch-decipher-pst_busybee 

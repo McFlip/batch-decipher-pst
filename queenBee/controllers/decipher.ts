@@ -50,9 +50,8 @@ export const decipher = async (req: Request, res: Response, next: NextFunction):
                 { 
                   HostConfig: { 
                       Binds: [
-                      'batch-decipher-pst_hive:/app/workspace',
-                      'batch-decipher-pst_public:/srv/public',
-                      // '/home/denton/batch-decipher-pst/busyBee:/app'
+                      'batch-decipher-pst_hive:/app/workspace:z',
+                      'batch-decipher-pst_public:/srv/public:z',
                   ]},
                   Env
                 })

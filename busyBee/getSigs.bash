@@ -15,7 +15,8 @@ custodians="$3"
 # unmount when done
 
 # DEFAULT
-tmpfsPath="/dev/shm/PST/"
+# tmpfsPath="/dev/shm/PST/"
+tmpfsPath="/tmp/PST/"
 mkdir -p "$tmpfsPath"
 
 # Cleanup previous runs
@@ -98,12 +99,13 @@ do
   # Extract PST to RAM
   bash lib/xtractPSTs.bash "$pst" "$tmpfsPath"
 
+  # EnCase should be able to do the filtering for us now
   # Free up space in RAM. We only need signed emails in 'Sent Items'
   # Delete everything not in 'Sent Items'
-  find "$tmpfsPath" -maxdepth 2 -mindepth 2 -type d -not -name 'Sent Items' -exec rm -rf {} \;
+  # find "$tmpfsPath" -maxdepth 2 -mindepth 2 -type d -not -name 'Sent Items' -exec rm -rf {} \;
 
   # Delete emails that are not signed
-  find "$tmpfsPath" -type f -print0 | parallel --null bash lib/filterEml.bash 'Content-Type\\x3A\\x20multipart\\x2Fsigned' "{}"
+  # find "$tmpfsPath" -type f -print0 | parallel --null bash lib/filterEml.bash 'Content-Type\\x3A\\x20multipart\\x2Fsigned' "{}"
 
   # Iterate through the dir using parallel processing
   export -f getSig pipeline parseCert getCert decodeSignedData getSignedData

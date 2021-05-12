@@ -1,0 +1,20 @@
+serial=12C3905B55296E401270C0CEB18B5BA660DB9A1F
+subject=
+    countryName               = US
+    stateOrProvinceName       = FL
+    localityName              = Jacksonville
+    organizationName          = USACE
+    organizationalUnitName    = Forensics
+    commonName                = LAST.FIRST.MIDDLE.12345678
+    emailAddress              = Grady.C.Denton@usace.army.mil
+notBefore=Apr 17 15:56:38 2020 GMT
+notAfter=Apr 17 15:56:38 2021 GMT
+Grady.C.Denton@usace.army.mil
+issuer=
+    countryName               = US
+    stateOrProvinceName       = FL
+    localityName              = Jacksonville
+    organizationName          = USACE
+    organizationalUnitName    = Forensics
+    commonName                = LAST.FIRST.MIDDLE.12345678
+    emailAddress              = Grady.C.Denton@usace.army.mil
