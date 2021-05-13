@@ -74,10 +74,16 @@ getSerial() {
   do
     # convert to hex
     ser=$(printf "%06X" "$s")
+    # if already hex strip leading '0x'
+    hex=$(echo "$s" | sed 's/^0x//')
     if [ -f "$keysDIR/$ser.key" ]
       then
         echo "$ser"
-      return 0
+        return 0
+    elif [ -f "$keysDIR/$hex.key" ]
+      then
+        echo "$s" | sed 's/^0x//'
+        return 0
     fi
   done
   >&2 echo "No matching key for $serials"
