@@ -19,9 +19,9 @@ buildah run $ctr addgroup -g 1001 -S nodejs
 buildah run $ctr adduser -S nextjs -u 1001
 buildah run $ctr chown -R nextjs:nodejs /app/.next
 buildah config --user nextjs $ctr
-buildah commit --format oci $ctr beekeeper
+buildah commit --format oci $ctr batch-decipher-pst_beekeeper
 popd
-podman save -o images/beekeeper.tar --format oci-archive beekeeper
+podman save -o images/beekeeper.tar --format oci-archive batch-decipher-pst_beekeeper
 
 pushd queenBee
 ctr=$(buildah from node:alpine)
@@ -42,9 +42,9 @@ buildah config --port 3000 $ctr
 buildah config --entrypoint '"node" "index.js"' $ctr
 # inside a pod inter-container networking is over 'localhost'
 buildah config --env HOST_IP=localhost $ctr
-buildah commit --format oci $ctr queenbee
+buildah commit --format oci $ctr batch-decipher-pst_queenbee
 popd
-podman save -o images/queenbee.tar --format oci-archive queenbee
+podman save -o images/queenbee.tar --format oci-archive batch-decipher-pst_queenbee
 # exit
 
 pushd busyBee

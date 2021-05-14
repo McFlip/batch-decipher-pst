@@ -40,7 +40,7 @@ export const extractKeys = async (req: Request, res: Response, next: NextFunctio
                     HostConfig: { 
                         Binds: [
                         'batch-decipher-pst_hive:/app/workspace:z',
-                        'batch-decipher-pst_public:/srv/public:z'
+                        '/srv/public:/srv/public:z'
                     ]},
                     Env
                 })

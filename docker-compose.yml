@@ -1,14 +1,14 @@
 version: "3.8"
 # Define app infrastructure
 
-volumes: 
-  dbvol: # database
-  hive: # shared volume between queenBee and busyBee
-  public: # SAMBA share for IO of data
-    driver_opts: 
-      type: "cifs"
-      device: "//127.0.0.1/public"
-      o: "username=${SAMBA_UNAME},password=${SAMBA_PW}"
+# volumes: 
+#   dbvol: # database
+#   hive: # shared volume between queenBee and busyBee
+#   public: # SAMBA share for IO of data
+    # driver_opts: 
+    #   type: "cifs"
+    #   device: "//127.0.0.1/public"
+    #   o: "username=${SAMBA_UNAME},password=${SAMBA_PW}"
 
 services:
 # backend
@@ -37,19 +37,19 @@ services:
   database:
     container_name: db_container
     image: mongo 
-    ports:
-      - "27017:27017"
+    # ports:
+    #   - "27017:27017"
     volumes:
       - type: volume
         source: dbvol
         target: /data/db
-    command: ["mongod", "--bind_ip", "localhost,database"]
+    # command: ["mongod", "--bind_ip", "localhost,database"]
 
 # front end
   # Nextjs Client App 
   beekeeper:
     container_name: beekeeper_container
-    image: : beekeeper
+    image: beekeeper
     ports:
       - "8080:8080"
     environment:

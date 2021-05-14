@@ -111,3 +111,6 @@ public/
 
 # podman OCI images
 images/
+
+# podman socket
+podman/
