@@ -8,12 +8,13 @@ import ListCases from 'components/listcases'
 
 const HomeDebug = debug('home')
 debug.enable('home')
+const apiExternal = process.env.apiExternal || 'localhost'
 
 export default function Home() {
   const [cases, setCases] = useState()
-  const handlSearch = async (searchCategory, searchTerm) => {
+  const handlSearch = async (searchCategory: 'forensicator' | 'name', searchTerm: string) => {
     HomeDebug(`Search by ${searchCategory} for ${searchTerm}`)
-    const url = `http://localhost:3000/cases/search?${searchCategory}=${encodeURI(searchTerm)}`
+    const url = `http://${apiExternal}:3000/cases/search?${searchCategory}=${encodeURI(searchTerm)}`
     try {
       const res = await fetch(url, {
         method: 'GET',

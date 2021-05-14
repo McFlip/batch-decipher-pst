@@ -36,9 +36,12 @@ export const processSigs = async (req: Request, res: Response, next: NextFunctio
                 { 
                     HostConfig: { 
                         Binds: [
-                        'batch-decipher-pst_hive:/app/workspace',
-                        'batch-decipher-pst_public:/srv/public'
-                    ]}
+                        'batch-decipher-pst_hive:/app/workspace:z',
+                        '/srv/public:/srv/public:z'
+                        ],
+                        Tmpfs: {
+                            '/tmp/PST': 'rw,noexec'
+                        }}
                 })
                 .then(data => data[1])
             await container.remove()

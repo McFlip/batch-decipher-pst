@@ -11,21 +11,16 @@ outDIR="${2%/}"
 keysDIR="${3%/}"
 exceptionsDIR="${4%/}"
 
-# Set up tmpfs in RAM
-# Custom
-# mkdir -p /tmp/PST
-# chown user:group /tmp/PST
-# mount -t tmpfs -o size=100M,mode=0755 tmpfs /tmp/PST
-# unmount when done
+# Set up tmpfs volume mount in RAM
+# https://docs.docker.com/storage/tmpfs/
 
-# DEFAULT
-# tmpfsPath="/dev/shm/PST"
-# Docker limits shared mem (default 64MB) - using tmp as a workaround
-tmpfsPath="/tmp/PST"
+# using SAMBA share as tmp workaround for massive PST files
+tmpfsPath="/$inDIR/unpack"
 mkdir -p "$tmpfsPath"
 
 # Cleanup previous runs
 find "$outDIR" -mindepth 1 -maxdepth 1 -type d -exec rm -rf {} \;
+find "$exceptionsDIR" -mindepth 1 -maxdepth 1 -type d -exec rm -rf {} \;
 
 # Extract PSTs
 # Get list of PSTs to process
@@ -37,21 +32,22 @@ total=$(echo "$pstList" | wc -l)
 for pst in $(echo "$pstList")
 do
   echo "***Processing $i/$total    $(date)  "$pst""
-  # Extract PST to RAM
+  # Extract PST
   bash lib/xtractPSTs.bash "$pst" "$tmpfsPath"
 
   i=$((i+1))
 done
 
 echo "***Done extracting PSTs"
+# exit
 
 # *** FUNCTIONS ***
 
 # Check if the email is encrypted aka Cypher Text
 isCT() {
   eml="$1"
-  pattern='^Content-Type: application/pkcs7-mime'
-  echo "$eml" | grep "$pattern" > /dev/null
+  pattern='^Content-Type: application\/(x-)?pkcs7-mime'
+  echo "$eml" | egrep "$pattern" > /dev/null
   if [[ $? -eq 0 ]]
   then
     printf "CT"
@@ -78,10 +74,16 @@ getSerial() {
   do
     # convert to hex
     ser=$(printf "%06X" "$s")
+    # if already hex strip leading '0x'
+    hex=$(echo "$s" | sed 's/^0x//')
     if [ -f "$keysDIR/$ser.key" ]
       then
         echo "$ser"
-      return 0
+        return 0
+    elif [ -f "$keysDIR/$hex.key" ]
+      then
+        echo "$s" | sed 's/^0x//'
+        return 0
     fi
   done
   >&2 echo "No matching key for $serials"
@@ -119,6 +121,7 @@ assemble() {
 
 # Write out to the filesystem
 output() {
+  # exit
   path="$1"
   data="$2"
   mkdir -p "$(dirname "$path")"
@@ -178,4 +181,4 @@ cd "$tmpfsPath"
 find . -type f -name "*.eml" -print0 | parallel -0 --bar pipeline {} $tmpfsPath $outDIR $keysDIR $exceptionsDIR
 
 # housekeeping
-# find "$tmpfsPath" -maxdepth 1 -mindepth 1 -type d -exec rm -rf {} \;
+find "$tmpfsPath" -maxdepth 1 -mindepth 1 -type d -exec rm -rf {} \;

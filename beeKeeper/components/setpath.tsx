@@ -3,6 +3,7 @@ import debug from 'debug'
 
 const SetPathDebug = debug('setPath')
 debug.enable('setPath')
+const apiExternal = process.env.apiExternal || 'localhost'
 
 interface propsType {
   path: string,
@@ -19,7 +20,7 @@ export default function SetPath (props: propsType) {
     let update = {}
     update[pathName] = path
     e.preventDefault()
-    const url = `http://localhost:3000/cases/${caseId}`
+    const url = `http://${apiExternal}:3000/cases/${caseId}`
     try {
       const res = await fetch(url, {
         method: 'PATCH',

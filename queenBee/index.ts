@@ -6,7 +6,6 @@ import {keysRte} from './routes/keys'
 import debug from 'debug'
 import mongoose from 'mongoose'
 import { decipherRte } from './routes/decipher'
-// import { MockMongoose } from 'mock-mongoose'
 
 const app = express()
 const debugApp = debug('app')
@@ -17,7 +16,8 @@ const PORT = 3000
 // Leave as '*' for public API
 const ACAO = process.env.ALLOW_ORIGIN || '*'
 const dbName = 'decipherDB'
-const dbHost = `mongodb://database:27017/${dbName}`
+const hostName = process.env.HOST_IP || 'database'
+const dbHost = `mongodb://${hostName}:27017/${dbName}`
 const dbOpts = {
   useNewUrlParser: true,
   useUnifiedTopology: true,
@@ -47,8 +47,11 @@ app.use('/keys', keysRte)
 app.use('/decipher', decipherRte)
 app.get('/', (req, res) => res.send('Healthy :)\r\n'))
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   debugApp(`⚡️[server]: Server is running at https://localhost:${PORT}`)
 })
+
+// 30s timeout to avoid CORS failure while unpacking PSTs
+server.keepAliveTimeout = 30000
 
 export default app

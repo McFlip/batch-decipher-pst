@@ -11,7 +11,7 @@
 
 p12DIR=$1
 outPath="${2%/}"
-secretsPath=$3
+# secretsPath=$3
 
 # Clean up previous runs
 find "$2" -type f -exec rm -f {} \;

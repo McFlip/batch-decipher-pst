@@ -5,6 +5,8 @@ import {FormEvent, useState} from 'react'
 import debug from 'debug'
 import Menu from 'components/menu'
 
+const apiExternal = process.env.apiExternal || 'localhost'
+
 export default function NewCase () {
   const router = useRouter()
   const newCaseDebug = debug('newcase')
@@ -13,8 +15,7 @@ export default function NewCase () {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
-    // const url = 'http://queenbee:3000/cases'
-    const url = 'http://localhost:3000/cases'
+    const url = `http://${apiExternal}:3000/cases`
     const body = JSON.stringify({name: caseName, forensicator})
     try {
       const res = await fetch(url, {

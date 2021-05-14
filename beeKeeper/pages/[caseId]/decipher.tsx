@@ -10,6 +10,8 @@ import Alert from 'react-bootstrap/Alert'
 
 const DecipherDebug = debug('decipher')
 debug.enable('decipher')
+const apiInternal = process.env.apiInternal || 'queenbee'
+const apiExternal = process.env.apiExternal || 'localhost'
 
 type SerialsType = [string, string][]
 interface caseType {
@@ -21,8 +23,8 @@ interface caseType {
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const {caseId} = context.params
-  const urlCase = `http://queenbee:3000/cases/${caseId}`
-  const urlKeys = `http://queenbee:3000/keys/${caseId}`
+  const urlCase = `http://${apiInternal}:3000/cases/${caseId}`
+  const urlKeys = `http://${apiInternal}:3000/keys/${caseId}`
   try {
     const fetchCase = fetch(urlCase, {
       method: 'GET',
@@ -80,7 +82,7 @@ export default function Keys ({ pstPath, ptPath, exceptionsPath, serialsProp }: 
 
   const handleRun = async () => {
     setIsRunning(true)
-    const url = 'http://localhost:3000/decipher'
+    const url = `http://${apiExternal}:3000/decipher`
     const body = { caseId, secrets }
     const decoder = new TextDecoder()
     try {
@@ -102,10 +104,12 @@ export default function Keys ({ pstPath, ptPath, exceptionsPath, serialsProp }: 
           console.log(error)
         }
         if (progress) setResult(progress)
+        // console.log(progress)
       }
       setIsRunning(false)
     } catch (err) {
-      DecipherDebug(err)
+      // DecipherDebug(err)
+      console.log(err)
       alert('Ohs Noes! Check the console for error msg')
       setIsRunning(false)
     }
