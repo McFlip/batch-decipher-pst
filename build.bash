@@ -23,7 +23,7 @@ buildah config --user nextjs $ctr
 buildah commit --format oci $ctr batch-decipher-pst_beekeeper
 popd
 podman save -o images/beekeeper.tar --format oci-archive batch-decipher-pst_beekeeper
-exit
+# exit
 
 pushd queenBee
 ctr=$(buildah from node:alpine)
