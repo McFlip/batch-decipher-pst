@@ -10,13 +10,13 @@ import Button from 'react-bootstrap/Button'
 
 const CertsDebug = debug('certs')
 debug.enable('certs')
-const apiInternal = process.env.apiInternal || 'queenbee'
+const apiInternal = process.env.apiInternal || 'localhost'
 const apiExternal = process.env.apiExternal || 'localhost'
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const {caseId} = context.params
-  const urlCase = `http://${apiInternal}:3000/cases/${caseId}`
-  const urlCerts = `http://${apiInternal}:3000/sigs/${caseId}`
+  const urlCase = `${apiInternal}:3000/cases/${caseId}`
+  const urlCerts = `${apiInternal}:3000/sigs/${caseId}`
   try {
     const resPst = fetch(urlCase, {
       method: 'GET',
@@ -58,7 +58,7 @@ export default function Certs (props: propsType) {
 
   const handleRun = async (caseId: string) => {
     setIsRunning(true)
-    const url = `http://${apiExternal}:3000/sigs`
+    const url = `${apiExternal}:3000/sigs`
     const urlCerts = `${url}/${caseId}`
     const body = { caseId }
     const decoder = new TextDecoder()

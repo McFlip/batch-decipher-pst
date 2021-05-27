@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev -p 8080",
     "build": "next build",
-    "start": "next start -p 8080"
+    "start": "NODE_ENV=production PORT=8080 node server.js"
   },
   "dependencies": {
     "bootstrap": "^4.6.0",

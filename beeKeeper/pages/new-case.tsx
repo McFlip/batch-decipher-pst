@@ -15,7 +15,7 @@ export default function NewCase () {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
-    const url = `http://${apiExternal}:3000/cases`
+    const url = `${apiExternal}:3000/cases`
     const body = JSON.stringify({name: caseName, forensicator})
     try {
       const res = await fetch(url, {

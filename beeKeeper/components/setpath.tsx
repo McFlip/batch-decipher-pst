@@ -13,14 +13,14 @@ interface propsType {
 }
 
 export default function SetPath (props: propsType) {
+  const { pathName, caseId } = props
   const [ path, setPath ] = useState(props.path)
   
   const handleSubmit = async (e: FormEvent) => {
-    const { pathName, caseId } = props
     let update = {}
     update[pathName] = path
     e.preventDefault()
-    const url = `http://${apiExternal}:3000/cases/${caseId}`
+    const url = `${apiExternal}:3000/cases/${caseId}`
     try {
       const res = await fetch(url, {
         method: 'PATCH',
@@ -41,8 +41,8 @@ export default function SetPath (props: propsType) {
   return( 
     <form onSubmit={handleSubmit}>
       <div className='form-group'>
-        <label htmlFor='pstPath'>{props.labelTxt}</label>
-        <input id='pstPath' type='text' className='form-control' value={path} onChange={e => setPath(e.target.value)} />
+        <label htmlFor={pathName}>{props.labelTxt}</label>
+        <input id={pathName} type='text' className='form-control' value={path} onChange={e => setPath(e.target.value)} />
       </div>
       <button type='submit' className='btn btn-info'>Set Path & Validate</button>
     </form>

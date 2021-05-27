@@ -1,4 +1,6 @@
 import express from 'express'
+import https from 'https'
+import { readFileSync } from 'fs'
 import bodyParser from 'body-parser'
 import { caseRte } from './routes/cases'
 import {sigsRte} from './routes/sigs'
@@ -12,11 +14,15 @@ const debugApp = debug('app')
 
 // Configs
 const PORT = 3000
+const tlsOpts = process.env.NODE_ENV === 'production' ? {
+  key: readFileSync('/app/tlscert/key.pem'),
+  cert: readFileSync('/app/tlscert/cert.pem')
+} : {}
 // Config for CORS - set to Domain or http://localhost:8080 if deploying full stack
 // Leave as '*' for public API
 const ACAO = process.env.ALLOW_ORIGIN || '*'
 const dbName = 'decipherDB'
-const hostName = process.env.HOST_IP || 'database'
+const hostName = process.env.HOST_IP || 'localhost'
 const dbHost = `mongodb://${hostName}:27017/${dbName}`
 const dbOpts = {
   useNewUrlParser: true,
@@ -47,9 +53,11 @@ app.use('/keys', keysRte)
 app.use('/decipher', decipherRte)
 app.get('/', (req, res) => res.send('Healthy :)\r\n'))
 
-const server = app.listen(PORT, () => {
-  debugApp(`⚡️[server]: Server is running at https://localhost:${PORT}`)
-})
+const server = process.env.NODE_ENV === 'production' ?
+  https.createServer(tlsOpts, app).listen(PORT) :
+  app.listen(PORT, () => {
+    debugApp(`⚡️[server]: Server is running at http://localhost:${PORT}`)
+  })
 
 // 30s timeout to avoid CORS failure while unpacking PSTs
 server.keepAliveTimeout = 30000
