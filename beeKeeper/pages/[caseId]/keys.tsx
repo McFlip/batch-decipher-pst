@@ -9,7 +9,7 @@ import debug from 'debug'
 
 const KeysDebug = debug('keys')
 debug.enable('keys')
-const apiInternal = process.env.apiInternal || 'queenbee'
+const apiInternal = process.env.apiInternal || 'localhost'
 const apiExternal = process.env.apiExternal || 'localhost'
 
 type SerialsType = [string, string][]
@@ -19,8 +19,8 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     p12Path: string
   }
   const {caseId} = context.params
-  const urlCase = `http://${apiInternal}:3000/cases/${caseId}`
-  const urlKeys = `http://${apiInternal}:3000/keys/${caseId}`
+  const urlCase = `${apiInternal}:3000/cases/${caseId}`
+  const urlKeys = `${apiInternal}:3000/keys/${caseId}`
   try {
     const fetchCase = fetch(urlCase, {
       method: 'GET',
@@ -72,7 +72,7 @@ export default function Keys ({ p12Path, serialsProp }: { p12Path: string, seria
 
   const handleRun = async () => {
     setIsRunning(true)
-    const url = `http://${apiExternal}:3000/keys`
+    const url = `${apiExternal}:3000/keys`
     const body = { caseId, secrets }
     try {
       const res = await fetch(url, {

@@ -10,7 +10,7 @@ import Alert from 'react-bootstrap/Alert'
 
 const DecipherDebug = debug('decipher')
 debug.enable('decipher')
-const apiInternal = process.env.apiInternal || 'queenbee'
+const apiInternal = process.env.apiInternal || 'localhost'
 const apiExternal = process.env.apiExternal || 'localhost'
 
 type SerialsType = [string, string][]
@@ -23,8 +23,8 @@ interface caseType {
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const {caseId} = context.params
-  const urlCase = `http://${apiInternal}:3000/cases/${caseId}`
-  const urlKeys = `http://${apiInternal}:3000/keys/${caseId}`
+  const urlCase = `${apiInternal}:3000/cases/${caseId}`
+  const urlKeys = `${apiInternal}:3000/keys/${caseId}`
   try {
     const fetchCase = fetch(urlCase, {
       method: 'GET',
@@ -82,7 +82,7 @@ export default function Keys ({ pstPath, ptPath, exceptionsPath, serialsProp }: 
 
   const handleRun = async () => {
     setIsRunning(true)
-    const url = `http://${apiExternal}:3000/decipher`
+    const url = `${apiExternal}:3000/decipher`
     const body = { caseId, secrets }
     const decoder = new TextDecoder()
     try {

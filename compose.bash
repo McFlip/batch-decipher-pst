@@ -38,13 +38,19 @@ fi
 # database
 podman run -dt --pod $PROJ --name "$PROJ"_db -v "$PROJ"_dbvol:/data:Z mongo
 # front end
-podman run -dt --pod $PROJ --name "$PROJ"_beekeeper --env NODE_ENV=production "$PROJ"_beekeeper
+podman run -dt --pod $PROJ --name "$PROJ"_beekeeper \
+    --env NODE_ENV=production \
+    --env NODE_TLS_REJECT_UNAUTHORIZED=0 \
+    --env apiInternal=localhost \
+    -v $(pwd)/tlscert:/app/tlscert:z \
+    "$PROJ"_beekeeper
 # back end
 podman run -dt --pod $PROJ --name "$PROJ"_queenbee \
-    --env HOST_IP=localhost \
     --env NODE_ENV=production \
     -v /srv/public:/srv/public:z,U \
     -v "$PROJ"_hive:/app/workspace:z \
     -v $(pwd)/podman/podman.sock:/var/run/docker.sock:Z \
+    -v $(pwd)/tlscert:/app/tlscert:z \
     "$PROJ"_queenbee
     # -v "$PROJ"_public:/srv/public:z \
+    # --env HOST_IP=localhost \

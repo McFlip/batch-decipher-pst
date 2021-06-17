@@ -8,12 +8,12 @@ import debug from 'debug'
 
 const custodiansDebug = debug('custodians')
 debug.enable('custodians')
-const apiInternal = process.env.apiInternal || 'queenbee'
+const apiInternal = process.env.apiInternal || 'localhost'
 const apiExternal = process.env.apiExternal || 'localhost'
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const {caseId} = context.params
-  const url = `http://${apiInternal}:3000/cases/${caseId}`
+  const url = `${apiInternal}:3000/cases/${caseId}`
   try {
     const res = await fetch(url, {
       method: 'GET',
@@ -38,7 +38,7 @@ export default function Custodians({custodians}: {custodians: string}) {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
-    const url = `http://${apiExternal}:3000/cases/${caseId}`
+    const url = `${apiExternal}:3000/cases/${caseId}`
     try {
       const res = await fetch(url, {
         method: 'PATCH',
