@@ -12,7 +12,7 @@ certs=$(find "$2" -type f -name "*.cert.txt")
 for cert in $(echo "$certs")
 do
   delete=1
-  for custodian in "$custodians"
+  for custodian in $(echo "$custodians")
   do
     grep -m 1 -P "$custodian" "$cert" &> /dev/null
     if [[ $? -eq 0 ]]
