@@ -40,9 +40,9 @@ podman run -dt --pod $PROJ --name "$PROJ"_db -v "$PROJ"_dbvol:/data:Z mongo
 # front end
 podman run -dt --pod $PROJ --name "$PROJ"_beekeeper \
     --env NODE_ENV=production \
-    --env NODE_TLS_REJECT_UNAUTHORIZED=0 \
+    --env NODE_TLS_REJECT_UNAUTHORIZED=1 \
     --env apiInternal=localhost \
-    -v $(pwd)/tlscert:/app/tlscert:z \
+    -v $(pwd)/tlscert:/app/tlscert:z,U \
     "$PROJ"_beekeeper
 # back end
 podman run -dt --pod $PROJ --name "$PROJ"_queenbee \
