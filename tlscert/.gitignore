@@ -1,0 +1,3 @@
+# Only include the README - Don't commit certs
+!README.txt
+*.pem
