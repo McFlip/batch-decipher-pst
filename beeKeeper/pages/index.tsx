@@ -8,7 +8,7 @@ import ListCases from 'components/listcases'
 
 const HomeDebug = debug('home')
 debug.enable('home')
-const apiExternal = process.env.apiExternal || 'localhost'
+const apiExternal = process.env.NEXT_PUBLIC_API_EXTERNAL || 'localhost'
 
 export default function Home() {
   const [cases, setCases] = useState()

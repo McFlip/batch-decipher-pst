@@ -7,8 +7,8 @@ import { useRouter } from 'next/router'
 
 const EditDebug = debug('editCase')
 debug.enable('editCase')
-const apiInternal = process.env.apiInternal || 'localhost'
-const apiExternal = process.env.apiExternal || 'localhost'
+const apiInternal = process.env.API_INTERNAL || 'localhost'
+const apiExternal = process.env.NEXT_PUBLIC_API_EXTERNAL || 'localhost'
 
 interface CaseType {
   _id: string,

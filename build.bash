@@ -12,7 +12,7 @@ buildah run $ctr npm ci
 buildah copy $ctr .next /app/.next/
 buildah copy $ctr public/ /app/public/
 buildah copy $ctr server.js /app/
-buildah copy $ctr next.config.js /app/
+buildah copy $ctr .env.local /app/
 buildah config --env NODE_ENV=production $ctr
 buildah config --port 8080 $ctr
 buildah config --entrypoint '"npm" "start"' $ctr
@@ -23,7 +23,7 @@ buildah config --user nextjs $ctr
 buildah commit --format oci $ctr batch-decipher-pst_beekeeper
 popd
 podman save -o images/beekeeper.tar --format oci-archive batch-decipher-pst_beekeeper
-# exit
+exit
 
 pushd queenBee
 ctr=$(buildah from node:alpine)

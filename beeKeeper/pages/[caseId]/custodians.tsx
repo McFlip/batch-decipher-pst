@@ -8,8 +8,8 @@ import debug from 'debug'
 
 const custodiansDebug = debug('custodians')
 debug.enable('custodians')
-const apiInternal = process.env.apiInternal || 'localhost'
-const apiExternal = process.env.apiExternal || 'localhost'
+const apiInternal = process.env.API_INTERNAL || 'localhost'
+const apiExternal = process.env.NEXT_PUBLIC_API_EXTERNAL || 'localhost'
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const {caseId} = context.params

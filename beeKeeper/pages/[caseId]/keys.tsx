@@ -9,8 +9,8 @@ import debug from 'debug'
 
 const KeysDebug = debug('keys')
 debug.enable('keys')
-const apiInternal = process.env.apiInternal || 'localhost'
-const apiExternal = process.env.apiExternal || 'localhost'
+const apiInternal = process.env.API_INTERNAL || 'localhost'
+const apiExternal = process.env.NEXT_PUBLIC_API_EXTERNAL || 'localhost'
 
 type SerialsType = [string, string][]
 

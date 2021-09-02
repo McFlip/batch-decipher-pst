@@ -10,8 +10,8 @@ import Button from 'react-bootstrap/Button'
 
 const CertsDebug = debug('certs')
 debug.enable('certs')
-const apiInternal = process.env.apiInternal || 'localhost'
-const apiExternal = process.env.apiExternal || 'localhost'
+const apiInternal = process.env.API_INTERNAL || 'localhost'
+const apiExternal = process.env.NEXT_PUBLIC_API_EXTERNAL || 'localhost'
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const {caseId} = context.params

@@ -3,7 +3,7 @@ import debug from 'debug'
 
 const SetPathDebug = debug('setPath')
 debug.enable('setPath')
-const apiExternal = process.env.apiExternal || 'localhost'
+const apiExternal = process.env.NEXT_PUBLIC_API_EXTERNAL || 'localhost'
 
 interface propsType {
   path: string,
