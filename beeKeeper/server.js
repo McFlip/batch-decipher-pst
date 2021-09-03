@@ -3,13 +3,11 @@ const https = require('https')
 const fs = require('fs')
 const { parse } = require('url')
 const next = require('next')
-const conf = require('./next.config')
 const port = parseInt(process.env.PORT) || 443
 const dev = false
 const app = next({
   dev,
   dir: __dirname,
-  conf
 })
 const handle = app.getRequestHandler()
 
