@@ -4,11 +4,10 @@ import debug from 'debug'
 import { FormEvent, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
+import { apiExternal, apiInternal } from '../../constants'
 
 const EditDebug = debug('editCase')
 debug.enable('editCase')
-const apiInternal = process.env.API_INTERNAL || 'localhost'
-const apiExternal = process.env.NEXT_PUBLIC_API_EXTERNAL || 'localhost'
 
 interface CaseType {
   _id: string,

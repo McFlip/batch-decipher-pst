@@ -6,11 +6,10 @@ import {useRouter} from 'next/router'
 import {GetServerSideProps} from 'next'
 import { FormEvent, MouseEvent, useState } from 'react'
 import debug from 'debug'
+import { apiExternal, apiInternal } from '../../constants'
 
 const KeysDebug = debug('keys')
 debug.enable('keys')
-const apiInternal = process.env.API_INTERNAL || 'localhost'
-const apiExternal = process.env.NEXT_PUBLIC_API_EXTERNAL || 'localhost'
 
 type SerialsType = [string, string][]
 

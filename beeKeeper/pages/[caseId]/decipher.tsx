@@ -7,11 +7,10 @@ import { FormEvent, MouseEvent, useState } from 'react'
 import debug from 'debug'
 import ProgressBar from 'react-bootstrap/ProgressBar'
 import Alert from 'react-bootstrap/Alert'
+import { apiExternal, apiInternal } from '../../constants'
 
 const DecipherDebug = debug('decipher')
 debug.enable('decipher')
-const apiInternal = process.env.API_INTERNAL || 'localhost'
-const apiExternal = process.env.NEXT_PUBLIC_API_EXTERNAL || 'localhost'
 
 type SerialsType = [string, string][]
 interface caseType {

@@ -5,11 +5,10 @@ import {GetServerSideProps} from 'next'
 import {FormEvent, useState} from 'react'
 import Menu from 'components/menu'
 import debug from 'debug'
+import { apiExternal, apiInternal } from '../../constants'
 
 const custodiansDebug = debug('custodians')
 debug.enable('custodians')
-const apiInternal = process.env.API_INTERNAL || 'localhost'
-const apiExternal = process.env.NEXT_PUBLIC_API_EXTERNAL || 'localhost'
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const {caseId} = context.params

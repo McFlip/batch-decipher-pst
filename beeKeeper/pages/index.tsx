@@ -5,10 +5,10 @@ import debug from 'debug'
 import Menu from 'components/menu'
 import SearchBar from 'components/searchbar'
 import ListCases from 'components/listcases'
+import { apiExternal } from '../constants'
 
 const HomeDebug = debug('home')
 debug.enable('home')
-const apiExternal = process.env.NEXT_PUBLIC_API_EXTERNAL || 'localhost'
 
 export default function Home() {
   const [cases, setCases] = useState()
@@ -27,7 +27,8 @@ export default function Home() {
       HomeDebug(fetchedCases)
       setCases(fetchedCases)
     } catch (err) {
-      HomeDebug(err)
+      HomeDebug(`failed to fetch ${url}`)
+      // HomeDebug(err)
     }
   }
   return (

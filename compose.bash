@@ -48,7 +48,7 @@ podman run -dt --pod $PROJ --name "$PROJ"_beekeeper \
 podman run -dt --pod $PROJ --name "$PROJ"_queenbee \
     --env NODE_ENV=production \
     -v /srv/public:/srv/public:z,U \
-    -v "$PROJ"_hive:/app/workspace:z \
+    -v "$PROJ"_hive:/app/workspace:z,U \
     -v $(pwd)/podman/podman.sock:/var/run/docker.sock:Z \
     -v $(pwd)/tlscert:/app/tlscert:z \
     "$PROJ"_queenbee
