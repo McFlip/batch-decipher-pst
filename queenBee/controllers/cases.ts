@@ -14,7 +14,7 @@ export const create = (req: Request, res: Response, next: NextFunction): void =>
     .then(c => {
       const casePath = path.join('/app/workspace',c._id.toString() as string)
       fs.mkdirSync(casePath)
-      const subDirs = ['sigs', 'p12', 'keys']
+      const subDirs = ['sigs', 'sigsPSTs', 'p12', 'keys']
       subDirs.forEach(s => fs.mkdirSync(path.join(casePath, s)))
       res.status(201).json({ caseId: c._id })
     })

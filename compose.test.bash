@@ -46,7 +46,7 @@ podman run -dt --name "$PROJ"_db -v "$PROJ"_dbvol:/data:Z --pod $PROJ mongo
 podman run -it --name "$PROJ"_queenbee \
     --privileged  \
     --env NODE_ENV=development \
-    --env DEBUG=decipher \
+    --env DEBUG=none \
     -v $(pwd)/queenBee:/app:Z \
     -w /app \
     -v /srv/public:/srv/public:z,U \

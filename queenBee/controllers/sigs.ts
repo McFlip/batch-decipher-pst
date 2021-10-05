@@ -5,9 +5,30 @@ import dockerode from 'dockerode'
 import { Case } from '../models/case'
 import debug from 'debug'
 import CaseType from '../types/case'
+import { pathValidator } from '../util/pathvalidator'
 
 const debugSig = debug('sig')
 const dockerAPI = new dockerode({socketPath: '/var/run/docker.sock'})
+
+export const uploadSigsPst = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+        const { caseId } = req.params
+        const pstPath = `/app/workspace/${caseId}/sigsPSTs`
+        debugSig(pstPath)
+        if (!caseId) throw new Error("no case ID")
+        if (!pathValidator(pstPath)) {
+            res.status(404).json({error: 'unable to find sigsPSTs folder in case workspace'})
+        } else {
+            debugSig(req.files)
+            debugSig(fs.readdirSync(pstPath))
+            fs.readdirSync(pstPath).forEach(f => fs.renameSync(path.join(pstPath, f), path.join(pstPath, `${f}.pst`)))
+            debugSig(fs.readdirSync(pstPath))
+            res.status(201).send('PST(s) uploaded')
+        }
+    } catch (error) {
+        next(error)
+    }
+}
 
 export const processSigs = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
@@ -26,7 +47,7 @@ export const processSigs = async (req: Request, res: Response, next: NextFunctio
             const custodianPath = path.join(basePath, 'custodianList.txt')
             fs.writeFileSync(custodianPath, custodians)
             // create container
-            const inPath = caseMeta?.pstPath
+            const inPath = path.join(basePath, 'sigsPSTs')
             if (!inPath) throw new Error('No PST path set')
             const outPath = path.join(basePath, 'sigs')
             const container = await dockerAPI.run(
