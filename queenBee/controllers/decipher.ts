@@ -25,11 +25,13 @@ export const decipher = async (req: Request, res: Response, next: NextFunction):
           // create the secret
           // validate pw exists for each key
           const secretNames = secrets.map(s => s[0])
+          const keyRegEx = /\.key$/
           decipherDebug(secrets)
           decipherDebug(keysPath)
-          decipherDebug(fs.readdirSync(keysPath).filter(f => f.match(/$\.key/)?.length))
+          decipherDebug(fs.readdirSync(keysPath).filter(f => keyRegEx.test(f)))
+          decipherDebug(fs.readdirSync(keysPath))
           if (!fs.readdirSync(keysPath)
-            .filter(f => f.match(/\.key$/)?.length)
+            .filter(f => keyRegEx.test(f))
             .map(p => secretNames.includes(path.basename(p, '.key')))
             .reduce((p,c) => p && c)
           ) throw new Error('Missing password')

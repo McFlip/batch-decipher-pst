@@ -42,8 +42,9 @@ export default function sigs(this: Mocha.Suite): void {
     expect(setCustodiansRes).to.have.status(200)
     // Run getSigs
     const getSigsRes: ChaiHttp.Response = await chai.request(apiURL).post('/sigs').send({caseId})
-    expect(getSigsRes).to.have.status(201)
-    expect(getSigsRes.text).to.eql(fs.readFileSync('/app/tests/data/allCerts.txt').toString("ascii"))
+    expect(getSigsRes).to.have.status(200)
+    expect(getSigsRes.text).to.contain("3 items done, 0 items skipped")
+    expect(getSigsRes.text).to.contain("Failed to get cert for:\r\n /tmp/PST/TEST/Inbox/buried/deep/down/1.eml\r\nserial=12C3905B55296E401270C0CEB18B5BA660DB9A1F\r\n")
   })
   it('should FAIL to process emails with a bad case id', async function () {
     const res404: ChaiHttp.Response = await chai.request(apiURL).post('/sigs').send({caseId: 'aaaaaaaaaaaa'})
