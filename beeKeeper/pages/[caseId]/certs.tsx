@@ -123,7 +123,9 @@ export default function Certs (props: propsType) {
       </Head>
       <main>
         <Menu currentPg='Get Cert Info' caseId={caseId} />
-        <h1>Upload pst file(s)</h1>
+        <h1>Get Cert Info</h1>
+        <p>This process will parse the needed cert info such as serial #, dates, and issuer info</p>
+        <h2>Upload pst file(s)</h2>
         <p>PSTs contain signed emails from Custodians. Re-uploading overwrites.</p>
         <form onSubmit={handleUpload}>
           <div className='form-group'>
