@@ -3,7 +3,7 @@ import SetPath from 'components/setpath'
 import Head from 'next/head'
 import {useRouter} from 'next/router'
 import {GetServerSideProps} from 'next'
-import { useState } from 'react'
+import { FormEvent, useState } from 'react'
 import debug from 'debug'
 import Modal from 'react-bootstrap/Modal'
 import Button from 'react-bootstrap/Button'
@@ -54,6 +54,7 @@ export default function Certs (props: propsType) {
   const [isRunning, setIsRunning] = useState(false)
   const [showTerminal, setShowTerminal] = useState(false)
   const [terminalTxt, setTerminalTxt] = useState('')
+  const [files, setFiles] = useState<FileList>(null)
 
   const handleRun = async (caseId: string) => {
     setIsRunning(true)
@@ -97,6 +98,24 @@ export default function Certs (props: propsType) {
     }
   }
 
+  const handleUpload = async (e: FormEvent) => {
+    const url = `${apiExternal}:3000/sigs/upload/${caseId}`
+    const form = new FormData()
+    e.preventDefault()
+    if(!files) {
+      alert("Please select PSTs to upload")
+    } else {
+      console.log(files)
+      Array.from(files).forEach(file => { form.append("pst", file) })
+      const res = await fetch(url, {
+        method: 'POST',
+        mode: 'cors',
+        body: form
+      })
+      alert(await res.text())
+    }
+  }
+
   return(
     <div className='container'>
       <Head>
@@ -104,9 +123,15 @@ export default function Certs (props: propsType) {
       </Head>
       <main>
         <Menu currentPg='Get Cert Info' caseId={caseId} />
-        <h1>Set input PST path</h1>
-        <p>Set the path before running to ensure propper permissions</p>
-        <SetPath path={props.pstPath} pathName='pstPath' caseId={caseId} labelTxt='PST Path:' />
+        <h1>Upload pst file(s)</h1>
+        <p>PSTs contain signed emails from Custodians. Re-uploading overwrites.</p>
+        <form onSubmit={handleUpload}>
+          <div className='form-group'>
+            <label htmlFor='files'>Select PSTs</label>
+            <input id='files' type='file' multiple className='form-control-file' onChange={e => setFiles(e.target.files)} />
+          </div>
+            <button className='btn btn-primary' type='submit'>Upload</button>
+        </form>
         <h2>Launch Script</h2>
         <button className='btn btn-primary' disabled={isRunning} onClick={() => handleRun(caseId)}>
           { isRunning ?
