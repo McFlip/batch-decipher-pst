@@ -70,7 +70,7 @@ export default function cases (this: Mocha.Suite): void {
   it('should FAIL to get a case by bad ID', async function () {
     const res500: ChaiHttp.Response = await chai.request(apiURL).get('/cases/FUBAR')
     expect(res500).to.have.status(500)
-    expect(res500.text).to.match(/CastError: Cast to ObjectId failed for value &quot;FUBAR&quot; at path &quot;_id&quot; for model &quot;Case&quot;/)
+    expect(res500.text).to.contain("CastError: Cast to ObjectId failed for value &quot;FUBAR&quot; (type string) at path &quot;_id&quot; for model &quot;Case&quot;")
     const res404: ChaiHttp.Response = await chai.request(apiURL).get('/cases/aaaaaaaaaaaa')
     expect(res404).to.have.status(404)
   })
