@@ -63,6 +63,13 @@ export default function Certs (props: propsType) {
     const body = { caseId }
     const decoder = new TextDecoder()
 
+    // TODO: add more robust validation using the API to make sure user actually uploaded a file and entered custodians
+    if(!files) {
+      alert("You forgot to upload a PST to process")
+      setIsRunning(false)
+      return
+    }
+
     try {
       // Run the container and send response stream to terminal modal
       const res = await fetch(url, {
