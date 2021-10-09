@@ -3,6 +3,8 @@
 # Build images using Buildah for podman deployment on RHEL instead of Docker
 # Save images to archive for deployment on intranet server
 
+if [ "$1" = "beeKeeper" ] || [ "$1" = "all" ]
+then
 pushd beeKeeper
 ctr=$(buildah from node:alpine)
 npm run build
@@ -12,7 +14,7 @@ buildah run $ctr npm ci
 buildah copy $ctr .next /app/.next/
 buildah copy $ctr public/ /app/public/
 buildah copy $ctr server.js /app/
-buildah copy $ctr .env.local /app/
+buildah copy $ctr .env.production.local /app/
 buildah config --env NODE_ENV=production $ctr
 buildah config --port 8080 $ctr
 buildah config --entrypoint '"npm" "start"' $ctr
@@ -23,8 +25,10 @@ buildah config --user nextjs $ctr
 buildah commit --format oci $ctr batch-decipher-pst_beekeeper
 popd
 podman save -o images/beekeeper.tar --format oci-archive batch-decipher-pst_beekeeper
-exit
+fi
 
+if [ "$1" = "queenBee" ] || [ "$1" = "all" ]
+then
 pushd queenBee
 ctr=$(buildah from node:alpine)
 # compile using host; ts is dev dep
@@ -47,10 +51,12 @@ buildah config --env HOST_IP=localhost $ctr
 buildah commit --format oci $ctr batch-decipher-pst_queenbee
 popd
 podman save -o images/queenbee.tar --format oci-archive batch-decipher-pst_queenbee
-exit
+fi
 
+if [ "$1" = "busyBee" ] || [ "$1" = "all" ]
+then
 pushd busyBee
 buildah bud -t batch-decipher-pst_busybee .
 popd
-
 podman save -o images/busybee.tar --format oci-archive batch-decipher-pst_busybee 
+fi
