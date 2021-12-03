@@ -1,5 +1,6 @@
 import Menu from 'components/menu'
-import SetPath from 'components/setpath'
+// import SetPath from 'components/setpath'
+import Uploader from 'components/uploader'
 import Head from 'next/head'
 import {useRouter} from 'next/router'
 import {GetServerSideProps} from 'next'
@@ -65,9 +66,11 @@ export default function Certs (props: propsType) {
 
     // TODO: add more robust validation using the API to make sure user actually uploaded a file and entered custodians
     if(!files) {
-      alert("You forgot to upload a PST to process")
-      setIsRunning(false)
-      return
+      const pyUpload = confirm("You forgot to upload a PST to process. Did you upload from a server using the Py script? Click OK to run, Cancel to upload.")
+      if(!pyUpload) {
+        setIsRunning(false)
+        return
+      }
     }
 
     try {
@@ -105,24 +108,6 @@ export default function Certs (props: propsType) {
     }
   }
 
-  const handleUpload = async (e: FormEvent) => {
-    const url = `${apiExternal}:3000/sigs/upload/${caseId}`
-    const form = new FormData()
-    e.preventDefault()
-    if(!files) {
-      alert("Please select PSTs to upload")
-    } else {
-      console.log(files)
-      Array.from(files).forEach(file => { form.append("pst", file) })
-      const res = await fetch(url, {
-        method: 'POST',
-        mode: 'cors',
-        body: form
-      })
-      alert(await res.text())
-    }
-  }
-
   return(
     <div className='container'>
       <Head>
@@ -134,13 +119,7 @@ export default function Certs (props: propsType) {
         <p>This process will parse the needed cert info such as serial #, dates, and issuer info</p>
         <h2>Upload pst file(s)</h2>
         <p>PSTs contain signed emails from Custodians. Re-uploading overwrites.</p>
-        <form onSubmit={handleUpload}>
-          <div className='form-group'>
-            <label htmlFor='files'>Select PSTs</label>
-            <input id='files' type='file' multiple className='form-control-file' onChange={e => setFiles(e.target.files)} />
-          </div>
-            <button className='btn btn-primary' type='submit'>Upload</button>
-        </form>
+        <Uploader caseId={caseId} fileType='pst' destination='sigs' files={files} setFiles={setFiles} />
         <h2>Launch Script</h2>
         <button className='btn btn-primary' disabled={isRunning} onClick={() => handleRun(caseId)}>
           { isRunning ?
