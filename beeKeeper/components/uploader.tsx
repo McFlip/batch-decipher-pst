@@ -1,9 +1,10 @@
 import { FormEvent, useState, Dispatch, SetStateAction } from "react"
 import debug from "debug"
+import { apiExternal } from "../constants"
+import ClipBtn from 'components/clipbtn'
 
 const uploadDebug = debug('uploader')
 debug.enable('uploader')
-const apiExternal = process.env.NEXT_PUBLIC_API_EXTERNAL || 'http://localhost'
 
 interface propsType {
 	caseId: string,
@@ -15,13 +16,13 @@ interface propsType {
 
 export default function Uploader (props: propsType) {
 	const { caseId, fileType, destination, files, setFiles } = props
+	// decipher destination has 2 upload paths based on fileType - pst & p12; only upload pst to sigs
+	const uriFType = destination == 'decipher'? `${fileType}/` : ''
+  const url = `${apiExternal}:3000/${destination}/upload/${uriFType}${caseId}`
+	uploadDebug(url)
 
-	// Form submission
+  // Form submission
   const handleUpload = async (e: FormEvent) => {
-		// decipher destination has 2 upload paths based on fileType - pst & p12; only upload pst to sigs
-		const uriFType = destination == 'decipher'? `${fileType}/` : ''
-    const url = `${apiExternal}:3000/${destination}/upload/${uriFType}${caseId}`
-		uploadDebug(url)
     const form = new FormData()
     e.preventDefault()
     if(!files) {
@@ -45,6 +46,8 @@ export default function Uploader (props: propsType) {
 
 	return(
 		<form onSubmit={handleUpload}>
+			<p>Use the following URL if uploading with a script:<ClipBtn txtToCopy={url} /></p>
+      <p><code>{url}</code></p>
 			<div className='form-group'>
 				<label htmlFor='files'>Select PSTs</label>
 				<input id='files' type='file' multiple className='form-control-file' onChange={e => setFiles(e.target.files)} />
