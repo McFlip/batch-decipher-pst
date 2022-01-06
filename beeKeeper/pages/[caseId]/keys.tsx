@@ -1,5 +1,5 @@
 import Menu from 'components/menu'
-import SetPath from 'components/setpath'
+// import SetPath from 'components/setpath'
 import Head from 'next/head'
 import Link from 'next/link'
 import {useRouter} from 'next/router'
@@ -7,6 +7,7 @@ import {GetServerSideProps} from 'next'
 import { FormEvent, MouseEvent, useState } from 'react'
 import debug from 'debug'
 import { apiExternal, apiInternal } from '../../constants'
+import Uploader from 'components/uploader'
 
 const KeysDebug = debug('keys')
 debug.enable('keys')
@@ -55,6 +56,7 @@ export default function Keys ({ p12Path, serialsProp }: { p12Path: string, seria
   const [secrets, setSecrets] = useState([['','']])
   const [p12, setP12] = useState('')
   const [password, setPassword] = useState('')
+  const [files, setFiles] = useState<FileList>(null)
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault()
@@ -127,9 +129,8 @@ export default function Keys ({ p12Path, serialsProp }: { p12Path: string, seria
       <main>
         <Menu currentPg='Extract Keys' caseId={caseId} />
         <h1>Extract Keys From 'p12' Container</h1>
-        <h2>Set the p12 path</h2>
-        <p>Set the path before running to ensure propper permissions</p>
-        <SetPath caseId={caseId} pathName='p12Path' path={p12Path} labelTxt='p12 Path:'/>
+        <h2>Upload p12 file(s)</h2>
+        <Uploader caseId={caseId} fileType='p12' destination='decipher' files={files} setFiles={setFiles} />
         <h2>Enter in Passwords</h2>
         <form onSubmit={handleSubmit}>
           <div className='form-group'>
