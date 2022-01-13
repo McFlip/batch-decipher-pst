@@ -2,56 +2,54 @@ import { NextFunction, Request, Response } from 'express'
 import fs from 'fs'
 import path from 'path'
 import dockerode from 'dockerode'
-import { Case } from '../models/case'
 import debug from 'debug'
-import CaseType from '../types/case'
+import {pathValidator} from '../util/pathvalidator'
 
 const debugKeys = debug('keys')
 const dockerAPI = new dockerode({socketPath: '/var/run/docker.sock'})
 
 export const extractKeys = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-      const {caseId}: {caseId: string} = req.body
-      const {secrets}: {secrets: string[][]} = req.body
+      const {caseId, p12PW, keyPW}: {caseId: string, p12PW: string, keyPW: string} = req.body
       if (!caseId) throw new Error("no case ID");
-      const caseMeta = await Case.findById(caseId) as CaseType
-      debugKeys(caseMeta)
-      if (!caseMeta) {
-          res.status(404).json({error: 'unable to find case in DB'})
+      if (!p12PW) throw new Error("no password for p12")
+      if (!keyPW) throw new Error("no password for extracted key")
+      const basePath = path.join('/app/workspace', caseId)
+      if (!pathValidator(basePath)) {
+          res.status(404).json({error: 'unable to find case in filesystem'})
       } else {
-          const basePath = path.join('/app/workspace', caseId)
-          const {p12Path} = caseMeta
+          const p12Path = path.join(basePath, 'p12')
           const keysPath = path.join(basePath, 'keys')
-          // create the secret
-          // validate pw exists for each p12
-          const secretNames = secrets.map(s => s[0])
-          if (!fs.readdirSync(p12Path)
-            .map(p => secretNames.includes(p))
-            .reduce((p,c) => p && c)
-          ) throw new Error('Missing password')
-          // Pass secrets as env array in form 'PW_TEST=MrGlitter'
-          const Env = secrets.map(s => `PW_${path.basename(s[0], '.p12')}=${s[1]}`)
-          debugKeys(Env)
+          debugKeys("extracting keys")
+          debugKeys(new Date().toLocaleString())
+          debugKeys(keysPath)
+          // Pass secrets as env array
+          const Env = [`PW_P12=${p12PW}`, `PW_KEY=${keyPW}`]
+          // debugKeys(Env)
+          // const outLog = fs.createWriteStream('/app/workspace/outLog.txt')
+          // const errLog = fs.createWriteStream('/app/workspace/errLog.txt')
           const container = await dockerAPI.run(
                 'batch-decipher-pst_busybee',
-                ['bash', 'getKeys.bash', p12Path, keysPath],
-                process.stdout,
+                ['./getKeys.bash', p12Path, keysPath],
+                // [outLog, errLog],
+                [process.stdout, process.stderr],
                 { 
                     HostConfig: { 
                         Binds: [
-                        'batch-decipher-pst_hive:/app/workspace:z',
-                        '/srv/public:/srv/public:z'
+                        'batch-decipher-pst_hive:/app/workspace:z'
                     ]},
-                    Env
+                    Env,
+                    Tty: false
                 })
-                .then(data => data[1])
+                .then(([data, container]) => {
+                  return container
+                })
+                .catch((err) => {
+                  debugKeys(err)
+                  next(err)
+                })
           await container.remove()
-          const serialTuples = fs.readFileSync(path.join(keysPath, 'serials.tsv'))
-            .toString('ascii')
-            .split('\n')
-            .map(s => s.split('\t'))
-            .filter(arr => arr.length === 2)
-          res.status(201).send(serialTuples)
+          getSerials(req, res, next)
       } 
   } catch (err) {
       next(err) 
@@ -62,12 +60,8 @@ export const getSerials = async (req: Request, res: Response, next: NextFunction
     const {caseId}  = req?.params
     if (!caseId) throw new Error("no case ID")
     const keysPath = path.join('/app/workspace/', caseId, 'keys/')
-    const serialTuples = fs.readFileSync(path.join(keysPath, 'serials.tsv'))
-      .toString('ascii')
-      .split('\n')
-      .map(s => s.split('\t'))
-      .filter(arr => arr.length === 2)
-    res.status(200).send(serialTuples)
+    const serials = fs.readdirSync(keysPath).filter(fname => path.extname(fname) === '.key')
+    res.status(200).send(serials)
   } catch (err) {
     next(err)
   }

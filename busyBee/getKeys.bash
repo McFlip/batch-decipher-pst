@@ -11,31 +11,48 @@
 
 p12DIR=$1
 outPath="${2%/}"
-# secretsPath=$3
-
-# Clean up previous runs
-find "$2" -type f -exec rm -f {} \;
+logPath="$outPath/log.txt"
+# touch "$logPath"
 
 # Get list of p12 files to unpack
 p12List=$(find "$p12DIR" -name "*.p12")
 
+echo "**********" >> $logPath
+echo $(date) >> $logPath
+echo "p12Dir: $p12DIR" >> $logPath
+echo "outPath: $outPath" >> $logPath
 for p in $(echo "$p12List")
 do
   filename=$(basename "$p")
+  echo "Processing: $filename" >> $logPath
   # Look up the password from secrets table
   # password=$(grep ^"$filename" "$secretsPath" | cut -f 2)
-  password=$(printenv 'PW_'$(basename "$filename" ".p12"))
-  # echo "$password"
+  # password=$(printenv 'PW_'$(basename "$filename" ".p12"))
+  password=$(printenv 'PW_P12')
+  keyPassword=$(printenv 'PW_KEY')
+  # echo "$password" >> $logPath
+  # echo "$keyPassword" >> $logPath
   # Get serial number of the embedded key - used in output filename
   serial=$(openssl pkcs12 -in "$p" -nokeys -password pass:"$password" | openssl x509 -serial -noout | cut -f 2 -d '=')
+  echo "serial #: $serial" >> $logPath
+  if [ -z $serial ]
+  then
+    echo "ERROR: can't extract cert from p12" >> $logPath
+    echo "**********" >> $logPath
+    exit 1
+  fi
   # Extract the key
   openssl pkcs12 \
     -in "$p"\
     -nocerts\
     -passin pass:"$password"\
-    -passout pass:"$password"\
-    -out "$outPath/$serial.key"
-  # append serial number to output table
-  # this table will be used by the API later to pass in the correct password for each key
-  echo -e "$filename\t$serial" | tee -a "$outPath/serials.tsv"
+    -passout pass:"$keyPassword"\
+    -out "$outPath/$serial.key" &>> $logPath
+  if [ $? -gt 0 ]
+  then
+    echo "ERROR: can't extract key from p12" >> $logPath
+    echo "**********" >> $logPath
+    exit 1
+  fi
 done
+echo "**********" >> $logPath

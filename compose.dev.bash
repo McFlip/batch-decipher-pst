@@ -44,7 +44,8 @@ podman run -dt --name "$PROJ"_beekeeper \
 
 # back end
 podman run -dt --name "$PROJ"_queenbee \
-    --privileged  \
+    --privileged \
+    --env DEBUG=* \
     --env NODE_ENV=development \
     -v $(pwd)/queenBee:/app:Z \
     -w /app \

@@ -26,6 +26,9 @@
     "url": "https://github.com/McFlip/batch-decipher-pst/issues"
   },
   "homepage": "https://github.com/McFlip/batch-decipher-pst#readme",
+  "nodemonConfig": {
+    "ignore": ["workspace/*", "tests/*", "dist/*"]
+  },
   "dependencies": {
     "body-parser": "^1.19.0",
     "compression": "^1.7.4",

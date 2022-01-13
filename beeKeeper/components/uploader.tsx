@@ -19,7 +19,7 @@ export default function Uploader (props: propsType) {
 	const { caseId, fileType, destination, files, setFiles, setSerials } = props
 	// decipher destination has 2 upload paths based on fileType - pst & p12; only upload pst to sigs
 	const uriFType = destination == 'decipher'? `${fileType}/` : ''
-  const url = `${apiExternal}:3000/${destination}/upload/${uriFType}${caseId}`
+  const url = fileType === 'pst' ? `${apiExternal}:3000/${destination}/upload/${uriFType}${caseId}` : `${apiExternal}:3000/keys/${caseId}`
 	const [p12PW, setP12PW] = useState('')
 	const [keyPW, setKeyPW] = useState('')
   const [isRunning, setIsRunning] = useState(false)
@@ -49,26 +49,23 @@ export default function Uploader (props: propsType) {
 			if (fileType === "p12") {
 				form.append("p12PW", p12PW)
 				form.append("keyPW", keyPW)
+				form.append("caseId", caseId)
 			}
 			try {
+				// const headers = {'Content-Type': 'application/json'}
 				const res = await fetch(url, {
 					method: 'POST',
 					mode: 'cors',
 					body: form
 				})
-				const resTxt = await res.text()
 				if (fileType === "p12") {
-					const urlKeys = `${apiExternal}:3000/keys/${caseId}`
-					const fetchSerials = await fetch(urlKeys, {
-						method: 'GET',
-						mode: 'cors',
-						cache: 'default',
-						headers: {'Content-Type': 'application/json'}
-					})
-					setSerials(await fetchSerials.json())
+					setSerials(await res.json())
+					alert('key extracted')
+				} else {
+					const resTxt = await res.text()
+					alert(resTxt)
 				}
 				setIsRunning(false)
-				alert(resTxt)
 			} catch (error) {
 				setIsRunning(false)
 				uploadDebug(error)
