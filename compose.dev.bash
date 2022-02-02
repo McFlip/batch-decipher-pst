@@ -12,11 +12,12 @@ if [ ! -d podman ]
 then
     mkdir podman
 fi
-if [ ! -S podman/podman.sock ]
+if [ -S podman/podman.sock ]
 then
-    podman system service -t 0 unix:$(pwd)/podman/podman.sock &
+    # sometimes there are permission errors if re-using old socket so always start fresh
+    rm -f podman/podman.sock
 fi
-
+podman system service -t 0 unix:$(pwd)/podman/podman.sock &
 # check for pod; if it doesn't exist then exit code == 1
 podman pod exists $PROJ
 if [ $? -eq 1 ]

@@ -1,5 +1,5 @@
 import Menu from 'components/menu'
-import SetPath from 'components/setpath'
+import Uploader from 'components/uploader'
 import Head from 'next/head'
 import {useRouter} from 'next/router'
 import {GetServerSideProps} from 'next'
@@ -54,30 +54,10 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 export default function Keys ({ pstPath, ptPath, exceptionsPath, serialsProp }: caseType) {
   const router = useRouter()
   const {caseId}: {caseId?: string} = router.query
-  const [serials, setSerials] = useState(serialsProp)
-  const [serial, setSerial] = useState(serialsProp[0][1])
-  const [password, setPassword] = useState('')
-  const [secrets, setSecrets] = useState([['','']])
+  const [secrets, setSecrets] = useState('')
   const [isRunning, setIsRunning] = useState(false)
   const [result, setResult] = useState(0)
-
-  const handleSubmit = (e: FormEvent) => {
-    e.preventDefault()
-    DecipherDebug('wtf')
-    const newSecrets = [...secrets, [serial, password]]
-      .filter(([s, pw]) => s.length > 0 && pw.length > 0)
-    setSecrets(newSecrets)
-    DecipherDebug(newSecrets)
-    const newSerials = [...serials].filter(([p12, sn]) => sn != serial)
-    DecipherDebug(newSerials)
-    setSerials(newSerials)
-    if (newSerials[0]) {
-      setSerial(newSerials[0][1])
-    } else {
-      setSerial('')
-    }
-    setPassword('')
-  }
+  const [files, setFiles] = useState<FileList>(null)
 
   const handleRun = async () => {
     setIsRunning(true)
@@ -114,15 +94,6 @@ export default function Keys ({ pstPath, ptPath, exceptionsPath, serialsProp }: 
     }
   }
 
-  const listKeys = (serials: SerialsType) => {
-    return (
-      <select id='selectSerial' className='form-control' value={serial} onChange={({target: {value}}) => setSerial(value)} disabled={serial === ''}>
-        <option value='' disabled>Choose p12 filename key was extracted from</option>
-        {serials.map(([p12, s]) => <option value={s} key={s}>{p12}</option>)}
-      </select>
-    )
-  }
-
   return(
     <div className='container'>
       <Head>
@@ -131,26 +102,14 @@ export default function Keys ({ pstPath, ptPath, exceptionsPath, serialsProp }: 
       <main>
         <Menu currentPg='Decipher' caseId={caseId} />
         <h1>Decipher Email</h1>
-        <h2>Set the PST Path</h2>
-        <p>These are the pst files contianing encrypted email</p>
-        <SetPath caseId={caseId} path={pstPath} pathName='pstPath' labelTxt='Input PST path' />
-        <h2>Set the Plain Text Path</h2>
-        <p>This is the output path for deciphered emails</p>
-        <SetPath caseId={caseId} path={ptPath} pathName='ptPath' labelTxt='Output PT path' />
-        <h2>Set the Exceptions Path</h2>
-        <p>Anything that fails to be deciphered will go here. Email that was already PT will simply be copied to PT.</p>
-        <SetPath caseId={caseId} path={exceptionsPath} pathName='exceptionsPath' labelTxt='Exceptions Path' />
+        <h2>Upload PSTs with encrypted email</h2>
+        <Uploader caseId={caseId} fileType='pst' destination='decipher' files={files} setFiles={setFiles} />
         <h2>Enter Passwords</h2>
-        <form onSubmit={handleSubmit}>
-          <div className='form-group'>
-            <label htmlFor='selectSerial'>Select a Key and Enter it's Password</label>
-            {listKeys(serials)}
-          </div>
+        <form onSubmit={e => e.preventDefault()}>
           <div className='form-group'>
             <label htmlFor='password'>Password</label>
-            <input id='password' type='password' className='form-control' value={password} onChange={({target: {value}}) => setPassword(value)} disabled={!serial} />
+            <input id='password' type='password' className='form-control' value={secrets} onChange={({target: {value}}) => setSecrets(value)} />
           </div>
-          <button type='submit' className='btn btn-secondary' disabled={serial === ''}>Set Password</button>
         </form>
         <h2>Launch Script</h2>
         <button className='btn btn-primary' disabled={isRunning} onClick={() => handleRun()}>

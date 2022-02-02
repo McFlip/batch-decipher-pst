@@ -2,41 +2,52 @@ import { NextFunction, Request, Response } from 'express'
 import fs from 'fs'
 import path from 'path'
 import dockerode from 'dockerode'
-import { Case } from '../models/case'
 import debug from 'debug'
-import CaseType from '../types/case'
+import { pathValidator } from '../util/pathvalidator'
 
-const decipherDebug = debug('decipher')
 const dockerAPI = new dockerode({socketPath: '/var/run/docker.sock'})
+const sharePath = '/srv/public'
+
+export const uploadCtPst = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+      const { caseId } = req.params
+      const pstPath = `/app/workspace/${caseId}/ctPSTs`
+      if (!caseId) throw new Error("no case ID")
+      if (!pathValidator(pstPath)) {
+          res.status(404).json({error: 'unable to find ctPSTs folder in case workspace'})
+      } else {
+          fs.readdirSync(pstPath).forEach(f => fs.renameSync(path.join(pstPath, f), path.join(pstPath, `${f}.pst`)))
+          res.status(201).send('PST(s) uploaded')
+      }
+  } catch (error) {
+      next(error)
+  }
+}
 
 export const decipher = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
+      const decipherDebug = debug('decipher')
       const {caseId}: {caseId: string} = req.body
-      const {secrets}: {secrets: string[][]} = req.body
+      const {secrets}: {secrets: string} = req.body
       if (!caseId) throw new Error("no case ID");
-      const caseMeta = await Case.findById(caseId) as CaseType
-      decipherDebug(caseMeta)
-      if (!caseMeta) {
-          res.status(404).json({error: 'unable to find case in DB'})
+      const basePath = path.join('/app/workspace', caseId)
+      const pstPath = path.join(basePath, 'ctPSTs')
+      const ptPath = path.join(sharePath, caseId, 'pt')
+      const exceptionsPath = path.join(sharePath, caseId, 'exceptions')
+      const keysPath = path.join(basePath, 'keys')
+      if(!secrets) {
+        res.status(404).json({error: 'missing secret'})
+      } else if (!pathValidator(pstPath) || !pathValidator(ptPath) || !pathValidator(exceptionsPath) || !pathValidator(keysPath)) {
+          res.status(500).json({error: 'unable to access one of the paths'})
       } else {
-          const basePath = path.join('/app/workspace', caseId)
-          const {pstPath, ptPath, exceptionsPath} = caseMeta
-          const keysPath = path.join(basePath, 'keys')
           // create the secret
           // validate pw exists for each key
-          const secretNames = secrets.map(s => s[0])
-          const keyRegEx = /\.key$/
-          decipherDebug(secrets)
-          decipherDebug(keysPath)
-          decipherDebug(fs.readdirSync(keysPath).filter(f => keyRegEx.test(f)))
-          decipherDebug(fs.readdirSync(keysPath))
-          if (!fs.readdirSync(keysPath)
-            .filter(f => keyRegEx.test(f))
-            .map(p => secretNames.includes(path.basename(p, '.key')))
-            .reduce((p,c) => p && c)
-          ) throw new Error('Missing password')
+          // const keyRegEx = /\.key$/
+          // decipherDebug(secrets)
+          // decipherDebug(fs.readdirSync(keysPath).filter(f => keyRegEx.test(f)))
+          // decipherDebug(fs.readdirSync(keysPath))
           // Pass secrets as env array in form 'PW_TEST=MrGlitter'
-          const Env = secrets.map(s => `PW_${path.basename(s[0], '.key')}=${s[1]}`)
+          const Env = [`PW_KEY=${secrets}`]
           decipherDebug(Env)
           // hack to avoid CORS failure from timeout - send init progress update of 1%
           res.writeHead(200, {
@@ -53,7 +64,7 @@ export const decipher = async (req: Request, res: Response, next: NextFunction):
                   HostConfig: { 
                       Binds: [
                       'batch-decipher-pst_hive:/app/workspace:z',
-                      '/srv/public:/srv/public:z',
+                      `${sharePath}:${sharePath}:z`,
                   ]},
                   Env
                 })

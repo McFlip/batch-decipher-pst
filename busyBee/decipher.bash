@@ -90,17 +90,12 @@ getSerial() {
   return 1
 }
 
-# Look up the password for a given serial #
-getPW() {
-  printenv PW_"$1"
-}
-
 # Decipher the email body
 decipher() {
   p7m="$1"
   keyPath="$2"
-  keyPW="$3"
-  echo "$p7m" | openssl cms -decrypt -inkey "$keyPath" -passin pass:"$keyPW"
+  # keyPW="$3"
+  echo "$p7m" | openssl cms -decrypt -inkey "$keyPath" -passin env:PW_KEY
 }
 
 # Get the header from the original email
@@ -143,7 +138,7 @@ pipeline() {
   if [ $encryption == "PT" ]
   then
     # avoid processing email that isn't encrypted
-    output "$exceptionsDIR/PT/$filename" "$eml" # comment to just drop PT
+    # output "$exceptionsDIR/PT/$filename" "$eml" # comment to just drop PT
     exit 0
   fi
   # Get the smime.p7m attachment
@@ -156,10 +151,12 @@ pipeline() {
     exit 1
   fi
   # Get the password for the key
-  pw="$(getPW "$serial" "$secretsPath")"
+  # pw="$(printenv PW_KEY)"
+  # >&2 echo pw is "$pw"
   # Decipher
   keyPath="$keysDIR/$serial.key"
-  PT="$(decipher "$p7m" "$keyPath" "$pw")"
+  # >&2 echo keyPath is "$keyPath"
+  PT="$(decipher "$p7m" "$keyPath")"
   # If successful output to PT
   if [[ $? -eq 0 ]]
   then
@@ -174,8 +171,8 @@ pipeline() {
 
 # *** MAIN PROCEDURE ***
 
-export inDIR outDIR secretsPath exceptionsDIR
-export -f pipeline assemble getHeader output decipher getPW getSerial getP7m isCT
+export inDIR outDIR exceptionsDIR
+export -f pipeline assemble getHeader output decipher getSerial getP7m isCT
 
 cd "$tmpfsPath"
 find . -type f -name "*.eml" -print0 | parallel -0 --bar pipeline {} $tmpfsPath $outDIR $keysDIR $exceptionsDIR
