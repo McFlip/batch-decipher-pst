@@ -4,17 +4,18 @@
 # Save images to archive for deployment on intranet server
 
 # update base images
-podman pull debian:stable-slim && podman pull node:alpine && podman pull node:current && podman pull mongo
+podman pull debian:stable-slim && podman pull node:alpine && podman pull node:current && podman pull mongo && podman pull node:16
 
 if [ "$1" = "beeKeeper" ] || [ "$1" = "all" ]
 then
 pushd beeKeeper
 # update browser list & NPM packages
-podman run -it --rm --security-opt label=disable -v $(pwd):/app --workdir /app node:alpine npx browserslist@latest --update-db
-podman run -it --rm --security-opt label=disable -v $(pwd):/app --workdir /app node:alpine npm update --save
-podman run -it --rm --security-opt label=disable -v $(pwd):/app --workdir /app node:alpine npm audit
+podman run -it --rm --security-opt label=disable -v $(pwd):/app --workdir /app node:current npx browserslist@latest --update-db
+podman run -it --rm --security-opt label=disable -v $(pwd):/app --workdir /app node:current npm update --save
+podman run -it --rm --security-opt label=disable -v $(pwd):/app --workdir /app node:current npm audit
 # compile
-podman run -it --rm --security-opt label=disable -v $(pwd):/app --workdir /app node:alpine npm run build
+# using Node v16 because of bug in webpack bundled w/ NextJS
+podman run -it --rm --security-opt label=disable -v $(pwd):/app --workdir /app node:16 npm run build
 # create container
 ctr=$(buildah from node:alpine)
 buildah config --workingdir='/app' $ctr
@@ -40,11 +41,11 @@ if [ "$1" = "queenBee" ] || [ "$1" = "all" ]
 then
 pushd queenBee
 # updates
-podman run -it --rm --security-opt label=disable -v $(pwd):/app --workdir /app node:alpine npm update --save
-podman run -it --rm --security-opt label=disable -v $(pwd):/app --workdir /app node:alpine npm audit
+podman run -it --rm --security-opt label=disable -v $(pwd):/app --workdir /app node:current npm update --save
+podman run -it --rm --security-opt label=disable -v $(pwd):/app --workdir /app node:current npm audit
 ctr=$(buildah from node:alpine)
 # compile using temp container; ts is dev dep
-podman run -it --rm --security-opt label=disable -v $(pwd):/app --workdir /app node:alpine npx tsc
+podman run -it --rm --security-opt label=disable -v $(pwd):/app --workdir /app node:current npx tsc
 # set up mount points and permissions for non-root use
 buildah run $ctr mkdir -p /app/workspace
 buildah run $ctr mkdir -p /srv/public
