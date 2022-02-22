@@ -40,7 +40,7 @@ podman run -dt --name "$PROJ"_beekeeper \
     -v $(pwd)/beeKeeper:/app:Z \
     -w /app \
      --pod $PROJ \
-    node:current \
+    node:16 \
     npm run dev
 
 # back end

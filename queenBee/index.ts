@@ -22,7 +22,7 @@ const tlsOpts = process.env.NODE_ENV === 'production' ? {
 // Leave as '*' for public API
 const ACAO = process.env.ALLOW_ORIGIN || '*'
 const dbName = 'decipherDB'
-const hostName = process.env.HOST_IP || 'localhost'
+const hostName = process.env.HOST_IP || '0.0.0.0'
 const dbHost = `mongodb://${hostName}:27017/${dbName}`
 const dbOpts = {
   useNewUrlParser: true,
