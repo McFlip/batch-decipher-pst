@@ -58,14 +58,18 @@ export const decipher = async (req: Request, res: Response, next: NextFunction):
           // use 'Mounts' subsection of 'HostConfig' to create tmpfs mount
           const container = await dockerAPI.run(
                 'batch-decipher-pst_busybee',
-                ['bash', 'decipher.bash', pstPath, ptPath, keysPath, exceptionsPath],
+                ['./decipher.bash', pstPath, ptPath, keysPath, exceptionsPath],
                 res,
                 { 
                   HostConfig: { 
-                      Binds: [
-                      'batch-decipher-pst_hive:/app/workspace:z',
-                      `${sharePath}:${sharePath}:z`,
-                  ]},
+                    Binds: [
+                    'batch-decipher-pst_hive:/app/workspace:z',
+                    `${sharePath}:${sharePath}:z`,
+                    ],
+                    Tmpfs: {
+                      '/tmp/PST': 'rw,noexec'
+                    }
+                  },
                   Env
                 })
                 .then(data => data[1])

@@ -21,7 +21,7 @@ const upload = multer({ storage })
 export const nuke = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
 	const { caseId } = req.params
 	const pstPath = `/app/workspace/${caseId}/ctPSTs`
-	fs.readdirSync(pstPath).forEach(f => fs.rmSync(path.join(pstPath, f)))
+	fs.readdirSync(pstPath).forEach(f => fs.rmSync(path.join(pstPath, f), { recursive: true }))
 	next()
 }
 

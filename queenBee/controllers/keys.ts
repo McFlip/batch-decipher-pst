@@ -44,14 +44,11 @@ export const extractKeys = async (req: Request, res: Response, next: NextFunctio
                 .then(([data, container]) => {
                   return container
                 })
-                .catch((err) => {
-                  debugKeys(err)
-                  next(err)
-                })
-          await container.remove()
-          getSerials(req, res, next)
-      } 
-  } catch (err) {
+                await container.remove()
+                getSerials(req, res, next)
+              } 
+            } catch (err) {
+      debugKeys(err)
       next(err) 
   }
 }

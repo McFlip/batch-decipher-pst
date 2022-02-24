@@ -10,36 +10,21 @@ inDIR="$1"
 outDIR="${2%/}"
 keysDIR="${3%/}"
 exceptionsDIR="${4%/}"
+reportPath="$exceptionsDIR/report_$(date '+%Y-%M-%d_%H%M').txt"
 
 # Set up tmpfs volume mount in RAM
 # https://docs.docker.com/storage/tmpfs/
 
 # using SAMBA share as tmp workaround for massive PST files
-tmpfsPath="/$inDIR/unpack"
+# tmpfsPath="/$inDIR/unpack"
+tmpfsPath="/tmp/PST/"
 mkdir -p "$tmpfsPath"
 
 # Cleanup previous runs
-find "$outDIR" -mindepth 1 -maxdepth 1 -type d -exec rm -rf {} \;
-find "$exceptionsDIR" -mindepth 1 -maxdepth 1 -type d -exec rm -rf {} \;
+# find "$outDIR" -mindepth 1 -maxdepth 1 -type d -exec rm -rf {} \;
+# find "$exceptionsDIR" -mindepth 1 -maxdepth 1 -type d -exec rm -rf {} \;
 
-# Extract PSTs
-# Get list of PSTs to process
-pstList=$(find "$inDIR" -type f -name "*.pst")
 
-echo "***Extracting PSTs    $(date)"
-i=1
-total=$(echo "$pstList" | wc -l)
-for pst in $(echo "$pstList")
-do
-  echo "***Processing $i/$total    $(date)  "$pst""
-  # Extract PST
-  bash lib/xtractPSTs.bash "$pst" "$tmpfsPath"
-
-  i=$((i+1))
-done
-
-echo "***Done extracting PSTs"
-# exit
 
 # *** FUNCTIONS ***
 
@@ -120,8 +105,40 @@ output() {
   path="$1"
   data="$2"
   mkdir -p "$(dirname "$path")"
-  echo "$data" > "$path"
+  # check if path already exists before writing out
+  if [ ! -f "$path" ]
+  then
+    echo "$data" > "$path"
+  else
+    # rename file to avoid overwrite
+    i=0
+    while [ -f "$(dirname "$path")/$i.eml" ]
+    do
+      i=$((i+1))
+    done
+    echo "$data" > "$(dirname "$path")/$i.eml"
+  fi
   exit
+}
+
+# Log Exceptions
+except() {
+  EML_PATH="$1"
+  REASON="$2"
+  header="$3"
+
+  FROM=$(echo "$header" | grep '^From:' | sed 's/.*: //')
+    TO=$(echo "$header" | grep '^To:' | sed 's/.*: //')
+    CC=$(echo "$header" | grep '^CC:' | sed 's/.*: //')
+    BCC=$(echo "$header" | grep '^BCC:' | sed 's/.*: //')
+    SUBJECT=$(echo "$header" | grep '^Subject:' | sed 's/.*: //')
+    THREAD_TOPIC=$(echo "$header" | grep '^Thread-Topic:' | sed 's/.*: //')
+    THREAD_INDEX=$(echo "$header" | grep '^Thread-Index:' | sed 's/.*: //')
+    DATE=$(echo "$header" | grep '^Date:' | sed 's/.*: //')
+    DATE_FMT=$(date --utc --date="$(echo $DATE)" +'%D %T')
+    MESSAGE_ID=$(echo "$header" | grep -A1 '^Message-ID:' | awk -F'[<,>]' '{print $2}' | tr -d '\n')
+    ATTACHMENTS=$(grep 'filename=\".*\"' "$EML_PATH" | grep -v 'smime.p7m' | grep -v 'rtf-body.rtf' | sed 's/^.*=//' | tr '\n' ';' | sed 's/;$//')
+    echo -e "$EML_PATH\t$FROM\t$TO\t$CC\t$BCC\t$SUBJECT\t$THREAD_TOPIC\t$THREAD_INDEX\t$DATE_FMT\t$MESSAGE_ID\t$ATTACHMENTS\t$REASON" >> "$reportPath"
 }
 
 # Process 1 email
@@ -147,7 +164,8 @@ pipeline() {
   serial="$(getSerial "$p7m" "$keysDIR")"
   if [[ $? -eq 1 ]]
   then
-    output "$exceptionsDIR/nokeys/$filename" "$eml"
+    # output "$exceptionsDIR/nokeys/$filename" "$eml"
+    except "$filename" "Missing Key" "$(getHeader "$eml")"
     exit 1
   fi
   # Get the password for the key
@@ -164,18 +182,37 @@ pipeline() {
     exit 0
   # Else output to exceptions
   else
-    output "$exceptionsDIR/failed/$filename" "$eml"
+    # output "$exceptionsDIR/failed/$filename" "$eml"
+    except "$filename" "Failed to Decrypt" "$(getHeader "$eml")"
     exit 1
   fi
 }
 
 # *** MAIN PROCEDURE ***
 
-export inDIR outDIR exceptionsDIR
-export -f pipeline assemble getHeader output decipher getSerial getP7m isCT
+export inDIR outDIR exceptionsDIR reportPath
+export -f pipeline assemble getHeader output decipher getSerial getP7m isCT except
 
-cd "$tmpfsPath"
-find . -type f -name "*.eml" -print0 | parallel -0 --bar pipeline {} $tmpfsPath $outDIR $keysDIR $exceptionsDIR
+echo -e "Path\tFrom\tTo\tCC\tBCC\tSubject\tThread-Topic\tThread-Index\tDate(UTC)\tMessage-ID\tAttachments\tReason" > "$reportPath"
 
-# housekeeping
-find "$tmpfsPath" -maxdepth 1 -mindepth 1 -type d -exec rm -rf {} \;
+# Extract PSTs
+# Get list of PSTs to process
+pstList=$(find "$inDIR" -type f -name "*.pst")
+
+i=1
+total=$(echo "$pstList" | wc -l)
+for pst in $(echo "$pstList")
+do
+  echo "***Processing $i/$total    $(date)  "$pst""
+  # Extract PST
+  bash lib/xtractPSTs.bash "$pst" "$tmpfsPath"
+
+	# iterate through unpacked PST
+  cd "$tmpfsPath"
+  find . -type f -name "*.eml" -print0 | parallel -0 --bar pipeline {} $tmpfsPath $outDIR $keysDIR $exceptionsDIR
+
+  # housekeeping
+  find "$tmpfsPath" -maxdepth 1 -mindepth 1 -type d -exec rm -rf {} \;
+  cd /app
+  i=$((i+1))
+done

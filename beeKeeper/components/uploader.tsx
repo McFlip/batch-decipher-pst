@@ -85,16 +85,42 @@ export default function Uploader (props: propsType) {
 		)
 	}
 
+	const setFilesVerified = (fList: FileList) => {
+	let verifiedArr: boolean[] = []
+	const verify = (fExt: 'p12' | 'pst',f: File) => {
+		switch (fExt) {
+			case 'p12':
+				return f.type === 'application/x-pkcs12'
+			case 'pst':
+				// unable to detect MIME type for PST; fall back to file extension
+				return f.name.match(/.*\.pst/) !== null
+			default:
+				return false
+		}
+	}
+	for (let i = 0; i < fList.length; i++) {
+		verifiedArr.push(verify(fileType, fList[i]))
+	}
+	if(verifiedArr.reduce((prev, curr) => prev && curr)) {
+		setFiles(fList)
+	} else {
+
+		alert('Check file upload type')
+	}
+}
+
 	return(
-		<form onSubmit={handleUpload}>
+		<div>
 			<p>Use the following URL if uploading with a script:<ClipBtn txtToCopy={url} /></p>
       <p><code>{url}</code></p>
-			<div className='form-group'>
-				<label htmlFor='files'>Select {fileType === "pst" ? 'all PSTs' : 'one p12 at a time'}</label>
-				<input id='files' type='file' multiple className='form-control-file' onChange={e => setFiles(e.target.files)} />
-			</div>
-			{fileType === "p12" ? pwForm() : ''}
-			<button className='btn btn-primary' type='submit' disabled={isRunning}>Upload{isRunning? 'ing...' : ''}</button>
-		</form>
+			<form onSubmit={handleUpload}>
+				<div className='form-group'>
+					<label htmlFor='files'>Select {fileType === "pst" ? 'all PSTs' : 'one p12 at a time'}</label>
+					<input id='files' type='file' multiple={fileType != "p12"} className='form-control-file' onChange={e => setFilesVerified(e.target.files)} />
+				</div>
+				{fileType === "p12" ? pwForm() : ''}
+				<button className='btn btn-primary' type='submit' disabled={isRunning}>Upload{isRunning? 'ing...' : ''}</button>
+			</form>
+		</div>
 	)
 }

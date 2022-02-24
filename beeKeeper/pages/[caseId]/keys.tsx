@@ -39,11 +39,11 @@ export default function Keys ({serialsProp}: { serialsProp: string[] }) {
   const listSerials = (serials: string[]) => {
     KeysDebug(serials)
     return(
-      <ul>
+      <ol>
         {serials.map((serial) => {
           return (<li key={serial}> {serial} </li>)
         })}
-      </ul>
+      </ol>
     )
   }
 

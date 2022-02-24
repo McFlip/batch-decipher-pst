@@ -58,6 +58,7 @@ export default function Keys ({ pstPath, ptPath, exceptionsPath, serialsProp }: 
   const [isRunning, setIsRunning] = useState(false)
   const [result, setResult] = useState(0)
   const [files, setFiles] = useState<FileList>(null)
+  const [processedPSTs, setProcessedPSTs] = useState<string[]>([])
 
   const handleRun = async () => {
     setIsRunning(true)
@@ -65,6 +66,8 @@ export default function Keys ({ pstPath, ptPath, exceptionsPath, serialsProp }: 
     const body = { caseId, secrets }
     const decoder = new TextDecoder()
     try {
+      setResult(0)
+      setProcessedPSTs([''])
       const res = await fetch(url, {
         method: 'POST',
         mode: 'cors',
@@ -74,11 +77,18 @@ export default function Keys ({ pstPath, ptPath, exceptionsPath, serialsProp }: 
       })
       const reader = res.body.getReader()
       let progress = 0
+      let currPST: string = null
+      let pstArr: string[] = []
       while (true) {
         const { done, value } = await reader.read()
         if (done) break
         try {
           progress = Number(decoder.decode(value)?.match(/\d+%/)?.join()?.slice(0,-1))
+          currPST = decoder.decode(value)?.match(/^\*\*\*Processing .*/)?.join()
+          if (currPST?.length > 0) {
+            pstArr.push(currPST)
+            setProcessedPSTs(pstArr)
+          }
         } catch (error) {
           console.log(error)
         }
@@ -86,6 +96,7 @@ export default function Keys ({ pstPath, ptPath, exceptionsPath, serialsProp }: 
         // console.log(progress)
       }
       setIsRunning(false)
+      setResult(100)
     } catch (err) {
       // DecipherDebug(err)
       console.log(err)
@@ -124,8 +135,11 @@ export default function Keys ({ pstPath, ptPath, exceptionsPath, serialsProp }: 
           { isRunning? '    running...' : '    Run' }
         </button>
         <h2>Results</h2>
+        <ol>
+          {processedPSTs.map((pst,i) => (<li key={i}>{pst}</li>))}
+        </ol>
         <ProgressBar  now={result} />
-        { result === 100 && <Alert variant='success'>DONE!</Alert>}
+        { result === 100 && isRunning === false && <Alert variant='success'>DONE!</Alert>}
       </main>
     </div>
   )
