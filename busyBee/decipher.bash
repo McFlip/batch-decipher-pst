@@ -143,13 +143,13 @@ except() {
   REASON="$2"
   header="$3"
 
-  FROM=$(echo "$header" | bbe -s --block='/\nFrom:/:/:/' | egrep '^From:|\s' | sed 's/.*: //' | tr '\n\t' ' ')
-  TO=$(echo "$header" | bbe -s --block='/\nTo:/:/:/' | egrep '^To:|\s' | sed 's/.*: //' | tr '\n\t' ' ')
-  CC=$(echo "$header" | bbe -s --block='/\nCC:/:/:/' | egrep '^CC:|\s' | sed 's/.*: //' | tr '\n\t' ' ')
-  BCC=$(echo "$header" | bbe -s --block='/\nBCC:/:/:/' | egrep '^BCC:|\s' | sed 's/.*: //' | tr '\n\t' ' ')
-  SUBJECT=$(echo "$header" | grep '^Subject:' | sed 's/.*: //')
-  THREAD_TOPIC=$(echo "$header" | grep '^Thread-Topic:' | sed 's/.*: //')
-  THREAD_INDEX=$(echo "$header" | sed -e '/^$/q;/^Thread-Index:/!d;n;:c;/^\s/!d;n;bc' | tr -d '\n' | sed 's/.*: //')
+  FROM=$(echo "$header" | sed -e '/^$/q;/^From:/!d;n;:c;/^\s/!d;n;bc' | sed 's/.*: //' | tr '\n\t' ' ')
+  TO=$(echo "$header" | sed -e '/^$/q;/^To:/!d;n;:c;/^\s/!d;n;bc' | sed 's/.*: //' | tr '\n\t' ' ')
+  CC=$(echo "$header" | sed -e '/^$/q;/^CC:/!d;n;:c;/^\s/!d;n;bc' | sed 's/.*: //' | tr '\n\t' ' ')
+  BCC=$(echo "$header" | sed -e '/^$/q;/^BCC:/!d;n;:c;/^\s/!d;n;bc' | sed 's/.*: //' | tr '\n\t' ' ')
+  SUBJECT=$(echo "$header" | sed -e '/^$/q;/^Subject:/!d;n;:c;/^\s/!d;n;bc' | sed 's/.*: //' | tr '\n\t' ' ')
+  THREAD_TOPIC=$(echo "$header" | sed -e '/^$/q;/^Thread-Topic:/!d;n;:c;/^\s/!d;n;bc' | sed 's/.*: //' | tr '\n\t' ' ')
+  THREAD_INDEX=$(echo "$header" | sed -e '/^$/q;/^Thread-Index:/!d;n;:c;/^\s/!d;n;bc' | sed 's/.*: //' | tr -d '\n\t')
   DATE=$(echo "$header" | grep '^Date:' | sed 's/.*: //')
   DATE_FMT=$(date --utc --date="$(echo $DATE)" +'%D %T')
   MESSAGE_ID=$(echo "$header" | grep -A1 '^Message-ID:' | awk -F'[<,>]' '{print $2}' | tr -d '\n')
