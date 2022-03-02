@@ -10,7 +10,7 @@ inDIR="$1"
 outDIR="${2%/}"
 keysDIR="${3%/}"
 exceptionsDIR="${4%/}"
-reportPath="$exceptionsDIR/report_$(date '+%Y-%M-%d_%H%M').txt"
+reportPath="$exceptionsDIR/report_$(date '+%Y-%m-%d_%H%M').txt"
 
 # Set up tmpfs volume mount in RAM
 # https://docs.docker.com/storage/tmpfs/
@@ -46,7 +46,22 @@ getP7m() {
   email="$1"
   start='Content-Type: application\x2Fpkcs7-mime\n'
   stop="----boundary-LibPST-iamunique-"
+  pattern='^Content-Type: application\/(x-)?pkcs7-mime'
+  cryptoCount=$(echo "$email" | egrep -c "$pattern")
+  if [[ $cryptoCount -gt 1 ]]
+  then
+  	# more than 1 encrypted email - not supported yet
+    return 1
+  fi
+  boundary=$(echo "$email" | grep -m 1 'boundary=' | awk -F'["]' '{print $2}')
+  p7mBoundary=$(echo "$email" | egrep -B1 "$pattern" | head -n 1)
+  if [[ "--${boundary}" != "$p7mBoundary" ]]
+  then
+    # encrypted email is a child of PT email
+    return 1
+  fi
   echo "$email" | bbe -s --block="/$start/:/$stop/"
+  return 0
 }
 
 # Parse the key serial #s from the eml and find a matching key
@@ -86,9 +101,10 @@ decipher() {
 # Get the header from the original email
 getHeader() {
   eml="$1"
-  start="From"
+  # start="From"
   stop="MIME-Version: 1.0"
-  echo "$eml" | bbe -s --block="/$start/:/$stop/"
+  # echo "$eml" | bbe -s --block="/$start/:/$stop/"
+  echo "$eml" | awk "NR==1,/$stop/"
 }
 
 # Stick the original header on top of the deciphered body
@@ -127,18 +143,18 @@ except() {
   REASON="$2"
   header="$3"
 
-  FROM=$(echo "$header" | grep '^From:' | sed 's/.*: //')
-    TO=$(echo "$header" | grep '^To:' | sed 's/.*: //')
-    CC=$(echo "$header" | grep '^CC:' | sed 's/.*: //')
-    BCC=$(echo "$header" | grep '^BCC:' | sed 's/.*: //')
-    SUBJECT=$(echo "$header" | grep '^Subject:' | sed 's/.*: //')
-    THREAD_TOPIC=$(echo "$header" | grep '^Thread-Topic:' | sed 's/.*: //')
-    THREAD_INDEX=$(echo "$header" | grep '^Thread-Index:' | sed 's/.*: //')
-    DATE=$(echo "$header" | grep '^Date:' | sed 's/.*: //')
-    DATE_FMT=$(date --utc --date="$(echo $DATE)" +'%D %T')
-    MESSAGE_ID=$(echo "$header" | grep -A1 '^Message-ID:' | awk -F'[<,>]' '{print $2}' | tr -d '\n')
-    ATTACHMENTS=$(grep 'filename=\".*\"' "$EML_PATH" | grep -v 'smime.p7m' | grep -v 'rtf-body.rtf' | sed 's/^.*=//' | tr '\n' ';' | sed 's/;$//')
-    echo -e "$EML_PATH\t$FROM\t$TO\t$CC\t$BCC\t$SUBJECT\t$THREAD_TOPIC\t$THREAD_INDEX\t$DATE_FMT\t$MESSAGE_ID\t$ATTACHMENTS\t$REASON" >> "$reportPath"
+  FROM=$(echo "$header" | bbe -s --block='/\nFrom:/:/:/' | egrep '^From:|\s' | sed 's/.*: //' | tr '\n\t' ' ')
+  TO=$(echo "$header" | bbe -s --block='/\nTo:/:/:/' | egrep '^To:|\s' | sed 's/.*: //' | tr '\n\t' ' ')
+  CC=$(echo "$header" | bbe -s --block='/\nCC:/:/:/' | egrep '^CC:|\s' | sed 's/.*: //' | tr '\n\t' ' ')
+  BCC=$(echo "$header" | bbe -s --block='/\nBCC:/:/:/' | egrep '^BCC:|\s' | sed 's/.*: //' | tr '\n\t' ' ')
+  SUBJECT=$(echo "$header" | grep '^Subject:' | sed 's/.*: //')
+  THREAD_TOPIC=$(echo "$header" | grep '^Thread-Topic:' | sed 's/.*: //')
+  THREAD_INDEX=$(echo "$header" | sed -e '/^$/q;/^Thread-Index:/!d;n;:c;/^\s/!d;n;bc' | tr -d '\n' | sed 's/.*: //')
+  DATE=$(echo "$header" | grep '^Date:' | sed 's/.*: //')
+  DATE_FMT=$(date --utc --date="$(echo $DATE)" +'%D %T')
+  MESSAGE_ID=$(echo "$header" | grep -A1 '^Message-ID:' | awk -F'[<,>]' '{print $2}' | tr -d '\n')
+  ATTACHMENTS=$(grep 'filename=\".*\"' "$EML_PATH" | grep -v 'smime.p7m' | grep -v 'rtf-body.rtf' | sed 's/^.*=//' | tr '\n' ';' | sed 's/;$//')
+  echo -e "$EML_PATH\t$FROM\t$TO\t$CC\t$BCC\t$SUBJECT\t$THREAD_TOPIC\t$THREAD_INDEX\t$DATE_FMT\t$MESSAGE_ID\t$ATTACHMENTS\t$REASON" >> "$reportPath"
 }
 
 # Process 1 email
@@ -160,12 +176,19 @@ pipeline() {
   fi
   # Get the smime.p7m attachment
   p7m="$(getP7m "$eml")"
+  if [[ $? -eq 1 ]]
+  then
+    # edge case detected
+    except "$filename" "Manual Review" "$(getHeader "$eml")"
+    output "$exceptionsDIR/manual/$filename" "$eml"
+    exit 1
+  fi
   # Get the serial for the key
   serial="$(getSerial "$p7m" "$keysDIR")"
   if [[ $? -eq 1 ]]
   then
-    # output "$exceptionsDIR/nokeys/$filename" "$eml"
     except "$filename" "Missing Key" "$(getHeader "$eml")"
+    output "$exceptionsDIR/nokeys/$filename" "$eml"
     exit 1
   fi
   # Get the password for the key
@@ -182,8 +205,8 @@ pipeline() {
     exit 0
   # Else output to exceptions
   else
-    # output "$exceptionsDIR/failed/$filename" "$eml"
     except "$filename" "Failed to Decrypt" "$(getHeader "$eml")"
+    # output "$exceptionsDIR/failed/$filename" "$eml"
     exit 1
   fi
 }
@@ -216,3 +239,4 @@ do
   cd /app
   i=$((i+1))
 done
+echo "*** Done    $(date)"
