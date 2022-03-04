@@ -1,4 +1,8 @@
 #!/bin/bash
+
+# *** This is a temp hack to reprocess opaque-signed emails from previous jobs
+# *** Changes already incorporated into decipher.bash - don't use this for future jobs
+
 # Deciphers a batch of PSTs containing encrypted mail. Outputs RFC eml files in a directory structure that mirrors the PSTs.
 # Key password will be passed using container env var 'PW_KEY' - 1 case pw for all keys
 # Passwords will never be stored to the FS.
@@ -18,8 +22,9 @@ reportPath="$exceptionsDIR/report_$(date '+%Y-%m-%d_%H%M').txt"
 
 # mount RAM temp fs into container
 # this will be our buffer for unpacking PSTs
-tmpfsPath="/tmp/PST/"
-mkdir -p "$tmpfsPath"
+# tmpfsPath="/tmp/PST/"
+# mkdir -p "$tmpfsPath"
+tmpfsPath="$(echo $inDIR)"
 
 # *** FUNCTIONS ***
 
@@ -249,25 +254,10 @@ export -f pipeline assemble getHeader output decipher getSerial getP7m isCT exce
 
 echo -e "Path\tFrom\tTo\tCC\tBCC\tSubject\tThread-Topic\tThread-Index\tDate(UTC)\tMessage-ID\tAttachments\tReason" > "$reportPath"
 
-# Extract PSTs
-# Get list of PSTs to process
-pstList=$(find "$inDIR" -type f -name "*.pst")
+echo "*** Starting    $(date)"
 
-i=1
-total=$(echo "$pstList" | wc -l)
-for pst in $(echo "$pstList")
-do
-  echo "***Processing $i/$total    $(date)  "$pst""
-  # Extract PST
-  bash lib/xtractPSTs.bash "$pst" "$tmpfsPath"
+# iterate through unpacked PST
+cd "$tmpfsPath"
+find . -type f -name "*.eml" -print0 | parallel -0 --bar pipeline {} $tmpfsPath $outDIR $keysDIR $exceptionsDIR
 
-	# iterate through unpacked PST
-  cd "$tmpfsPath"
-  find . -type f -name "*.eml" -print0 | parallel -0 --bar pipeline {} $tmpfsPath $outDIR $keysDIR $exceptionsDIR
-
-  # housekeeping
-  find "$tmpfsPath" -maxdepth 1 -mindepth 1 -type d -exec rm -rf {} \;
-  cd /app
-  i=$((i+1))
-done
 echo "*** Done    $(date)"
