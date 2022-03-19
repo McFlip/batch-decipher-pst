@@ -32,7 +32,8 @@ else
 fi
 
 # database
-podman run -dt --name "$PROJ"_db -v "$PROJ"_dbvol:/data:Z --pod $PROJ mongo
+# --security-opt label=disable # disable SELinux pretection for debugging
+podman run -dt --name "$PROJ"_db -v "$PROJ"_dbvol:/data/db:z,U --pod $PROJ mongo
 
 # front end
 podman run -dt --name "$PROJ"_beekeeper \
