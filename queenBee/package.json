@@ -8,7 +8,7 @@
   "main": "index.js",
   "scripts": {
     "test": "env TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' nyc mocha tests/index.test.ts --require ts-node/register --extensions ts,tsx --timeout 12000 --exit --bail",
-    "start": "nodemon index.ts"
+    "start": "nodemon --watch index.ts --watch controllers --watch models --watch routes --watch util --watch types index.ts"
   },
   "repository": {
     "type": "git",
@@ -27,6 +27,7 @@
   },
   "homepage": "https://github.com/McFlip/batch-decipher-pst#readme",
   "nodemonConfig": {
+    "verbose": true,
     "ignore": [
       "workspace/*",
       "tests/*",
@@ -34,7 +35,7 @@
     ]
   },
   "dependencies": {
-    "body-parser": "^1.19.0",
+    "body-parser": "^1.20.0",
     "compression": "^1.7.4",
     "debug": "^2.6.9",
     "dockerode": "^3.3.1",
@@ -46,17 +47,19 @@
   },
   "devDependencies": {
     "@types/body-parser": "^1.19.2",
-    "@types/chai": "^4.3.0",
+    "@types/chai": "^4.3.1",
     "@types/debug": "^4.1.7",
-    "@types/dockerode": "^3.3.3",
+    "@types/dockerode": "^3.3.8",
+    "@types/errorhandler": "^1.5.0",
     "@types/express": "^4.17.13",
     "@types/mocha": "^8.2.3",
     "@types/multer": "^1.4.7",
-    "@types/node": "^14.18.12",
+    "@types/node": "^14.18.13",
     "@typescript-eslint/eslint-plugin": "^4.33.0",
     "@typescript-eslint/parser": "^4.33.0",
     "chai": "^4.3.6",
     "chai-http": "^4.3.0",
+    "errorhandler": "^1.5.1",
     "eslint": "^7.32.0",
     "eslint-plugin-node": "^11.1.0",
     "mocha": "^8.4.0",
@@ -64,7 +67,7 @@
     "mongodb": "^3.6.3",
     "nodemon": "^2.0.15",
     "nyc": "^15.1.0",
-    "ts-node": "^9.1.1",
-    "typescript": "^4.5.5"
+    "ts-node": "^10.7.0",
+    "typescript": "^4.6.3"
   }
 }

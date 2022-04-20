@@ -8,6 +8,7 @@ import {keysRte} from './routes/keys'
 import debug from 'debug'
 import mongoose from 'mongoose'
 import { decipherRte } from './routes/decipher'
+import errorhandler from 'errorhandler'
 
 const app = express()
 const debugApp = debug('app')
@@ -46,13 +47,17 @@ app.use(function (req, res, next) {
   res.header('Access-Control-Allow-Methods', 'GET, PUT, POST, PATCH, DELETE')
   next()
 })
+// Eror handler for debugging crashes w/ no error messages
+if (process.env.NODE_ENV === 'development') app.use(errorhandler())
 
+// Routes
 app.use('/cases', caseRte)
 app.use('/sigs', sigsRte)
 app.use('/keys', keysRte)
 app.use('/decipher', decipherRte)
 app.get('/', (req, res) => res.send('Healthy :)\r\n'))
 
+// Run production on HTTPS; dev on localhost
 const server = process.env.NODE_ENV === 'production' ?
   https.createServer(tlsOpts, app).listen(PORT) :
   app.listen(PORT, () => {
