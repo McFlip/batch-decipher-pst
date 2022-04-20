@@ -56,6 +56,7 @@ export const getSerials = async (req: Request, res: Response, next: NextFunction
     const {caseId}  = req?.params
     if (!caseId) throw new Error("no case ID")
     const keysPath = path.join('/app/workspace/', caseId, 'keys/')
+    if (!pathValidator(keysPath)) return next(new Error('key path invalid'))
     const serials = fs.readdirSync(keysPath).filter(fname => path.extname(fname) === '.key')
     res.status(200).send(serials)
   } catch (err) {

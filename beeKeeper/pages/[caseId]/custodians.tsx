@@ -26,6 +26,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     }
   } catch (err) {
     custodiansDebug(err)
+    return { props: { custodians: ''}}
   }
 }
 

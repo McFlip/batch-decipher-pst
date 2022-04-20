@@ -83,7 +83,7 @@ export const getCerts = (req: Request, res: Response, next: NextFunction): void 
     try {
        fs.accessSync(certPath, fs.constants.R_OK) 
     } catch (err) {
-        res.status(404).json({error: 'cannot find or cannot open allCerts.txt'})
+        return next(new Error('cannot find or cannot open allCerts.txt'))
     }
     try {
         const certs = fs.readFileSync(certPath)

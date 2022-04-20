@@ -16,31 +16,21 @@ debug.enable('certs')
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const {caseId} = context.params
-  const urlCase = `${apiInternal}:3000/cases/${caseId}`
   const urlCerts = `${apiInternal}:3000/sigs/${caseId}`
+  let certTxt = ''
   try {
-    const resPst = fetch(urlCase, {
-      method: 'GET',
-      mode: 'cors',
-      cache: 'default',
-      headers: {'Content-Type': 'application/json'}
-    })
-    const resCerts = fetch(urlCerts, {
+    const resCerts = await fetch(urlCerts, {
       method: 'GET',
       mode: 'cors',
       cache: 'default',
     })
-    const [pst, cert] = await Promise.all([resPst, resCerts])
-    let {pstPath}: {pstPath: string} = await pst.json()
-    if (!pstPath) pstPath = ''
-    let certTxt = cert.ok? await cert.text() : ''
+    if (resCerts.ok) certTxt = await resCerts.text()
     CertsDebug(certTxt)
-    if (!certTxt) certTxt = ''
-    return {
-      props: { pstPath, certTxt }
-    }
   } catch (err) {
     CertsDebug(err)
+  }
+  return {
+    props: { certTxt }
   }
 }
 
