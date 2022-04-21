@@ -3,16 +3,28 @@
 # Build images using Buildah for podman deployment on RHEL instead of Docker
 # Save images to archive for deployment on intranet server
 
+# update base images
+podman pull debian:stable-slim && podman pull node:alpine && podman pull node:current && podman pull mongo && podman pull node:16
+
+if [ "$1" = "beeKeeper" ] || [ "$1" = "all" ]
+then
 pushd beeKeeper
+# update browser list & NPM packages
+podman run -it --rm --security-opt label=disable -v $(pwd):/app --workdir /app node:current npx browserslist@latest --update-db
+podman run -it --rm --security-opt label=disable -v $(pwd):/app --workdir /app node:current npm update --save
+podman run -it --rm --security-opt label=disable -v $(pwd):/app --workdir /app node:current npm audit
+# compile
+# using Node v16 because of bug in webpack bundled w/ NextJS
+podman run -it --rm --security-opt label=disable -v $(pwd):/app --workdir /app node:16 npm run build
+# create container
 ctr=$(buildah from node:alpine)
-npm run build
 buildah config --workingdir='/app' $ctr
 buildah copy $ctr package.json package-lock.json /app/
 buildah run $ctr npm ci
 buildah copy $ctr .next /app/.next/
 buildah copy $ctr public/ /app/public/
 buildah copy $ctr server.js /app/
-buildah copy $ctr next.config.js /app/
+buildah copy $ctr .env.production.local /app/
 buildah config --env NODE_ENV=production $ctr
 buildah config --port 8080 $ctr
 buildah config --entrypoint '"npm" "start"' $ctr
@@ -23,12 +35,17 @@ buildah config --user nextjs $ctr
 buildah commit --format oci $ctr batch-decipher-pst_beekeeper
 popd
 podman save -o images/beekeeper.tar --format oci-archive batch-decipher-pst_beekeeper
-# exit
+fi
 
+if [ "$1" = "queenBee" ] || [ "$1" = "all" ]
+then
 pushd queenBee
+# updates
+podman run -it --rm --security-opt label=disable -v $(pwd):/app --workdir /app node:current npm update --save
+podman run -it --rm --security-opt label=disable -v $(pwd):/app --workdir /app node:current npm audit
 ctr=$(buildah from node:alpine)
-# compile using host; ts is dev dep
-npx tsc
+# compile using temp container; ts is dev dep
+podman run -it --rm --security-opt label=disable -v $(pwd):/app --workdir /app node:current npx tsc
 # set up mount points and permissions for non-root use
 buildah run $ctr mkdir -p /app/workspace
 buildah run $ctr mkdir -p /srv/public
@@ -47,10 +64,12 @@ buildah config --env HOST_IP=localhost $ctr
 buildah commit --format oci $ctr batch-decipher-pst_queenbee
 popd
 podman save -o images/queenbee.tar --format oci-archive batch-decipher-pst_queenbee
-exit
+fi
 
+if [ "$1" = "busyBee" ] || [ "$1" = "all" ]
+then
 pushd busyBee
 buildah bud -t batch-decipher-pst_busybee .
 popd
-
 podman save -o images/busybee.tar --format oci-archive batch-decipher-pst_busybee 
+fi

@@ -1,5 +1,5 @@
 import Menu from 'components/menu'
-import SetPath from 'components/setpath'
+import Uploader from 'components/uploader'
 import Head from 'next/head'
 import {useRouter} from 'next/router'
 import {GetServerSideProps} from 'next'
@@ -7,11 +7,10 @@ import { FormEvent, MouseEvent, useState } from 'react'
 import debug from 'debug'
 import ProgressBar from 'react-bootstrap/ProgressBar'
 import Alert from 'react-bootstrap/Alert'
+import { apiExternal, apiInternal } from '../../constants'
 
 const DecipherDebug = debug('decipher')
 debug.enable('decipher')
-const apiInternal = process.env.apiInternal || 'localhost'
-const apiExternal = process.env.apiExternal || 'localhost'
 
 type SerialsType = [string, string][]
 interface caseType {
@@ -55,30 +54,11 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 export default function Keys ({ pstPath, ptPath, exceptionsPath, serialsProp }: caseType) {
   const router = useRouter()
   const {caseId}: {caseId?: string} = router.query
-  const [serials, setSerials] = useState(serialsProp)
-  const [serial, setSerial] = useState(serialsProp[0][1])
-  const [password, setPassword] = useState('')
-  const [secrets, setSecrets] = useState([['','']])
+  const [secrets, setSecrets] = useState('')
   const [isRunning, setIsRunning] = useState(false)
   const [result, setResult] = useState(0)
-
-  const handleSubmit = (e: FormEvent) => {
-    e.preventDefault()
-    DecipherDebug('wtf')
-    const newSecrets = [...secrets, [serial, password]]
-      .filter(([s, pw]) => s.length > 0 && pw.length > 0)
-    setSecrets(newSecrets)
-    DecipherDebug(newSecrets)
-    const newSerials = [...serials].filter(([p12, sn]) => sn != serial)
-    DecipherDebug(newSerials)
-    setSerials(newSerials)
-    if (newSerials[0]) {
-      setSerial(newSerials[0][1])
-    } else {
-      setSerial('')
-    }
-    setPassword('')
-  }
+  const [files, setFiles] = useState<FileList>(null)
+  const [processedPSTs, setProcessedPSTs] = useState<string[]>([])
 
   const handleRun = async () => {
     setIsRunning(true)
@@ -86,6 +66,8 @@ export default function Keys ({ pstPath, ptPath, exceptionsPath, serialsProp }: 
     const body = { caseId, secrets }
     const decoder = new TextDecoder()
     try {
+      setResult(0)
+      setProcessedPSTs([''])
       const res = await fetch(url, {
         method: 'POST',
         mode: 'cors',
@@ -95,11 +77,18 @@ export default function Keys ({ pstPath, ptPath, exceptionsPath, serialsProp }: 
       })
       const reader = res.body.getReader()
       let progress = 0
+      let currPST: string = null
+      let pstArr: string[] = []
       while (true) {
         const { done, value } = await reader.read()
         if (done) break
         try {
           progress = Number(decoder.decode(value)?.match(/\d+%/)?.join()?.slice(0,-1))
+          currPST = decoder.decode(value)?.match(/^\*\*\*Processing .*/)?.join()
+          if (currPST?.length > 0) {
+            pstArr.push(currPST)
+            setProcessedPSTs(pstArr)
+          }
         } catch (error) {
           console.log(error)
         }
@@ -107,21 +96,13 @@ export default function Keys ({ pstPath, ptPath, exceptionsPath, serialsProp }: 
         // console.log(progress)
       }
       setIsRunning(false)
+      setResult(100)
     } catch (err) {
       // DecipherDebug(err)
       console.log(err)
       alert('Ohs Noes! Check the console for error msg')
       setIsRunning(false)
     }
-  }
-
-  const listKeys = (serials: SerialsType) => {
-    return (
-      <select id='selectSerial' className='form-control' value={serial} onChange={({target: {value}}) => setSerial(value)} disabled={serial === ''}>
-        <option value='' disabled>Choose p12 filename key was extracted from</option>
-        {serials.map(([p12, s]) => <option value={s} key={s}>{p12}</option>)}
-      </select>
-    )
   }
 
   return(
@@ -132,26 +113,14 @@ export default function Keys ({ pstPath, ptPath, exceptionsPath, serialsProp }: 
       <main>
         <Menu currentPg='Decipher' caseId={caseId} />
         <h1>Decipher Email</h1>
-        <h2>Set the PST Path</h2>
-        <p>These are the pst files contianing encrypted email</p>
-        <SetPath caseId={caseId} path={pstPath} pathName='pstPath' labelTxt='Input PST path' />
-        <h2>Set the Plain Text Path</h2>
-        <p>This is the output path for deciphered emails</p>
-        <SetPath caseId={caseId} path={ptPath} pathName='ptPath' labelTxt='Output PT path' />
-        <h2>Set the Exceptions Path</h2>
-        <p>Anything that fails to be deciphered will go here. Email that was already PT will simply be copied to PT.</p>
-        <SetPath caseId={caseId} path={exceptionsPath} pathName='exceptionsPath' labelTxt='Exceptions Path' />
+        <h2>Upload PSTs with encrypted email</h2>
+        <Uploader caseId={caseId} fileType='pst' destination='decipher' files={files} setFiles={setFiles} />
         <h2>Enter Passwords</h2>
-        <form onSubmit={handleSubmit}>
-          <div className='form-group'>
-            <label htmlFor='selectSerial'>Select a Key and Enter it's Password</label>
-            {listKeys(serials)}
-          </div>
+        <form onSubmit={e => e.preventDefault()}>
           <div className='form-group'>
             <label htmlFor='password'>Password</label>
-            <input id='password' type='password' className='form-control' value={password} onChange={({target: {value}}) => setPassword(value)} disabled={!serial} />
+            <input id='password' type='password' className='form-control' value={secrets} onChange={({target: {value}}) => setSecrets(value)} />
           </div>
-          <button type='submit' className='btn btn-secondary' disabled={serial === ''}>Set Password</button>
         </form>
         <h2>Launch Script</h2>
         <button className='btn btn-primary' disabled={isRunning} onClick={() => handleRun()}>
@@ -166,8 +135,11 @@ export default function Keys ({ pstPath, ptPath, exceptionsPath, serialsProp }: 
           { isRunning? '    running...' : '    Run' }
         </button>
         <h2>Results</h2>
+        <ol>
+          {processedPSTs.map((pst,i) => (<li key={i}>{pst}</li>))}
+        </ol>
         <ProgressBar  now={result} />
-        { result === 100 && <Alert variant='success'>DONE!</Alert>}
+        { result === 100 && isRunning === false && <Alert variant='success'>DONE!</Alert>}
       </main>
     </div>
   )

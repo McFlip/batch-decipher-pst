@@ -4,8 +4,7 @@ import {useRouter} from 'next/router'
 import {FormEvent, useState} from 'react'
 import debug from 'debug'
 import Menu from 'components/menu'
-
-const apiExternal = process.env.apiExternal || 'localhost'
+import { apiExternal } from '../constants'
 
 export default function NewCase () {
   const router = useRouter()

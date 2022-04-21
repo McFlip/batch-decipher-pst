@@ -53,9 +53,9 @@ export default function decipher(this: Mocha.Suite): void {
     expect(keysRes).to.have.status(201)
     expect(keysRes.body).to.eql([[ 'TEST.p12', '12C3905B55296E401270C0CEB18B5BA660DB9A1F' ]])
     // run decipher job
-    secrets = [['12C3905B55296E401270C0CEB18B5BA660DB9A1F.key', 'MrGlitter']]
+    secrets = [['12C3905B55296E401270C0CEB18B5BA660DB9A1F', 'MrGlitter']]
     const decipherRes: ChaiHttp.Response = await chai.request(apiURL).post('/decipher').send({caseId, secrets})
-    expect(decipherRes).to.have.status(201)
+    expect(decipherRes).to.have.status(200)
     // read and verify output
     expect(fs.readFileSync('/app/workspace/pt/TEST/Inbox/buried/deep/down/1.eml').toString('ascii')).to.match(/NUTS!/)
   })

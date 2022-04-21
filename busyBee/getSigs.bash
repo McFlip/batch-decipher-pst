@@ -41,7 +41,7 @@ decodeSignedData () {
 
 getCert() {
   certs="$(openssl smime -pk7out | openssl pkcs7 -print_certs -text)"
-  keyUsage="Digital Signature"
+  keyUsage="Repudiation"
   beginCert="-----BEGIN CERTIFICATE-----"
   endCert="-----END CERTIFICATE-----"
 

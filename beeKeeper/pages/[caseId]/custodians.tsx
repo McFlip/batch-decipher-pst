@@ -5,11 +5,10 @@ import {GetServerSideProps} from 'next'
 import {FormEvent, useState} from 'react'
 import Menu from 'components/menu'
 import debug from 'debug'
+import { apiExternal, apiInternal } from '../../constants'
 
 const custodiansDebug = debug('custodians')
 debug.enable('custodians')
-const apiInternal = process.env.apiInternal || 'localhost'
-const apiExternal = process.env.apiExternal || 'localhost'
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const {caseId} = context.params
@@ -27,6 +26,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     }
   } catch (err) {
     custodiansDebug(err)
+    return { props: { custodians: ''}}
   }
 }
 
@@ -64,7 +64,7 @@ export default function Custodians({custodians}: {custodians: string}) {
         <Menu currentPg='Custodians' caseId={caseId} />
         <h1>Enter Custodians one per line</h1>
         <p>Each line is a REGEX that will be used to filter the results</p>
-        <p><em>PRO TIP:</em> I strongly recommend you use the EDIPI number</p>
+        <p><em>PRO TIP:</em> I strongly recommend you use the EDIPI number, or use the last name in <strong>ALL CAPS</strong> with only letters</p>
         <form onSubmit={handleSubmit}>
           <div className='form-group'>
             <label htmlFor='myCustodians'>Custodians</label>

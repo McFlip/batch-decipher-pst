@@ -1,45 +1,36 @@
 import Menu from 'components/menu'
-import SetPath from 'components/setpath'
+// import SetPath from 'components/setpath'
+import Uploader from 'components/uploader'
 import Head from 'next/head'
 import {useRouter} from 'next/router'
 import {GetServerSideProps} from 'next'
-import { useState } from 'react'
+import { FormEvent, useState } from 'react'
 import debug from 'debug'
 import Modal from 'react-bootstrap/Modal'
 import Button from 'react-bootstrap/Button'
+import { apiExternal, apiInternal } from '../../constants'
+import ClipBtn from 'components/clipbtn'
 
 const CertsDebug = debug('certs')
 debug.enable('certs')
-const apiInternal = process.env.apiInternal || 'localhost'
-const apiExternal = process.env.apiExternal || 'localhost'
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const {caseId} = context.params
-  const urlCase = `${apiInternal}:3000/cases/${caseId}`
   const urlCerts = `${apiInternal}:3000/sigs/${caseId}`
+  let certTxt = ''
   try {
-    const resPst = fetch(urlCase, {
-      method: 'GET',
-      mode: 'cors',
-      cache: 'default',
-      headers: {'Content-Type': 'application/json'}
-    })
-    const resCerts = fetch(urlCerts, {
+    const resCerts = await fetch(urlCerts, {
       method: 'GET',
       mode: 'cors',
       cache: 'default',
     })
-    const [pst, cert] = await Promise.all([resPst, resCerts])
-    let {pstPath}: {pstPath: string} = await pst.json()
-    if (!pstPath) pstPath = ''
-    let certTxt = cert.ok? await cert.text() : ''
+    if (resCerts.ok) certTxt = await resCerts.text()
     CertsDebug(certTxt)
-    if (!certTxt) certTxt = ''
-    return {
-      props: { pstPath, certTxt }
-    }
   } catch (err) {
     CertsDebug(err)
+  }
+  return {
+    props: { certTxt }
   }
 }
 
@@ -55,6 +46,7 @@ export default function Certs (props: propsType) {
   const [isRunning, setIsRunning] = useState(false)
   const [showTerminal, setShowTerminal] = useState(false)
   const [terminalTxt, setTerminalTxt] = useState('')
+  const [files, setFiles] = useState<FileList>(null)
 
   const handleRun = async (caseId: string) => {
     setIsRunning(true)
@@ -62,6 +54,15 @@ export default function Certs (props: propsType) {
     const urlCerts = `${url}/${caseId}`
     const body = { caseId }
     const decoder = new TextDecoder()
+
+    // TODO: add more robust validation using the API to make sure user actually uploaded a file and entered custodians
+    if(!files) {
+      const pyUpload = confirm("You forgot to upload a PST to process. Did you upload from a server using the Py script? Click OK to run, Cancel to upload.")
+      if(!pyUpload) {
+        setIsRunning(false)
+        return
+      }
+    }
 
     try {
       // Run the container and send response stream to terminal modal
@@ -105,9 +106,11 @@ export default function Certs (props: propsType) {
       </Head>
       <main>
         <Menu currentPg='Get Cert Info' caseId={caseId} />
-        <h1>Set input PST path</h1>
-        <p>Set the path before running to ensure propper permissions</p>
-        <SetPath path={props.pstPath} pathName='pstPath' caseId={caseId} labelTxt='PST Path:' />
+        <h1>Get Cert Info</h1>
+        <p>This process will parse the needed cert info such as serial #, dates, and issuer info</p>
+        <h2>Upload pst file(s)</h2>
+        <p>PSTs contain signed emails from Custodians. Re-uploading overwrites.</p>
+        <Uploader caseId={caseId} fileType='pst' destination='sigs' files={files} setFiles={setFiles} />
         <h2>Launch Script</h2>
         <button className='btn btn-primary' disabled={isRunning} onClick={() => handleRun(caseId)}>
           { isRunning ?
@@ -121,12 +124,7 @@ export default function Certs (props: propsType) {
           { isRunning? '    running...' : '    Run' }
         </button>
         <h2>Results</h2>
-        <button className='btn btn-secondary' onClick={() => navigator.clipboard.writeText(certs)}>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-            <path d="M16 10c3.469 0 2 4 2 4s4-1.594 4 2v6h-10v-12h4zm.827-2h-6.827v16h14v-8.842c0-2.392-4.011-7.158-7.173-7.158zm-8.827 12h-6v-16h4l2.102 2h3.898l2-2h4v2.145c.656.143 1.327.391 2 .754v-4.899h-3c-1.229 0-2.18-1.084-3-2h-8c-.82.916-1.771 2-3 2h-3v20h8v-2zm2-18c.553 0 1 .448 1 1s-.447 1-1 1-1-.448-1-1 .447-1 1-1zm4 18h6v-1h-6v1zm0-2h6v-1h-6v1zm0-2h6v-1h-6v1z"/>
-          </svg>
-          Copy to clipboard
-        </button>
+        <ClipBtn txtToCopy={certs} />
         {' '}
         <Button variant='info' onClick={() => setShowTerminal(true)}>
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">

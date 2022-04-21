@@ -9,13 +9,17 @@ const debugCase  = debug('cases')
 export const create = (req: Request, res: Response, next: NextFunction): void => {
   // const { name, forensicator, status } = req.body
   // const myCase = new Case({ name, forensicator, status })
+  const sharePath = '/srv/public'
   const myCase = new Case(req.body)
   myCase.save()
     .then(c => {
-      const casePath = path.join('/app/workspace',c._id.toString() as string)
+      const caseId = c._id.toString() as string
+      const casePath = path.join('/app/workspace', caseId)
+      const subDirs = ['sigs', 'sigsPSTs', 'ctPSTs', 'p12', 'keys']
+      const shareSubDirs = ['pt', 'exceptions']
       fs.mkdirSync(casePath)
-      const subDirs = ['sigs', 'p12', 'keys']
-      subDirs.forEach(s => fs.mkdirSync(path.join(casePath, s)))
+      subDirs.forEach(s => fs.mkdirSync(path.join(casePath, s))) 
+      shareSubDirs.forEach(s => fs.mkdirSync(path.join(sharePath, caseId, s), {recursive: true}))
       res.status(201).json({ caseId: c._id })
     })
     .catch(err => next(err))

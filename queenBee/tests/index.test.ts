@@ -14,7 +14,7 @@ import path from 'path'
 chai.use(chaiHttp)
 const expect = chai.expect
 const dbName = 'decipherDB'
-const mongoURI = `mongodb://database:27017/${dbName}`
+const mongoURI = `mongodb://localhost:27017/${dbName}`
 const dbOpts = { useUnifiedTopology: true }
 const client = new MongoClient(mongoURI, dbOpts)
 
