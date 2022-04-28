@@ -51,7 +51,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   }
 }
 
-export default function Keys ({ pstPath, ptPath, exceptionsPath, serialsProp }: caseType) {
+export default function Decipher ({ pstPath, ptPath, exceptionsPath, serialsProp }: caseType) {
   const router = useRouter()
   const {caseId}: {caseId?: string} = router.query
   const [secrets, setSecrets] = useState('')
@@ -59,6 +59,7 @@ export default function Keys ({ pstPath, ptPath, exceptionsPath, serialsProp }: 
   const [result, setResult] = useState(0)
   const [files, setFiles] = useState<FileList>(null)
   const [processedPSTs, setProcessedPSTs] = useState<string[]>([])
+  const [deletingPSTs, setDeletingPSTs] = useState(false)
 
   const handleRun = async () => {
     setIsRunning(true)
@@ -105,6 +106,20 @@ export default function Keys ({ pstPath, ptPath, exceptionsPath, serialsProp }: 
     }
   }
 
+  // Delete PSTs
+  const handleDelete =async () => {
+    const url = `${apiExternal}:3000/decipher/upload/pst/${caseId}`
+    if (!confirm('Are you sure? This cannot be undone!')) return
+    setDeletingPSTs(true)
+    const res = await fetch(url, {
+      method: 'DELETE',
+      mode: 'cors',
+      cache: 'no-cache'
+    })
+    if (res.status !== 200) alert('Deleting PSTs failed :(')
+    setDeletingPSTs(false)
+  }
+
   return(
     <div className='container'>
       <Head>
@@ -113,15 +128,25 @@ export default function Keys ({ pstPath, ptPath, exceptionsPath, serialsProp }: 
       <main>
         <Menu currentPg='Decipher' caseId={caseId} />
         <h1>Decipher Email</h1>
+        <hr/>
+        <h3>Delete previous uploads</h3>
+        <p>If working in batches, delete previous input before uploading next batch</p>
+        <button className='btn btn-danger' disabled={deletingPSTs} onClick={() => handleDelete()}>
+          { deletingPSTs ? 'Deleting...' : 'Delete PSTs'}
+        </button>
+        <hr/>
         <h2>Upload PSTs with encrypted email</h2>
         <Uploader caseId={caseId} fileType='pst' destination='decipher' files={files} setFiles={setFiles} />
-        <h2>Enter Passwords</h2>
+        <hr/>
+        <h2>Enter Password</h2>
+        <p>Use the password you generated when extracting keys</p>
         <form onSubmit={e => e.preventDefault()}>
           <div className='form-group'>
             <label htmlFor='password'>Password</label>
             <input id='password' type='password' className='form-control' value={secrets} onChange={({target: {value}}) => setSecrets(value)} />
           </div>
         </form>
+        <hr/>
         <h2>Launch Script</h2>
         <button className='btn btn-primary' disabled={isRunning} onClick={() => handleRun()}>
           { isRunning ?
@@ -135,6 +160,7 @@ export default function Keys ({ pstPath, ptPath, exceptionsPath, serialsProp }: 
           { isRunning? '    running...' : '    Run' }
         </button>
         <h2>Results</h2>
+        <p>The output will be in the shared folder</p>
         <ol>
           {processedPSTs.map((pst,i) => (<li key={i}>{pst}</li>))}
         </ol>
