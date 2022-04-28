@@ -45,9 +45,6 @@ export default function EditCase({myCase}: {myCase: CaseType}) {
 
   const [name, setName] = useState(myCase.name)
   const [forensicator, setForensicator] = useState(myCase.forensicator)
-  const [pstPath, setPstPath] = useState(myCase.pstPath)
-  const [p12Path, setP12Path] = useState(myCase.p12Path)
-  const [ptPath, setPtPath] = useState(myCase.ptPath)
   const [exceptionsPath, setExceptionsPath] = useState(myCase.exceptionsPath)
   const [custodians, setCustodians] = useState(myCase.custodians)
   
@@ -56,9 +53,6 @@ export default function EditCase({myCase}: {myCase: CaseType}) {
     const values = [
       ['name', name, myCase.name],
       ['forensicator', forensicator, myCase.forensicator],
-      ['pstPath', pstPath, myCase.pstPath],
-      ['p12Path', p12Path, myCase.p12Path],
-      ['ptPath', ptPath, myCase.ptPath],
       ['exceptionsPath', exceptionsPath, myCase.exceptionsPath],
       ['custodians', custodians, myCase.custodians]
     ]
@@ -118,22 +112,6 @@ export default function EditCase({myCase}: {myCase: CaseType}) {
         <div className='form-group'>
           <label htmlFor='forensicator'>Forensicator:</label>
           <input id='forensicator' type='text' className='form-control' value={forensicator} onChange={e => setForensicator(e.target.value)} />
-        </div>
-        <div className='form-group'>
-          <label htmlFor='pstPath'>PST Path:</label>
-          <input id='pstPath' type='text' className='form-control' value={pstPath} onChange={e => setPstPath(e.target.value)} />
-        </div>
-        <div className='form-group'>
-          <label htmlFor='p12Path'>p12 Path:</label>
-          <input id='p12Path' type='text' className='form-control' value={p12Path} onChange={e => setP12Path(e.target.value)} />
-        </div>
-        <div className='form-group'>
-          <label htmlFor='ptPath'>Plain Text Path:</label>
-          <input id='ptPath' type='text' className='form-control' value={ptPath} onChange={e => setPtPath(e.target.value)} />
-        </div>
-        <div className='form-group'>
-          <label htmlFor='exceptionsPath'>Exceptions Path:</label>
-          <input id='exceptionsPath' type='text' className='form-control' value={exceptionsPath} onChange={e => setExceptionsPath(e.target.value)} />
         </div>
         <div className='form-group'>
           <label htmlFor='custodians'>Custodians:</label>

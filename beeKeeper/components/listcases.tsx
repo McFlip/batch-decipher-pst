@@ -11,7 +11,6 @@ const caseRows = (cases: caseType[]): JSX.Element[] =>
   cases.map(c => <tr key={c._id}>
     <td>{c.forensicator}</td>
     <td>{c.name}</td>
-    <td>{c.status}</td>
     <td>{c.dateCreated}</td>
     <td><Link href={`/${c._id}/editcase`}><button className='btn btn-primary'>Select Case</button></Link></td>
 </tr>)
@@ -22,7 +21,6 @@ export default function ListCases({cases}: {cases: caseType[]}) {
         <tr>
           <th scope='col'>Forensicator</th>
           <th scope='col'>Case Name</th>
-          <th scope='col'>Status</th>
           <th scope='col'>Date Created</th>
         </tr>
       </thead>

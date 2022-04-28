@@ -40,6 +40,7 @@ export default function Home() {
 
       <main>
         <Menu currentPg='Home' />
+        <p>Start by either creating a new case or selecting an existing case to work on</p>
         <h1>A: Create a new case</h1>
         <p>
           Click <Link href='/new-case'><a>here</a></Link> to create a new case.
@@ -48,10 +49,19 @@ export default function Home() {
         <p>
           Search for cases by forensicator or case name.
           Searching with a blank name will list all cases.
-          You can filter by active or inactive.
         </p>
         <SearchBar onSearch={handlSearch} />
         <ListCases cases={cases} />
+        <hr/>
+        <h2>How to use this app</h2>
+        <p>
+          This app uses a wizard format. The menu at the top indicates your step in the pipleine going from left to right.
+          The workflow on each page goes from top to bottom.
+        </p>
+        <p>
+          There are 2 phases. The first is gathering cert info to make a request for keys. The second is extracting the keys you receive and deciphering email.
+          Create a new case and advance to "Get Cert Info". After receiving keys, return to the case and go to "Extract Keys".
+        </p>
       </main>
     </div>
   )
