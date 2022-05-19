@@ -110,7 +110,7 @@ export default function Certs (props: propsType) {
         <p>This process will parse the needed cert info such as serial #, dates, and issuer info</p>
         <hr/>
         <h2>Upload pst file(s)</h2>
-        <p>PSTs contain signed emails from Custodians. Re-uploading overwrites.</p>
+        <p>PSTs contain signed emails from Custodians. Consecutive uploads append instead of overwrite.</p>
         <Uploader caseId={caseId} fileType='pst' destination='sigs' files={files} setFiles={setFiles} />
         <hr/>
         <h2>Launch Script</h2>

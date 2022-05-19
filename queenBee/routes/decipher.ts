@@ -23,8 +23,12 @@ export const nuke = async (req: Request, res: Response, next: NextFunction): Pro
 	const { caseId } = req.params
 	const pstPath = `/app/workspace/${caseId}/ctPSTs`
 	if (! pathValidator(pstPath)) return next(new Error('invalid pst path'))
-	fs.readdirSync(pstPath).forEach(f => fs.rmSync(path.join(pstPath, f), { recursive: true }))
-	res.status(200).send('PST files deleted')
+	try {
+		fs.readdirSync(pstPath).forEach(f => fs.rmSync(path.join(pstPath, f), { recursive: true }))
+		res.status(200).send('PST files deleted')
+	} catch (error) {
+		next(error)
+	}
 }
 
 // Upload PST files
