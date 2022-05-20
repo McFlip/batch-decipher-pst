@@ -16,7 +16,9 @@ export const uploadCtPst = async (req: Request, res: Response, next: NextFunctio
       if (!pathValidator(pstPath)) {
           res.status(404).json({error: 'unable to find ctPSTs folder in case workspace'})
       } else {
-          fs.readdirSync(pstPath).forEach(f => fs.renameSync(path.join(pstPath, f), path.join(pstPath, `${f}.pst`)))
+          fs.readdirSync(pstPath).forEach(f => {
+            if (path.extname(f) !== '.pst') fs.renameSync(path.join(pstPath, f), path.join(pstPath, `${f}.pst`)
+          )})
           res.status(201).send('PST(s) uploaded')
       }
   } catch (error) {

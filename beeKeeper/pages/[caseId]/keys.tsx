@@ -55,9 +55,16 @@ export default function Keys ({serialsProp}: { serialsProp: string[] }) {
       <main>
         <Menu currentPg='Extract Keys' caseId={caseId} />
         <h1>Extract Keys From 'p12' Container</h1>
+        <p>
+          The keys for decrypting emails will be located inside the p12 files.
+          The keys must first be extracted before the decryption process.
+          Keys will be stored on the server protected by one common password that you create.
+          You will supply your password in the final step.
+        </p>
         <h2>Upload p12 file(s)</h2>
         <Uploader caseId={caseId} fileType='p12' destination='decipher' files={files} setFiles={setFiles} setSerials={setSerials} />
         <h2>Key Serial #s</h2>
+        <p>If a key is successfuly extracted, you will see its serial # listed here.</p>
         {listSerials(serials)}
       </main>
     </div>

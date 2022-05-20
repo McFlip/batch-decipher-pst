@@ -23,7 +23,22 @@ export default function Uploader (props: propsType) {
 	const [p12PW, setP12PW] = useState('')
 	const [keyPW, setKeyPW] = useState('')
   const [isRunning, setIsRunning] = useState(false)
+  const [deletingPSTs, setDeletingPSTs] = useState(false)
 	uploadDebug(url)
+
+  // Delete PSTs
+  const handleDelete =async () => {
+    const url = `${apiExternal}:3000/${destination}/upload/pst/${caseId}`
+    if (!confirm('Are you sure? This cannot be undone!')) return
+    setDeletingPSTs(true)
+    const res = await fetch(url, {
+      method: 'DELETE',
+      mode: 'cors',
+      cache: 'no-cache'
+    })
+    if (res.status !== 200) alert('Deleting PSTs failed :(')
+    setDeletingPSTs(false)
+  }
 
   // Form submission
   const handleUpload = async (e: FormEvent) => {
@@ -111,6 +126,13 @@ export default function Uploader (props: propsType) {
 
 	return(
 		<div>
+			<hr/>
+			<h3>Delete previous uploads</h3>
+			<p>If working in batches, delete previous input before uploading next batch</p>
+			<button className='btn btn-danger' disabled={deletingPSTs} onClick={() => handleDelete()}>
+				{ deletingPSTs ? 'Deleting...' : 'Delete PSTs'}
+			</button>
+			<hr/>
 			<p>Use the following URL if uploading with a script:<ClipBtn txtToCopy={url} /></p>
       <p><code>{url}</code></p>
 			<form onSubmit={handleUpload}>

@@ -108,9 +108,11 @@ export default function Certs (props: propsType) {
         <Menu currentPg='Get Cert Info' caseId={caseId} />
         <h1>Get Cert Info</h1>
         <p>This process will parse the needed cert info such as serial #, dates, and issuer info</p>
+        <hr/>
         <h2>Upload pst file(s)</h2>
-        <p>PSTs contain signed emails from Custodians. Re-uploading overwrites.</p>
+        <p>PSTs contain signed emails from Custodians. Consecutive uploads append instead of overwrite.</p>
         <Uploader caseId={caseId} fileType='pst' destination='sigs' files={files} setFiles={setFiles} />
+        <hr/>
         <h2>Launch Script</h2>
         <button className='btn btn-primary' disabled={isRunning} onClick={() => handleRun(caseId)}>
           { isRunning ?
@@ -123,7 +125,9 @@ export default function Certs (props: propsType) {
           }
           { isRunning? '    running...' : '    Run' }
         </button>
+        <hr/>
         <h2>Results</h2>
+        <p>A printout of each parsed cert will appear below. Click "Show Terminal" if you wish to monitor progress.</p>
         <ClipBtn txtToCopy={certs} />
         {' '}
         <Button variant='info' onClick={() => setShowTerminal(true)}>

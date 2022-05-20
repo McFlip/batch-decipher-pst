@@ -51,7 +51,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   }
 }
 
-export default function Keys ({ pstPath, ptPath, exceptionsPath, serialsProp }: caseType) {
+export default function Decipher ({ pstPath, ptPath, exceptionsPath, serialsProp }: caseType) {
   const router = useRouter()
   const {caseId}: {caseId?: string} = router.query
   const [secrets, setSecrets] = useState('')
@@ -115,13 +115,16 @@ export default function Keys ({ pstPath, ptPath, exceptionsPath, serialsProp }: 
         <h1>Decipher Email</h1>
         <h2>Upload PSTs with encrypted email</h2>
         <Uploader caseId={caseId} fileType='pst' destination='decipher' files={files} setFiles={setFiles} />
-        <h2>Enter Passwords</h2>
+        <hr/>
+        <h2>Enter Password</h2>
+        <p>Use the password you generated when extracting keys</p>
         <form onSubmit={e => e.preventDefault()}>
           <div className='form-group'>
             <label htmlFor='password'>Password</label>
             <input id='password' type='password' className='form-control' value={secrets} onChange={({target: {value}}) => setSecrets(value)} />
           </div>
         </form>
+        <hr/>
         <h2>Launch Script</h2>
         <button className='btn btn-primary' disabled={isRunning} onClick={() => handleRun()}>
           { isRunning ?
@@ -135,6 +138,7 @@ export default function Keys ({ pstPath, ptPath, exceptionsPath, serialsProp }: 
           { isRunning? '    running...' : '    Run' }
         </button>
         <h2>Results</h2>
+        <p>The output will be in the shared folder</p>
         <ol>
           {processedPSTs.map((pst,i) => (<li key={i}>{pst}</li>))}
         </ol>

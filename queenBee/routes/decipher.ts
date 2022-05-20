@@ -17,17 +17,27 @@ const storage = multer.diskStorage({
 	}
 })
 const upload = multer({ storage })
+
 // clean out the upload dir
 export const nuke = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
 	const { caseId } = req.params
 	const pstPath = `/app/workspace/${caseId}/ctPSTs`
-	fs.readdirSync(pstPath).forEach(f => fs.rmSync(path.join(pstPath, f), { recursive: true }))
-	next()
+	if (! pathValidator(pstPath)) return next(new Error('invalid pst path'))
+	try {
+		fs.readdirSync(pstPath).forEach(f => fs.rmSync(path.join(pstPath, f), { recursive: true }))
+		res.status(200).send('PST files deleted')
+	} catch (error) {
+		next(error)
+	}
 }
 
 // Upload PST files
-router.post('/upload/pst/:caseId', nuke, upload.array('pst'), decipherController.uploadCtPst)
+router.post('/upload/pst/:caseId', upload.array('pst'), decipherController.uploadCtPst)
 
+// Delete uploaded PSTs
+router.delete('/upload/pst/:caseId', nuke)
+
+// Run decipher job
 router.post('/', decipherController.decipher)
 
 export {router as decipherRte}
