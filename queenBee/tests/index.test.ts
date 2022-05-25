@@ -4,33 +4,17 @@ import chaiHttp from 'chai-http'
 import chai from 'chai'
 import apiURL from '../index' // Comment out if using URL string
 import cases from './suites/cases.test'
-import sigs from './suites/sigs.test'
-import keys from './suites/keys.test'
-import decipher from './suites/decipher.test'
-import { MongoClient } from 'mongodb'
+// import sigs from './suites/sigs.test'
+// import keys from './suites/keys.test'
+// import decipher from './suites/decipher.test'
 import fs from 'fs'
 import path from 'path'
 
 chai.use(chaiHttp)
 const expect = chai.expect
-const dbName = 'decipherDB'
-const mongoURI = `mongodb://localhost:27017/${dbName}`
-const dbOpts = { useUnifiedTopology: true }
-const client = new MongoClient(mongoURI, dbOpts)
 
 describe('API tests', function () {
-  before(async function () {
-    // In DEV, set apiURL to actual app
-    // If using Staging env, add logic to check env & get URL string for staging
-    // this.apiURL = apiURL as Express.Application
-    // set up database connection
-    await client.connect()
-    await client.db("admin").command({ ping: 1 })
-    this.client = client
-  })
   after(async function () {
-    // close db connection
-    client.close()
     // clean up filesystem
     interface rmOpts {
       recursive: boolean,
@@ -46,7 +30,7 @@ describe('API tests', function () {
     expect(res).to.have.status(200)
   })
   describe('CASES', cases.bind(this))
-  describe('Get CERTS from signed email', sigs.bind(this))
-  describe('Extract and decrypt KEYS from p12', keys.bind(this))
-  describe('Decipher', decipher.bind(this))
+  // describe('Get CERTS from signed email', sigs.bind(this))
+  // describe('Extract and decrypt KEYS from p12', keys.bind(this))
+  // describe('Decipher', decipher.bind(this))
 })

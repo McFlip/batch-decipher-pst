@@ -18,3 +18,23 @@ Change back to the busyBee folder and run the test container, mounting the curre
 cd ..
 podman run -it --rm -v $(pwd):/app:z test-busybee
 ```
+
+### Queen Bee
+
+Run all commands from inside the `queenBee` dir
+
+If you haven't installed the dependancies yet then run a clean install
+
+```bash
+podman run -it --rm --security-opt label=disable -v $(pwd):/app --workdir /app node:current npm ci
+```
+
+Build the test container `buildah bud -t test-queenbee .`
+
+Run the test container
+
+```bash
+podman run -it --rm -v $(pwd):/app:z test-queenbee npm test
+```
+
+The test is configured to bail on the 1st failure.
