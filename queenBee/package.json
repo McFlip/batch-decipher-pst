@@ -7,7 +7,7 @@
   "description": "REST API between the client and the busyBee worker",
   "main": "index.js",
   "scripts": {
-    "test": "env TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' nyc mocha tests/index.test.ts --require ts-node/register --extensions ts,tsx --timeout 12000 --exit --bail",
+    "test": "env TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' nyc mocha tests/index.test.ts --require ts-node/register --extensions ts,tsx --exit --bail",
     "start": "nodemon --watch index.ts --watch controllers --watch models --watch routes --watch util --watch types index.ts"
   },
   "repository": {
