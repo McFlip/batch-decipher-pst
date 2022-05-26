@@ -15,7 +15,8 @@ import type {} from 'chai-http'
 
 const debugCaseTest = debug('cases')
 const getCase = () => {
-  const caseData = fs.readFileSync('/app/workspace/*/case.json').toString()
+  // path to case file is /app/workspace/*/case.json
+  const caseData = fs.readFileSync(path.join('/app/workspace', fs.readdirSync('/app/workspace')[0], 'case.json')).toString()
   return JSON.parse(caseData)
 }
 
@@ -43,12 +44,18 @@ export default function cases (this: Mocha.Suite): void {
       .post('/cases')
       .send(badCase)
     expect(res).to.have.status(500)
-    expect(res.text).to.match(/ValidationError: Case validation failed: name: Case name is required/)
+    expect(res.text).to.match(/ValidationError: Case name is required/)
+    const badCase2 = { name: 'missing forensicator' }
+    const res2: ChaiHttp.Response = await chai.request(apiURL)
+      .post('/cases')
+      .send(badCase2)
+    expect(res2).to.have.status(500)
+    expect(res2.text).to.match(/ValidationError: Forensicator is required/)
   })
   it('should get all cases', async function () {
     const res: ChaiHttp.Response = await chai.request(apiURL).get('/cases/')
     expect(res).to.have.status(200)
-    // debugCaseTest(res.body[0])
+    // debugCaseTest(res.body)
     checkCase(res.body[0], testCase)
   })
   it('should get a case by ID', async function () {
@@ -61,7 +68,7 @@ export default function cases (this: Mocha.Suite): void {
     const res500: ChaiHttp.Response = await chai.request(apiURL).get('/cases/FUBAR')
     expect(res500).to.have.status(500)
     expect(res500.text).to.contain("Invalid Case ID")
-    const res404: ChaiHttp.Response = await chai.request(apiURL).get('/cases/aaaaaaaaaaaa')
+    const res404: ChaiHttp.Response = await chai.request(apiURL).get('/cases/aaaaaaaaaaaaaaaaaaaaaaaa')
     expect(res404).to.have.status(404)
   })
   it('should search & find the test case', async function () {
@@ -92,7 +99,7 @@ export default function cases (this: Mocha.Suite): void {
   })
   it('should FAIL to update a case with bad ID', async function () {
     const res: ChaiHttp.Response = await chai.request(apiURL)
-      .patch('/cases/aaaaaaaaaaaa')
+      .patch('/cases/aaaaaaaaaaaaaaaaaaaaaaaa')
       .send({status: 'inactive'})
     expect(res).to.have.status(404)
   })
@@ -101,8 +108,11 @@ export default function cases (this: Mocha.Suite): void {
     const resUpdate: ChaiHttp.Response = await chai.request(apiURL)
       .patch(`/cases/${c?._id}`)
       .send({forensicator: ''})
-    expect(resUpdate).to.have.status(500)
-    expect(resUpdate.text).to.match(/<pre>ValidationError: Validation failed: Forensicator is required/)
+    expect(resUpdate).to.have.status(200)
+    const { name, forensicator } = resUpdate.body
+    expect(name).to.eql('test case')
+    expect(forensicator).to.eql('Sherlock Holmes')
+    // expect(resUpdate.text).to.match(/<pre>ValidationError: Forensicator is required/)
   })
   it('should delete a case by ID', async function () {
     const c = getCase()
@@ -118,7 +128,7 @@ export default function cases (this: Mocha.Suite): void {
     expect(isDirExist).to.eql(false)
   })
   it('should FAIL to delete a case with a bad ID', async function () {
-    const res: ChaiHttp.Response = await chai.request(apiURL).delete('/cases/aaaaaaaaaaaa')
+    const res: ChaiHttp.Response = await chai.request(apiURL).delete('/cases/aaaaaaaaaaaaaaaaaaaaaaaa')
     expect(res).to.have.status(404)
   })
 }

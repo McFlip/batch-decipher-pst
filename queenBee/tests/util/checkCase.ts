@@ -14,5 +14,5 @@ export const checkCase = (res: TestCase, model: TestCase): void => {
   expect(res.name).to.eql(model.name)
   expect(res.forensicator).to.eql(model.forensicator)
   const myDate = (typeof res?.dateCreated == 'string') ? res?.dateCreated : res?.dateCreated?.toISOString()
-  expect(myDate).to.match(/\d{4}-[0-1]\d-[0-3]\dT[0-2]\d(:[0-5]\d){2}\.\d{3}Z/)
+  expect(myDate).to.match(/([A-Z][a-z]{2,} ){2}\d{1,2} \d{4} (\d{1,2}:){2}\d{1,2} [A-Z]{3}[+-]\d{4}/)
 }
