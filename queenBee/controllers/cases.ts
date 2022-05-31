@@ -3,23 +3,19 @@ import fs from 'fs'
 import path from 'path'
 import crypto from 'crypto'
 import debug from 'debug'
+import CaseType from '../types/case'
 
 const debugCase  = debug('cases')
-interface Case {
-  _id: string,
-  name: string,
-  forensicator: string,
-  dateCreated: string
-}
+
 // Helper func to get all cases as an array of obj
-const getCases = (): Case[] => {
+const getCases = (): CaseType[] => {
   const rootPath = '/app/workspace'
   return fs.readdirSync(rootPath)
     .map(myDir => path.join(rootPath, myDir, 'case.json'))
     .map(myPath => JSON.parse(fs.readFileSync(myPath).toString()))
 }
 // Helper func to get one case
-const getCase = (caseId: string): Case => {
+const getCase = (caseId: string): CaseType => {
   if (!caseId.match(/[0-9,a-f]{24}/)) {
     throw new Error('Invalid Case ID')
   }
@@ -32,7 +28,7 @@ const getCase = (caseId: string): Case => {
 }
 
 export const create = (req: Request, res: Response, next: NextFunction): void => {
-  const { name, forensicator } = req.body
+  const { name, forensicator, custodians } = req.body
   // validation
   if (!name) {
     const error = new Error('ValidationError: Case name is required')
@@ -53,11 +49,12 @@ export const create = (req: Request, res: Response, next: NextFunction): void =>
     casePath = path.join('/app/workspace', _id)
   }
   // create the case file and scaffold folders
-  const myCase: Case = {
+  const myCase: CaseType = {
     _id,
     name,
     forensicator,
-    dateCreated: Date()
+    dateCreated: Date(),
+    custodians
   }
   try {
     fs.mkdirSync(casePath)
@@ -116,7 +113,7 @@ export const search = async (req: Request, res: Response, next: NextFunction): P
 export const modify = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { caseId } = req.params
-    const { name, forensicator } = req.body
+    const { name, forensicator, custodians } = req.body
     const myCase = getCase(caseId)
     const { _id, dateCreated } = myCase
     const casePath = path.join('/app/workspace', caseId, 'case.json')
@@ -124,7 +121,8 @@ export const modify = async (req: Request, res: Response, next: NextFunction): P
       _id,
       dateCreated,
       name: name || myCase.name,
-      forensicator: forensicator || myCase.forensicator
+      forensicator: forensicator || myCase.forensicator,
+      custodians: custodians || myCase.custodians
     }
     // debugCase(newData)
     fs.writeFileSync(casePath, JSON.stringify(newData))
