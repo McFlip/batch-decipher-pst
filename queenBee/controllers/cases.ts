@@ -45,6 +45,7 @@ export const create = (req: Request, res: Response, next: NextFunction): void =>
   // generate a unique id for the case
   let _id = crypto.randomBytes(12).toString('hex')
   let casePath = path.join('/app/workspace', _id)
+  /* istanbul ignore next */
   while (fs.existsSync(casePath)) {
     _id = crypto.randomBytes(12).toString('hex')
     casePath = path.join('/app/workspace', _id)
@@ -83,6 +84,7 @@ export const getOne = async (req: Request, res: Response, next: NextFunction): P
     const { caseId } = req.params
     res.send(getCase(caseId))
   } catch (error) {
+    /* istanbul ignore next */
     const message = error instanceof Error ? error.message : String(error)
     if (message === 'Case ID not found') {
       res.status(404).json({error: 'Case ID not found'})
@@ -129,6 +131,7 @@ export const modify = async (req: Request, res: Response, next: NextFunction): P
     fs.writeFileSync(casePath, JSON.stringify(newData))
     res.send(newData)
   } catch (error) {
+    /* istanbul ignore next */
     const message = error instanceof Error ? error.message : String(error)
     if (message === 'Case ID not found') {
       res.status(404).json({error: 'Case ID not found'})
@@ -147,6 +150,7 @@ export const remove = async (req: Request, res: Response, next: NextFunction): P
     res.status(200).json({ caseId })
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error)
+    /* istanbul ignore next */
     if (message === 'Case ID not found') {
       res.status(404).json({error: 'Case ID not found'})
     } else {

@@ -87,6 +87,11 @@ export default function cases (this: Mocha.Suite): void {
     })
     await Promise.all(results)
   })
+  it('should get all cases with an empty query', async function () {
+    const res: ChaiHttp.Response = await chai.request(apiURL).get('/cases/search')
+    expect(res).to.have.status(200)
+    expect(res.body).to.have.length(1)
+  })
   it('should search & FAIL to find the test case', async function () {
     const queries = [
       'name=FUBAR',

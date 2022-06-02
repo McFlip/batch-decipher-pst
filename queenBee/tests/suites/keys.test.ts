@@ -7,6 +7,7 @@ import { cleanup } from '../util/cleanup'
 import type {} from 'mocha'
 import type {} from 'chai-http'
 import CaseType from '../../types/case'
+import exp from 'constants'
 
 const debugKeys = debug('keys')
 
@@ -67,5 +68,23 @@ export default function keys(this: Mocha.Suite): void {
     debugKeys(uploadRes.text)
     expect(uploadRes).to.have.status(500)
     expect(uploadRes.text).to.contain('Error: Mac verify error: invalid password?')
+  })
+  it('should FAIL to extract a key with a BAD caseId', async function () {
+    const formData = {
+      caseId: 'fubar',
+      p12PW: 'fubar',
+      keyPW: 'fubar'
+    }
+    const res: ChaiHttp.Response = await chai.request(apiURL)
+      .post('/keys/fubar')
+      .type('form')
+      .attach('p12', fs.readFileSync('/app/tests/data/p12/TEST.p12'), 'TEST.p12')
+      .field(formData)
+    debugKeys(res.text)
+    expect(res).to.have.status(500)
+  })
+  it('should FAIL to get serails with a BAD caseId', async function () {
+    const getkeysRes: ChaiHttp.Response = await chai.request(apiURL).get(`/keys/fubar}`)
+    expect(getkeysRes).to.have.status(500)
   })
 }

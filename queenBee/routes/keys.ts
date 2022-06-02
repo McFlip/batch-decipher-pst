@@ -25,7 +25,11 @@ const upload = multer({ storage })
 export const nuke = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
 	const { caseId } = req.params
 	const p12 = `/app/workspace/${caseId}/p12`
-	fs.readdirSync(p12).forEach(f => fs.rmSync(path.join(p12, f)))
+	try{
+		fs.readdirSync(p12).forEach(f => fs.rmSync(path.join(p12, f)))
+	} catch (err) {
+		return next(err)
+	}
 	next()
 }
 // extract key from uploaded p12 container

@@ -22,6 +22,9 @@ export default function sigs(this: Mocha.Suite): void {
     expect(createdRes).to.have.status(201)
     const { caseId }: { caseId: CaseType["_id"] } = createdRes.body
     debugSig(caseId)
+    // Attempt to prematurely get results - this should fail
+    const premetureRes: ChaiHttp.Response = await chai.request(apiURL).get(`/sigs/${caseId}`)
+    expect(premetureRes).to.have.status(500)
     // Upload the pst
     const uploadRes: ChaiHttp.Response = await chai.request(apiURL)
       .post(`/sigs/upload/${caseId}`)
@@ -36,11 +39,14 @@ export default function sigs(this: Mocha.Suite): void {
     // Run getSigs
     const getSigsRes: ChaiHttp.Response = await chai.request(apiURL).post('/sigs').send({caseId})
     expect(getSigsRes).to.have.status(200)
-    debugSig('DUUUUUUUUUUUUUUUUUVAAALLL!!!!')
     debugSig(getSigsRes.text)
     expect(getSigsRes.text).to.contain("3 items done, 0 items skipped")
     expect(getSigsRes.text).to.contain("Failed to get cert for:\r\n /tmp/PST/TEST/Inbox/buried/deep/down/1.eml\r\n")
     expect(getSigsRes.text).to.contain("serial=12C3905B55296E401270C0CEB18B5BA660DB9A1F\r\n")
+    // Delete uploaded PST
+    const delRes: ChaiHttp.Response = await chai.request(apiURL).delete(`/sigs/upload/pst/${caseId}`)
+    expect(delRes).to.have.status(200)
+    expect(fs.readdirSync(`/app/workspace/${caseId}/sigsPSTs`)).to.have.length(0)
   })
   it('should FAIL to process emails with a bad case id', async function () {
     const res404: ChaiHttp.Response = await chai.request(apiURL).post('/sigs').send({caseId: 'aaaaaaaaaaaaaaaaaaaaaaaa'})
@@ -49,6 +55,18 @@ export default function sigs(this: Mocha.Suite): void {
   it('should FAIL to process email with no case id', async function () {
     const res500: ChaiHttp.Response = await chai.request(apiURL).post('/sigs').send({})
     expect(res500).to.have.status(500)
+  })
+  it('should FAIL to upload PSTs with a bad case id', async function () {
+    const uploadRes: ChaiHttp.Response = await chai.request(apiURL)
+      .post('/sigs/upload/fubar')
+      .type('form')
+      .attach('pst', fs.readFileSync('/app/tests/data/pst/TEST.pst'), 'TEST.pst')
+    expect(uploadRes).to.have.status(500)
+    const res404: ChaiHttp.Response = await chai.request(apiURL)
+      .post('/sigs/upload/')
+      .type('form')
+      // .attach('pst', fs.readFileSync('/app/tests/data/pst/TEST.pst'), 'TEST.pst')
+    expect(res404).to.have.status(404)
   })
   it('should read certs from an already processed case', async function () {
     const caseRes: ChaiHttp.Response = await chai.request(apiURL).get('/cases')
@@ -76,5 +94,9 @@ export default function sigs(this: Mocha.Suite): void {
     const { caseId }: { caseId: CaseType["_id"] } = createdRes.body
     const getSigsRes: ChaiHttp.Response = await chai.request(apiURL).post('/sigs').send({caseId})
     expect(getSigsRes).to.have.status(500)
+  })
+  it('should FAIL to delete PST files with a BAD case id', async function () {
+    const delRes: ChaiHttp.Response = await chai.request(apiURL).delete('/sigs/upload/pst/fubar')
+    expect(delRes).to.have.status(500)
   })
 }
