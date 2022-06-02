@@ -2,6 +2,7 @@ import chai, { expect } from 'chai'
 import debug from 'debug'
 import apiURL from '../../index'
 import fs from 'fs'
+import { cleanup } from '../util/cleanup'
 // import types
 import type {} from 'mocha'
 import type {} from 'chai-http'
@@ -13,11 +14,7 @@ const dbName = 'decipherDB'
 const decipherDebug = debug('decipher')
 
 export default function decipher(this: Mocha.Suite): void {
-  after(async function() {
-    const { client } = this.test?.ctx as myContext
-    const cases = client.db(dbName).collection('cases')
-    cases.drop()
-  })
+  after(cleanup)
   it('should decipher encrypted email from pst', async function () {
     const testCase = {
       name: 'test case',

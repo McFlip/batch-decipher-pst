@@ -7,6 +7,7 @@ import fs from 'fs'
 // import utilities
 import { checkCase } from '../util/checkCase'
 import {pathValidator} from '../../util/pathvalidator'
+import { cleanup } from '../util/cleanup'
 // import data
 import { testCase } from '../data/cases'
 // import types
@@ -21,6 +22,7 @@ const getCase = () => {
 }
 
 export default function cases (this: Mocha.Suite): void {
+  after(cleanup)
   it('should create a case', async function (): Promise<void> {
     const sentCase = {
       name: 'test case',

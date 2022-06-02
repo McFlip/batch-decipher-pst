@@ -31,6 +31,12 @@ podman run -it --rm --security-opt label=disable -v $(pwd):/app --workdir /app n
 
 Build the test container `buildah bud -t test-queenbee .`
 
+Create the podman socket at `batch-decipher-pst/podman`
+
+```bash
+podman system service -t 0 unix:$(pwd)/podman.sock &
+```
+
 Run the test container
 
 ```bash
@@ -39,7 +45,7 @@ podman run -it --privileged --env NODE_ENV='test' --rm -v $(pwd):/app:z -v test_
 # Suppress stderr for less noise on tests that 'fail' succussfuly 
 podman run --privileged --env NODE_ENV='test' --attach stdout --rm -v $(pwd):/app:z -v test_hive:/app/workspace -v $(pwd)/../podman/podman.sock:/var/run/docker.sock:z test-queenbee npm test
 # Get debug output
-podman run -it --privileged --env NODE_ENV='test' --env DEBUG='sig' --rm -v $(pwd):/app:z -v test_hive:/app/workspace -v $(pwd)/../podman/podman.sock:/var/run/docker.sock:z test-queenbee npm test
+podman run -it --privileged --env NODE_ENV='test' --env DEBUG='keys' --rm -v $(pwd):/app:z -v test_hive:/app/workspace -v $(pwd)/../podman/podman.sock:/var/run/docker.sock:z test-queenbee npm test
 ```
 
 The test is configured to bail on the 1st failure.

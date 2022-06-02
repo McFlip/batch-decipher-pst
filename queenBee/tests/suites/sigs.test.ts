@@ -2,7 +2,7 @@ import chai, { expect } from 'chai'
 import debug from 'debug'
 import apiURL from '../../index'
 import fs from 'fs'
-import path from 'path'
+import { cleanup } from '../util/cleanup'
 // import types
 import type {} from 'mocha'
 import type {} from 'chai-http'
@@ -11,12 +11,7 @@ import CaseType from '../../types/case'
 const debugSig = debug('sig')
 
 export default function sigs(this: Mocha.Suite): void {
-  after(async function() {
-    const caseDirs = fs.readdirSync('/app/workspace')
-    caseDirs.forEach((folder) => {
-      fs.rmSync(path.join('/app/workspace', folder), { recursive: true, force: true })
-    })
-  })
+  after(cleanup)
   it('should get custodian cert info from signed emails', async function () {
     // Create a test case
     const testCase = {

@@ -28,6 +28,7 @@ export const extractKeys = async (req: Request, res: Response, next: NextFunctio
       // debugKeys(Env)
       const outLog = fs.createWriteStream(`/app/workspace/${caseId}/outLog.txt`)
       const errLog = fs.createWriteStream(`/app/workspace/${caseId}/errLog.txt`)
+      const hive = process.env.NODE_ENV === 'test' ? 'test_hive' : 'batch-decipher-pst_hive'
       const [data, container] = await dockerAPI.run(
         'batch-decipher-pst_busybee',
         ['./getKeys.bash', p12Path, keysPath],
@@ -35,7 +36,7 @@ export const extractKeys = async (req: Request, res: Response, next: NextFunctio
         {
           HostConfig: { 
             Binds: [
-              'batch-decipher-pst_hive:/app/workspace:z'
+              `${hive}:/app/workspace:z`
           ]},
           Env,
           Tty: false
