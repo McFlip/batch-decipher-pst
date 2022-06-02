@@ -3,9 +3,11 @@
 import fs from 'fs'
 import path from 'path'
 
-const rtPath = '/app/workspace'
+const rtPaths = ['/app/workspace', '/srv/public']
 export const cleanup = async function() {
-	const caseDirs = fs.readdirSync(rtPath)
-	caseDirs.forEach((folder) => {
-		fs.rmSync(path.join(rtPath, folder), { recursive: true, force: true })
-	})}
+	rtPaths.forEach(rtFolder => {
+		fs.readdirSync(rtFolder).forEach((subFolder) => {
+			fs.rmSync(path.join(rtFolder, subFolder), { recursive: true, force: true })
+		})
+	})
+}

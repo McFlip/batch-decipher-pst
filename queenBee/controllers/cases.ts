@@ -38,6 +38,7 @@ export const create = (req: Request, res: Response, next: NextFunction): void =>
     return next(error)
   }
   // path structure
+  // const sharePath = process.env.NODE_ENV === 'test' ? 'test_share' : '/srv/public'
   const sharePath = '/srv/public'
   const subDirs = ['sigs', 'sigsPSTs', 'ctPSTs', 'p12', 'keys']
   const shareSubDirs = ['pt', 'exceptions']

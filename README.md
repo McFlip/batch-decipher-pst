@@ -41,11 +41,11 @@ Run the test container
 
 ```bash
 # Get stderr and color output
-podman run -it --privileged --env NODE_ENV='test' --rm -v $(pwd):/app:z -v test_hive:/app/workspace -v $(pwd)/../podman/podman.sock:/var/run/docker.sock:z test-queenbee npm test
+podman run -it --privileged --env NODE_ENV='test' --rm -v $(pwd):/app:z -v test_hive:/app/workspace -v test_share:/srv/public -v $(pwd)/../podman/podman.sock:/var/run/docker.sock:z test-queenbee npm test
 # Suppress stderr for less noise on tests that 'fail' succussfuly 
-podman run --privileged --env NODE_ENV='test' --attach stdout --rm -v $(pwd):/app:z -v test_hive:/app/workspace -v $(pwd)/../podman/podman.sock:/var/run/docker.sock:z test-queenbee npm test
+podman run --privileged --env NODE_ENV='test' --attach stdout --rm -v $(pwd):/app:z -v test_hive:/app/workspace -v test_share:/srv/public -v $(pwd)/../podman/podman.sock:/var/run/docker.sock:z test-queenbee npm test
 # Get debug output
-podman run -it --privileged --env NODE_ENV='test' --env DEBUG='keys' --rm -v $(pwd):/app:z -v test_hive:/app/workspace -v $(pwd)/../podman/podman.sock:/var/run/docker.sock:z test-queenbee npm test
+podman run -it --privileged --env NODE_ENV='test' --env DEBUG='decipher' --rm -v $(pwd):/app:z -v test_hive:/app/workspace -v test_share:/srv/public -v $(pwd)/../podman/podman.sock:/var/run/docker.sock:z test-queenbee npm test
 ```
 
 The test is configured to bail on the 1st failure.

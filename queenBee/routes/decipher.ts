@@ -27,6 +27,7 @@ export const nuke = async (req: Request, res: Response, next: NextFunction): Pro
 		fs.readdirSync(pstPath).forEach(f => fs.rmSync(path.join(pstPath, f), { recursive: true }))
 		res.status(200).send('PST files deleted')
 	} catch (error) {
+		/* istanbul ignore next */
 		next(error)
 	}
 }
