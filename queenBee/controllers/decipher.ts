@@ -71,7 +71,9 @@ export const decipher = async (req: Request, res: Response, next: NextFunction):
                 },
                 Env
               })
+              /* istanbul ignore next */
               .then(data => data[1])
+        /* istanbul ignore next */
         await container.remove()
         /* istanbul ignore next */
         res.end()

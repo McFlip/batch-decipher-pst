@@ -7,7 +7,6 @@ import { cleanup } from '../util/cleanup'
 import type {} from 'mocha'
 import type {} from 'chai-http'
 import CaseType from '../../types/case'
-import exp from 'constants'
 
 const debugKeys = debug('keys')
 
@@ -86,5 +85,30 @@ export default function keys(this: Mocha.Suite): void {
   it('should FAIL to get serails with a BAD caseId', async function () {
     const getkeysRes: ChaiHttp.Response = await chai.request(apiURL).get(`/keys/fubar}`)
     expect(getkeysRes).to.have.status(500)
+  })
+  it('should FAIL to extract a key with missing form data', async function () {
+    const testCase = {
+      name: 'test case',
+      forensicator: 'Sherlock Holmes',
+    }
+    // create test case
+    const caseRes: ChaiHttp.Response = await chai.request(apiURL).post('/cases').send(testCase)
+    expect(caseRes).to.have.status(201)
+    const { caseId }: { caseId: CaseType["_id"] } = caseRes.body
+    const fakeId = 'fubar'
+    const p12PW = 'fubar'
+    const keyPW = 'fubar'
+    const noId = {p12PW,keyPW}
+    const noP12 = {fakeId,keyPW}
+    const noKey = {fakeId,p12PW}
+    const forms = [noId,noP12,noKey]
+    forms.forEach(async (f) => {
+      const res: ChaiHttp.Response = await chai.request(apiURL)
+        .post(`/keys/${caseId}`)
+        .type('form')
+        .field(f)
+      expect(res).to.have.status(500)
+      debugKeys(res.status)
+    })
   })
 }
