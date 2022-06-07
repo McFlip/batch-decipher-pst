@@ -31,10 +31,6 @@ else
     podman pod create --name $PROJ -p 8080:8080 -p 3000:3000 -p 27017:27017
 fi
 
-# database
-# --security-opt label=disable # disable SELinux pretection for debugging
-podman run -dt --name "$PROJ"_db -v "$PROJ"_dbvol:/data/db:z,U --pod $PROJ mongo
-
 # front end
 podman run -dt --name "$PROJ"_beekeeper \
     --env NODE_ENV=development \

@@ -5,7 +5,7 @@ eDiscovery tool to decipher a collection of PST archives containing encrypted em
 
 ### Busy Bee
 
-Build the Busy Bee image `build.dev.bash`
+Build the Busy Bee image `build.bash "busyBee"`
 
 Next, build the test container
 ```bash
@@ -49,3 +49,22 @@ podman run -it --privileged --env NODE_ENV='test' --env DEBUG='decipher' --rm -v
 ```
 
 The test is configured to bail on the 1st failure.
+
+### Bee Keeper
+
+To do.
+
+## Dev
+
+Run the tests first to ensure you have installed all dependancies. 
+
+To work on the UI and API stand up the dev servers with `compose.dev.bash`.
+
+To work on the BASH scripts use a busybee container.
+
+```bash
+cd beeKeeper
+podman run -it --name=busybee_dev -v $(pwd):/app:z busybee bash
+```
+
+If you make changes to the busy bee scripts make sure you re-build the container before moving on to work on the UI/API.

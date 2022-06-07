@@ -1,19 +1,12 @@
 #!/bin/bash
 # Workaround for podman-compose - will bring up the project pod and containers
 # Use build script to build with buildah
-# Create share volume ahead of time
+# Create share '/srv/public' ahead of time and configure access
 # Meant to be run rootless
 # Bring down project with pod stop; pod rm; rm podman/podman.sock
 
 PROJ=batch-decipher-pst
 
-# create public volume with NFS mapping if it doesn't already exist
-# other volumes will be automatically created if they don't exist
-# publicExists=$(podman volume inspect "$PROJ"_public | grep 'no such volume')
-# if [ -n "$publicExists" ]
-# then
-# podman volume create --driver local --opt type=nfs --opt o=nfsvers=4,addr=127.0.0.1 --opt device=:/srv/public "$PROJ"_public
-# fi
 # create the unix socket
 if [ ! -d podman ]
 then
@@ -25,6 +18,7 @@ then
     rm -f podman/podman.sock
 fi
 podman system service -t 0 unix:$(pwd)/podman/podman.sock &
+
 # check for pod; if it doesn't exist then exit code == 1
 podman pod exists $PROJ
 if [ $? -eq 1 ]
@@ -37,8 +31,7 @@ else
     podman pod rm $PROJ
     podman pod create --name $PROJ -p 8080:8080 -p 3000:3000
 fi
-# database
-podman run -dt --pod $PROJ --name "$PROJ"_db -v "$PROJ"_dbvol:/data:Z mongo
+
 # front end
 podman run -dt --pod $PROJ --name "$PROJ"_beekeeper \
     --env NODE_ENV=production \
@@ -46,6 +39,7 @@ podman run -dt --pod $PROJ --name "$PROJ"_beekeeper \
     --env apiInternal=localhost \
     -v $(pwd)/tlscert:/app/tlscert:z,U \
     "$PROJ"_beekeeper
+
 # back end
 podman run -dt --pod $PROJ --name "$PROJ"_queenbee \
     --env NODE_ENV=production \
@@ -54,5 +48,3 @@ podman run -dt --pod $PROJ --name "$PROJ"_queenbee \
     -v $(pwd)/podman/podman.sock:/var/run/docker.sock:Z \
     -v $(pwd)/tlscert:/app/tlscert:z \
     "$PROJ"_queenbee
-    # -v "$PROJ"_public:/srv/public:z \
-    # --env HOST_IP=localhost \
