@@ -6,9 +6,7 @@ import { caseRte } from './routes/cases'
 import {sigsRte} from './routes/sigs'
 import {keysRte} from './routes/keys'
 import debug from 'debug'
-import mongoose from 'mongoose'
 import { decipherRte } from './routes/decipher'
-import errorhandler from 'errorhandler'
 
 const app = express()
 const debugApp = debug('app')
@@ -22,20 +20,6 @@ const tlsOpts = process.env.NODE_ENV === 'production' ? {
 // Config for CORS - set to Domain or http://localhost:8080 if deploying full stack
 // Leave as '*' for public API
 const ACAO = process.env.ALLOW_ORIGIN || '*'
-const dbName = 'decipherDB'
-const hostName = process.env.HOST_IP || '0.0.0.0'
-const dbHost = `mongodb://${hostName}:27017/${dbName}`
-const dbOpts = {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-  useCreateIndex: true,
-  useFindAndModify: false
-}
-
-// Database connection
-mongoose.connect(dbHost, dbOpts)
-const db = mongoose.connection
-db.once('open', () => debugApp('Mongoose is connected'))
 
 // Middlewares
 app.use(bodyParser.json())
@@ -47,8 +31,6 @@ app.use(function (req, res, next) {
   res.header('Access-Control-Allow-Methods', 'GET, PUT, POST, PATCH, DELETE')
   next()
 })
-// Eror handler for debugging crashes w/ no error messages
-if (process.env.NODE_ENV === 'development') app.use(errorhandler())
 
 // Routes
 app.use('/cases', caseRte)

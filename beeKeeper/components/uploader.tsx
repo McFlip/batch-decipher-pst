@@ -130,7 +130,7 @@ export default function Uploader (props: propsType) {
 			<h3>Delete previous uploads</h3>
 			<p>If working in batches, delete previous input before uploading next batch</p>
 			<button className='btn btn-danger' disabled={deletingPSTs} onClick={() => handleDelete()}>
-				{ deletingPSTs ? 'Deleting...' : 'Delete PSTs'}
+				{ deletingPSTs ? 'Deleting...' : 'Delete Uploads'}
 			</button>
 			<hr/>
 			<p>Use the following URL if uploading with a script:<ClipBtn txtToCopy={url} /></p>
