@@ -1,11 +1,12 @@
 import Head from 'next/head'
 import Link from 'next/link'
-import {useState, useEffect} from 'react'
+import {useState} from 'react'
 import debug from 'debug'
 import Menu from 'components/menu'
 import SearchBar from 'components/searchbar'
 import ListCases from 'components/listcases'
 import { apiExternal } from '../constants'
+import axios from 'axios'
 
 const HomeDebug = debug('home')
 debug.enable('home')
@@ -16,16 +17,10 @@ export default function Home() {
     HomeDebug(`Search by ${searchCategory} for ${searchTerm}`)
     const url = `${apiExternal}:3000/cases/search?${searchCategory}=${encodeURI(searchTerm)}`
     try {
-      const res = await fetch(url, {
-        method: 'GET',
-        mode: 'cors',
-        // cache: 'no-cache',
-        headers: {'Content-Type': 'application/json'}
-      })
-      const fetchedCases = await res.json()
-      if (fetchedCases.length === 0) alert('no cases found')
-      HomeDebug(fetchedCases)
-      setCases(fetchedCases)
+      const {data} = await axios.get(url)
+      if (data.length === 0) alert('no cases found')
+      HomeDebug(data)
+      setCases(data)
     } catch (err) {
       HomeDebug(`failed to fetch ${url}`)
       // HomeDebug(err)
