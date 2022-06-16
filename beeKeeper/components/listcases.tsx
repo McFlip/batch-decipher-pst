@@ -1,12 +1,5 @@
 import Link from 'next/link'
 
-interface caseType {
-  status: 'active' | 'inactive',
-  _id: string,
-  name: string,
-  forensicator: string,
-  dateCreated: string
-}
 const caseRows = (cases: caseType[]): JSX.Element[] => 
   cases.map(c => <tr key={c._id}>
     <td>{c.forensicator}</td>
