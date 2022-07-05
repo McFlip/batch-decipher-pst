@@ -1,7 +1,7 @@
 import SearchBar from '../components/searchbar'
 import '@testing-library/jest-dom'
 import { render, fireEvent } from '@testing-library/react'
-import { act } from 'react-dom/test-utils'
+import { act } from '@testing-library/react'
 
 let searchCategory, searchTerm
 const mockSearch = (category, term) => {

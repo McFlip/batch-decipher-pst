@@ -1,5 +1,6 @@
 import { FormEvent, useState, Dispatch, SetStateAction } from "react"
 import debug from "debug"
+import axios from "axios"
 import { apiExternal } from "../constants"
 import ClipBtn from 'components/clipbtn'
 
@@ -31,11 +32,7 @@ export default function Uploader (props: propsType) {
     const url = `${apiExternal}:3000/${destination}/upload/pst/${caseId}`
     if (!confirm('Are you sure? This cannot be undone!')) return
     setDeletingPSTs(true)
-    const res = await fetch(url, {
-      method: 'DELETE',
-      mode: 'cors',
-      cache: 'no-cache'
-    })
+    const res = await axios.delete(url)
     if (res.status !== 200) alert('Deleting PSTs failed :(')
     setDeletingPSTs(false)
   }
