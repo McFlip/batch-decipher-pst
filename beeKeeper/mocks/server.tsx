@@ -1,4 +1,4 @@
-import {rest} from 'msw'
+import {DefaultBodyType, rest} from 'msw'
 import {setupServer} from 'msw/node'
 
 const testCase1 = {
@@ -14,6 +14,12 @@ const testCase2 = {
 	forensicator: 'Batman',
 	dateCreated: '2/20/2020',
 	custodians: 'yaboi'
+}
+interface DelPostRes {
+	caseId: string
+}
+interface DelPostParams {
+	caseId: string
 }
 
 const server = setupServer(
@@ -44,8 +50,13 @@ const server = setupServer(
 			return res(ctx.json([ testCase1, testCase2 ]))
 		}
   }),
-	rest.delete('http://localhost:3000/sigs/upload/pst/:caseId', (req, res, ctx) => {
-		const caseId = req.params
+	rest.delete <DefaultBodyType, DelPostRes, DelPostParams>('http://localhost:3000/sigs/upload/pst/:caseId', (req, res, ctx) => {
+		// expecting to recieve caseId 12345
+		const caseId = req.params.caseId
+		if(caseId != '12345') return(
+			ctx.delay(),
+			ctx.status(400)
+		)
 		return res(
 			ctx.delay(), // need a delay to test Delete button behavior
 			ctx.json({caseId})
@@ -57,6 +68,10 @@ const server = setupServer(
 			ctx.delay(), // need a delay to test Upload button behavior
 			ctx.text('PST(s) uploaded')
 			)
+	}),
+	rest.post('http://localhost:3000/cases', (req, res, ctx) => {
+		const caseId = '1234'
+		return res(ctx.json({caseId}))
 	})
 )
 

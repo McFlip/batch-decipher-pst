@@ -5,6 +5,7 @@ import {FormEvent, useState} from 'react'
 import debug from 'debug'
 import Menu from 'components/menu'
 import { apiExternal } from '../constants'
+import axios from 'axios'
 
 export default function NewCase () {
   const router = useRouter()
@@ -15,18 +16,11 @@ export default function NewCase () {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     const url = `${apiExternal}:3000/cases`
-    const body = JSON.stringify({name: caseName, forensicator})
+    if(!forensicator) return alert('Missing Forensicator')
+    if(!caseName) return alert('Missing Case Name')
     try {
-      const res = await fetch(url, {
-        method: 'POST',
-        mode: 'cors',
-        cache: 'no-cache',
-        headers: {'Content-Type': 'application/json'},
-        body
-      })
-      // console.log(res)
-      const {caseId} = await res.json()
-      // console.log(caseId)
+      const res = await axios.post(url, {name: caseName, forensicator})
+      const {caseId} = await res.data
       newCaseDebug(caseId)
       router.push(`${caseId}/custodians`)
     } catch (err) {
