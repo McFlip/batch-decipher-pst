@@ -1,4 +1,4 @@
-import SearchBar from '../components/searchbar'
+import SearchBar from 'components/searchbar'
 import '@testing-library/jest-dom'
 import { render, fireEvent } from '@testing-library/react'
 import { act } from '@testing-library/react'

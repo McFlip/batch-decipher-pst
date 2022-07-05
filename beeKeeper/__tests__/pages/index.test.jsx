@@ -1,5 +1,5 @@
 // Testing the Home Page
-import Home from '../pages/index'
+import Home from 'pages/index'
 import { render, fireEvent , within, waitForElementToBeRemoved , waitFor, logRoles } from '@testing-library/react'
 import '@testing-library/jest-dom'
 import { act } from '@testing-library/react'

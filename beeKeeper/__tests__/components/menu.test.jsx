@@ -1,4 +1,4 @@
-import Menu from '../components/menu'
+import Menu from 'components/menu'
 import '@testing-library/jest-dom'
 import { render } from '@testing-library/react'
 

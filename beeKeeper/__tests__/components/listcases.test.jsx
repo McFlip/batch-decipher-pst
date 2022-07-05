@@ -1,4 +1,4 @@
-import ListCases from '../components/listcases'
+import ListCases from 'components/listcases'
 import '@testing-library/jest-dom'
 import { render, within } from '@testing-library/react'
 
