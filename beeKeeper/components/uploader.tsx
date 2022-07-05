@@ -132,10 +132,10 @@ export default function Uploader (props: propsType) {
 			<hr/>
 			<p>Use the following URL if uploading with a script:<ClipBtn txtToCopy={url} /></p>
       <p><code>{url}</code></p>
-			<form onSubmit={handleUpload}>
+			<form onSubmit={handleUpload} role='form'>
 				<div className='form-group'>
 					<label htmlFor='files'>Select {fileType === "pst" ? 'all PSTs' : 'one p12 at a time'}</label>
-					<input id='files' type='file' multiple={fileType != "p12"} className='form-control-file' onChange={e => setFilesVerified(e.target.files)} />
+					<input id='files' type='file' multiple={fileType != "p12"} role='button' aria-label="File Upload" className='form-control-file' onChange={e => setFilesVerified(e.target.files)} />
 				</div>
 				{fileType === "p12" ? pwForm() : ''}
 				<button className='btn btn-primary' type='submit' disabled={isRunning}>Upload{isRunning? 'ing...' : ''}</button>

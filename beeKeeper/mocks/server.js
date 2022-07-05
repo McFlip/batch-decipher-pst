@@ -48,7 +48,14 @@ const server = setupServer(
 		const caseId = req.params
 		return res(
 			ctx.delay(), // need a delay to test Delete button behavior
-			ctx.json({ caseId })
+			ctx.json({caseId})
+			)
+	}),
+	rest.post('http://localhost:3000/sigs/upload/:caseId', (req, res, ctx) => {
+		console.log("DUUUUUUVAL!")
+		return res(
+			ctx.delay(), // need a delay to test Upload button behavior
+			ctx.text('PST(s) uploaded')
 			)
 	})
 )
