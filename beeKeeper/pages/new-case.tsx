@@ -4,7 +4,7 @@ import {useRouter} from 'next/router'
 import {FormEvent, useState} from 'react'
 import debug from 'debug'
 import Menu from 'components/menu'
-import { apiExternal } from '../constants'
+import { apiExternal } from 'constants/'
 import axios from 'axios'
 
 export default function NewCase () {

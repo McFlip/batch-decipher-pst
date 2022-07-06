@@ -8,7 +8,7 @@ import { FormEvent, useState } from 'react'
 import debug from 'debug'
 import Modal from 'react-bootstrap/Modal'
 import Button from 'react-bootstrap/Button'
-import { apiExternal, apiInternal } from '../../constants'
+import { apiExternal, apiInternal } from 'constants/'
 import ClipBtn from 'components/clipbtn'
 
 const CertsDebug = debug('certs')

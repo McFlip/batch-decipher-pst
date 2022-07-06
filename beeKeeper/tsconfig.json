@@ -22,14 +22,17 @@
     "paths": {
       "@pages": ["pages/*"],
       "@components": ["components/*"],
-      "@mocks": ["mocks/*"]
+      "@mocks": ["mocks/*"],
+      "@types": ["types/*"],
+      "@constants": ["constants/*"],
+      "@fixtures": ["fixtures/*"]
     }
   },
   "include": [
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx"
-  ],
+, "__tests__/pages/editcase.jsx"  ],
   "exclude": [
     "node_modules"
   ]

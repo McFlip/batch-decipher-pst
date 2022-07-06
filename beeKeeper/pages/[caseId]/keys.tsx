@@ -4,7 +4,7 @@ import {useRouter} from 'next/router'
 import {GetServerSideProps} from 'next'
 import { useState } from 'react'
 import debug from 'debug'
-import { apiExternal, apiInternal } from '../../constants'
+import { apiExternal, apiInternal } from 'constants/'
 import Uploader from 'components/uploader'
 
 const KeysDebug = debug('keys')

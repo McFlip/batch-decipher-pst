@@ -21,7 +21,7 @@ describe('Home Page', () => {
 
 		act(() => fireEvent.change(getByRole('textbox'), { target: { value: 'Sherlock' }}))
 		act(() => fireEvent.click(getByText('Search')))
-		await findByText(/Holms/)
+		await findByText(/Holmes/)
 		// logRoles(getByRole('table'))
 		expect(queryByText(/Batman/)).toBeNull()
 	})
@@ -32,12 +32,12 @@ describe('Home Page', () => {
 		act(() => fireEvent.change(getByRole('textbox'), { target: { value: '2' }}))
 		act(() => fireEvent.click(getByText('Search')))
 		await findByText(/Batman/)
-		expect(queryByText(/Holms/)).toBeNull()
+		expect(queryByText(/Holmes/)).toBeNull()
 	})
 	it('lists all the cases', async () => {
 		const { getByText, findByText } = render(<Home />)
 		act(() => fireEvent.click(getByText('Search')))
-		await findByText(/Holms/)
+		await findByText(/Holmes/)
 	})
 	it('FAILS to find non-existent case', async () => {
 		const { getByText, getByRole, findByText, debug, queryByText } = render(<Home />)
@@ -45,11 +45,11 @@ describe('Home Page', () => {
 		// Get case 1 so that we can check for it's disapearance
 		act(() => fireEvent.change(getByRole('textbox'), { target: { value: 'Sherlock' }}))
 		act(() => fireEvent.click(getByText('Search')))
-		await findByText(/Holms/)
+		await findByText(/Holmes/)
 		// Search for Pickle Rick which should return nothing and make the previous result disapear
 		act(() => fireEvent.change(getByRole('textbox'), { target: { value: 'Pickle Rick' }}))
 		act(() => fireEvent.click(getByText('Search')))
-		await waitForElementToBeRemoved(queryByText(/Holms/))
+		await waitForElementToBeRemoved(queryByText(/Holmes/))
 		expect(alertMsg).toBe('no cases found')
 		window.alert.mockClear()
 	})

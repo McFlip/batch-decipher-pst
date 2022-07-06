@@ -5,7 +5,7 @@ import {GetServerSideProps} from 'next'
 import {FormEvent, useState} from 'react'
 import Menu from 'components/menu'
 import debug from 'debug'
-import { apiExternal, apiInternal } from '../../constants'
+import { apiExternal, apiInternal } from 'constants/'
 
 const custodiansDebug = debug('custodians')
 debug.enable('custodians')

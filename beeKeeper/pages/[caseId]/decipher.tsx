@@ -7,7 +7,7 @@ import { FormEvent, MouseEvent, useState } from 'react'
 import debug from 'debug'
 import ProgressBar from 'react-bootstrap/ProgressBar'
 import Alert from 'react-bootstrap/Alert'
-import { apiExternal, apiInternal } from '../../constants'
+import { apiExternal, apiInternal } from 'constants/'
 
 const DecipherDebug = debug('decipher')
 debug.enable('decipher')

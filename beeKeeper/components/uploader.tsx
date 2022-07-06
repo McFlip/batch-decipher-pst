@@ -1,7 +1,7 @@
 import { FormEvent, useState, Dispatch, SetStateAction } from "react"
 import debug from "debug"
 import axios from "axios"
-import { apiExternal } from "../constants"
+import { apiExternal } from "constants/"
 import ClipBtn from 'components/clipbtn'
 
 const uploadDebug = debug('uploader')

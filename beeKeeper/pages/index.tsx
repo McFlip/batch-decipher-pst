@@ -5,7 +5,7 @@ import debug from 'debug'
 import Menu from 'components/menu'
 import SearchBar from 'components/searchbar'
 import ListCases from 'components/listcases'
-import { apiExternal } from '../constants'
+import { apiExternal } from 'constants/'
 import axios from 'axios'
 
 const HomeDebug = debug('home')

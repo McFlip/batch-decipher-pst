@@ -1,10 +1,12 @@
 import {DefaultBodyType, rest} from 'msw'
 import {setupServer} from 'msw/node'
+import CaseType from 'types/case'
+import testCases from 'fixtures/cases'
 
 const testCase1 = {
 	_id: '1234',
 	name: 'test case 1',
-	forensicator: 'Sherlock Holms',
+	forensicator: 'Sherlock Holmes',
 	dateCreated: '1/1/1970',
 	custodians: 'Alice\nBob'
 }
@@ -19,6 +21,14 @@ interface DelPostRes {
 	caseId: string
 }
 interface DelPostParams {
+	caseId: string
+}
+interface CasePatchReq {
+	name?: string,
+	forensicator?: string,
+	custodians?: string
+}
+interface CasePatchParams {
 	caseId: string
 }
 
@@ -50,7 +60,20 @@ const server = setupServer(
 			return res(ctx.json([ testCase1, testCase2 ]))
 		}
   }),
-	rest.delete <DefaultBodyType, DelPostRes, DelPostParams>('http://localhost:3000/sigs/upload/pst/:caseId', (req, res, ctx) => {
+	rest.patch<CasePatchReq, CaseType, CasePatchParams>('http://localhost:3000/cases/:caseId', (req, res, ctx) => {
+		const caseId = req.params.caseId
+		const { name, forensicator, custodians } = req.body
+		const oldData = testCases[caseId]
+		const newData = {
+			_id: oldData._id,
+			dateCreated: oldData.dateCreated,
+			name: name || oldData.name,
+			forensicator: forensicator || oldData.forensicator,
+			custodians: custodians || oldData.custodians
+		}
+		return res(ctx.json(newData))
+	}),
+	rest.delete<DefaultBodyType, DelPostRes, DelPostParams>('http://localhost:3000/sigs/upload/pst/:caseId', (req, res, ctx) => {
 		// expecting to recieve caseId 12345
 		const caseId = req.params.caseId
 		if(caseId != '12345') return(
