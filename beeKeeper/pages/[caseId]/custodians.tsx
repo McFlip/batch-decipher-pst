@@ -6,6 +6,7 @@ import {FormEvent, useState} from 'react'
 import Menu from 'components/menu'
 import debug from 'debug'
 import { apiExternal, apiInternal } from 'constants/'
+import axios from 'axios'
 
 const custodiansDebug = debug('custodians')
 debug.enable('custodians')
@@ -22,32 +23,25 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     })
     const {custodians}: {custodians: string} = await res.json()
     return {
-      props: { custodians: custodians || '' }
+      props: { custodians: custodians || '', caseId }
     }
   } catch (err) {
     custodiansDebug(err)
-    return { props: { custodians: ''}}
+    return { props: { custodians: '', caseId }}
   }
 }
 
-export default function Custodians({custodians}: {custodians: string}) {
+export default function Custodians({custodians, caseId}: {custodians: string, caseId: string}) {
   const [myCustodians, setMyCustodians] = useState(custodians)
   const router = useRouter()
-  const {caseId}: {caseId?: string} = router.query
   custodiansDebug(caseId)
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     const url = `${apiExternal}:3000/cases/${caseId}`
     try {
-      const res = await fetch(url, {
-        method: 'PATCH',
-        mode: 'cors',
-        // cache: 'no-cache',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ custodians: myCustodians })
-      })
-      if (res.ok) {
+      const res = await axios.patch(url, { custodians: myCustodians })
+      if (res.status == 200) {
         router.push(`/${caseId}/certs`)
       }
     } catch (err) {
