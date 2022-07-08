@@ -5,7 +5,8 @@ import { act } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import server from 'mocks/server'
 import {rest} from 'msw'
-import testFile from 'fixtures/p12'
+import testP12 from 'fixtures/p12'
+import testPST from 'fixtures/pst'
 
 // NOTE: due to the useState function for setFiles being in the parent page,
 // actual upload in-progress and upload complete behavior will be tested at the page level.
@@ -67,9 +68,9 @@ describe('File Upload Component', () => {
 		await act(() => userEvent.click(getByText('Upload')))
 		expect(alertMsg[2]).toBe('Check file upload type')
 		// do it right this time, check file mock for success
-		await act(() => userEvent.upload(getByLabelText(/select all psts/i), testFile ))
+		await act(() => userEvent.upload(getByLabelText(/select all psts/i), testPST ))
 		await act(() => userEvent.click(getByText('Upload')))
-		expect(files.item(0)).toBe(testFile)
+		expect(files.item(0)).toBe(testPST)
 		// we will check behavior on API returning success msg in the page level tests
 	}),
 	it('validates a p12 upload', async () => {
@@ -87,9 +88,9 @@ describe('File Upload Component', () => {
 		await act(() => userEvent.click(getByText('Upload')))
 		expect(alertMsg[2]).toBe('Check file upload type')
 		// do it right this time, check file mock for success
-		await act(() => userEvent.upload(getByLabelText(/select one p12/i), testFile ))
+		await act(() => userEvent.upload(getByLabelText(/select one p12/i), testP12 ))
 		await act(() => userEvent.click(getByText('Upload')))
-		expect(files.item(0)).toStrictEqual(testFile)
+		expect(files.item(0)).toStrictEqual(testP12)
 		// we will check behavior on API returning success msg in the page level tests
 		// we will also check password inputs
 	})

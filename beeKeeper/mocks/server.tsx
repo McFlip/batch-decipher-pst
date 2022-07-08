@@ -106,6 +106,9 @@ const server = setupServer(
 	}),
 	rest.post('http://localhost:3000/keys/:caseId', (req, res, ctx) => {
 		return res(ctx.json(['1a2b3c']))
+	}),
+	rest.post('http://localhost:3000/decipher', (req, res, ctx) => {
+		return res(ctx.text('stream output from job container'))
 	})
 )
 
