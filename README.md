@@ -52,7 +52,11 @@ The test is configured to bail on the 1st failure.
 
 ### Bee Keeper
 
-To do.
+Change to the beeKeeper directory. This will run tests in watch mode. Press `q` to quit.
+
+```
+podman run -it --rm --name beekeeper_test -v $(pwd):/app:Z -w /app node:current npm test
+```
 
 ## Dev
 

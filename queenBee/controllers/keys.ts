@@ -27,7 +27,7 @@ export const extractKeys = async (req: Request, res: Response, next: NextFunctio
     const errLog = fs.createWriteStream(`/app/workspace/${caseId}/errLog.txt`)
     const hive = process.env.NODE_ENV === 'test' ? 'test_hive' : 'batch-decipher-pst_hive'
     const [data, container] = await dockerAPI.run(
-      'batch-decipher-pst_busybee',
+      'localhost/batch-decipher-pst_busybee',
       ['./getKeys.bash', p12Path, keysPath],
       [outLog, errLog],
       {

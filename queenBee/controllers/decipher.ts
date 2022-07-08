@@ -56,7 +56,7 @@ export const decipher = async (req: Request, res: Response, next: NextFunction):
         res.write('1%\n')
         // use 'Mounts' subsection of 'HostConfig' to create tmpfs mount
         const container = await dockerAPI.run(
-              'batch-decipher-pst_busybee',
+              'localhost/batch-decipher-pst_busybee',
               ['./decipher.bash', pstPath, ptPath, keysPath, exceptionsPath],
               res,
               { 

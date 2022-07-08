@@ -12,7 +12,7 @@ window.alert = jest.fn(msg => alertMsg.push(msg))
 
 describe('decipher pg', () => {
 	it('warns when no keys are loaded in the case', () => {
-		const { getByText } = render(<Decipher caseId='1' />)
+		const { getByText } = render(<Decipher caseId='1' serialsProp={[]} />)
 		expect(getByText(/WARNING/)).toBeInTheDocument()
 		// check that run button is disabled
 		expect(getByText(/Run/)).toBeDisabled()

@@ -61,7 +61,7 @@ export const processSigs = async (req: Request, res: Response, next: NextFunctio
             const hive = process.env.NODE_ENV === 'test' ? 'test_hive' : 'batch-decipher-pst_hive'
             debugSig(`hive: ${hive}`)
             const container = await dockerAPI.run(
-                'batch-decipher-pst_busybee',
+                'localhost/batch-decipher-pst_busybee',
                 ['bash', 'getSigs.bash', inPath, outPath, custodianPath],
                 res,
                 { 
