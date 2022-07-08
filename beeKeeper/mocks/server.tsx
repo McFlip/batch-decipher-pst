@@ -103,6 +103,9 @@ const server = setupServer(
 		const caseId = req.params.caseId
 		console.log(caseId)
 		return res(ctx.text(cert))
+	}),
+	rest.post('http://localhost:3000/keys/:caseId', (req, res, ctx) => {
+		return res(ctx.json(['1a2b3c']))
 	})
 )
 

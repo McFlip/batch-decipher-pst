@@ -93,6 +93,20 @@ export default function Uploader (props: propsType) {
 		)
 	}
 
+	const deleteForm = () => {
+		return(
+			<div className="container">
+				<hr/>
+				<h3>Delete previous uploads</h3>
+				<p>If working in batches, delete previous input before uploading next batch</p>
+				<button className='btn btn-danger' disabled={deletingPSTs} onClick={() => handleDelete()}>
+					{ deletingPSTs ? 'Deleting...' : 'Delete Uploads'}
+				</button>
+				<hr/>
+			</div>
+		)
+	}
+
 	const setFilesVerified = (fList: FileList) => {
 	let verifiedArr: boolean[] = []
 	const verify = (fExt: 'p12' | 'pst',f: File) => {
@@ -119,13 +133,7 @@ export default function Uploader (props: propsType) {
 
 	return(
 		<div>
-			<hr/>
-			<h3>Delete previous uploads</h3>
-			<p>If working in batches, delete previous input before uploading next batch</p>
-			<button className='btn btn-danger' disabled={deletingPSTs} onClick={() => handleDelete()}>
-				{ deletingPSTs ? 'Deleting...' : 'Delete Uploads'}
-			</button>
-			<hr/>
+			{fileType === "pst" ? deleteForm() : ''}
 			<p>Use the following URL if uploading with a script:<ClipBtn txtToCopy={url} /></p>
       <p><code>{url}</code></p>
 			<form onSubmit={handleUpload} role='form'>

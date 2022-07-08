@@ -5,6 +5,7 @@ import { act } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import server from 'mocks/server'
 import {rest} from 'msw'
+import testFile from 'fixtures/p12'
 
 // NOTE: due to the useState function for setFiles being in the parent page,
 // actual upload in-progress and upload complete behavior will be tested at the page level.
@@ -73,7 +74,6 @@ describe('File Upload Component', () => {
 	}),
 	it('validates a p12 upload', async () => {
 		const { getByText, getByRole, getByLabelText } = render(<Uploader caseId='12345' fileType='p12' destination='decipher' files={files} setFiles={setFiles} />)
-		const testFile = new File(['test p12'], 'test.p12', {type: 'application/x-pkcs12'})
 		// Check proper render
 		expect(getByText('Select one p12 at a time')).toBeInTheDocument()
 		expect(getByText(/localhost/)).toHaveTextContent('http://localhost:3000/keys/12345')
