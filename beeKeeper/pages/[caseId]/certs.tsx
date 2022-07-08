@@ -2,7 +2,6 @@ import Menu from 'components/menu'
 // import SetPath from 'components/setpath'
 import Uploader from 'components/uploader'
 import Head from 'next/head'
-import {useRouter} from 'next/router'
 import {GetServerSideProps} from 'next'
 import { FormEvent, useState } from 'react'
 import debug from 'debug'
@@ -30,18 +29,17 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     CertsDebug(err)
   }
   return {
-    props: { certTxt }
+    props: { certTxt, caseId }
   }
 }
 
 interface propsType {
-  pstPath: string,
+  caseId: string,
   certTxt?: string
 }
 
 export default function Certs (props: propsType) {
-  const router = useRouter()
-  const {caseId}: {caseId?: string} = router.query
+  const {caseId} = props
   const [certs, setCerts] = useState(props?.certTxt || '')
   const [isRunning, setIsRunning] = useState(false)
   const [showTerminal, setShowTerminal] = useState(false)

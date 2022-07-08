@@ -65,16 +65,12 @@ export default function Uploader (props: propsType) {
 			}
 			try {
 				// const headers = {'Content-Type': 'application/json'}
-				const res = await fetch(url, {
-					method: 'POST',
-					mode: 'cors',
-					body: form
-				})
+				const res = await axios.post(url, form)
 				if (fileType === "p12") {
-					setSerials(await res.json())
+					setSerials(res.data)
 					alert('key extracted')
 				} else {
-					const resTxt = await res.text()
+					const resTxt = res.data
 					alert(resTxt)
 				}
 				setIsRunning(false)

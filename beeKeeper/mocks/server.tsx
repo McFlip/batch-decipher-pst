@@ -2,6 +2,7 @@ import {DefaultBodyType, rest} from 'msw'
 import {setupServer} from 'msw/node'
 import CaseType from 'types/case'
 import testCases from 'fixtures/cases'
+import cert from 'fixtures/cert'
 
 const testCase1 = {
 	_id: '1234',
@@ -86,7 +87,6 @@ const server = setupServer(
 			)
 	}),
 	rest.post('http://localhost:3000/sigs/upload/:caseId', (req, res, ctx) => {
-		console.log("DUUUUUUVAL!")
 		return res(
 			ctx.delay(), // need a delay to test Upload button behavior
 			ctx.text('PST(s) uploaded')
@@ -95,6 +95,14 @@ const server = setupServer(
 	rest.post('http://localhost:3000/cases', (req, res, ctx) => {
 		const caseId = '1234'
 		return res(ctx.json({caseId}))
+	}),
+	rest.post('http://localhost:3000/sigs', (req, res, ctx) => {
+		return res(ctx.body('test terminal output'))
+	}),
+	rest.get('http://localhost:3000/sigs/:caseId', (req, res, ctx) => {
+		const caseId = req.params.caseId
+		console.log(caseId)
+		return res(ctx.text(cert))
 	})
 )
 
