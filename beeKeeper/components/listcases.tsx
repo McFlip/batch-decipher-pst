@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import caseType from 'types/case'
 
 const caseRows = (cases: caseType[]): JSX.Element[] => 
   cases.map(c => <tr key={c._id}>

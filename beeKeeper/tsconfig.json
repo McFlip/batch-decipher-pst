@@ -32,8 +32,8 @@
   "include": [
     "next-env.d.ts",
     "**/*.ts",
-    "**/*.tsx"
-, "__tests__/pages/editcase.jsx"  ],
+    "**/*.tsx",
+    "cypress/support/*.ts"  ],
   "exclude": [
     "node_modules"
   ]

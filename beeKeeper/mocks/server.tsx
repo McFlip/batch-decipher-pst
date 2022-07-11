@@ -1,6 +1,6 @@
 import {DefaultBodyType, rest} from 'msw'
 import {setupServer} from 'msw/node'
-import CaseType from 'types/case'
+// import CaseType from 'types/case'
 import testCases from 'fixtures/cases'
 import cert from 'fixtures/cert'
 
@@ -28,6 +28,13 @@ interface CasePatchReq {
 	name?: string,
 	forensicator?: string,
 	custodians?: string
+}
+interface CasePatchRes {
+	_id: string,
+	dateCreated: string,
+	name: string,
+	forensicator: string,
+	custodians: string
 }
 interface CasePatchParams {
 	caseId: string
@@ -61,7 +68,7 @@ const server = setupServer(
 			return res(ctx.json([ testCase1, testCase2 ]))
 		}
   }),
-	rest.patch<CasePatchReq, CaseType, CasePatchParams>('http://localhost:3000/cases/:caseId', (req, res, ctx) => {
+	rest.patch<CasePatchReq, CasePatchParams, CasePatchRes>('http://localhost:3000/cases/:caseId', (req, res, ctx) => {
 		const caseId = req.params.caseId
 		const { name, forensicator, custodians } = req.body
 		const oldData = testCases[caseId]
@@ -74,12 +81,13 @@ const server = setupServer(
 		}
 		return res(ctx.json(newData))
 	}),
-	rest.delete<DefaultBodyType, DelPostRes, DelPostParams>('http://localhost:3000/sigs/upload/pst/:caseId', (req, res, ctx) => {
+	rest.delete<DefaultBodyType, DelPostParams, DelPostRes>('http://localhost:3000/sigs/upload/pst/:caseId', (req, res, ctx) => {
 		// expecting to recieve caseId 12345
 		const caseId = req.params.caseId
-		if(caseId != '12345') return(
+		if(caseId != '12345') return res(
 			ctx.delay(),
-			ctx.status(400)
+			ctx.status(400),
+			ctx.json({caseId})
 		)
 		return res(
 			ctx.delay(), // need a delay to test Delete button behavior
