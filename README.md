@@ -70,6 +70,12 @@ podman volume rm batch-decipher-pst_hive
 
 Run Cypress from inside the beeKeeper folder `npx cypress open`
 
+1. Click E2E Testing
+2. Click Start E2E Testing in Electron
+3. Run the `workflow` test
+
+Reset the stack again if desired i.e. to run the tests again in Firefox.
+
 
 ## Dev
 

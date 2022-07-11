@@ -59,14 +59,17 @@ describe('End to End App test', () => {
     })
 
     it('Start to Finish Workflow', () => {
+        // Create the case
         cy.findByRole('link', {name: 'here'}).click()
         cy.findByLabelText('Forensicator:').clear()
         cy.findByLabelText('Forensicator:').type('Jessica Jones')
         cy.findByLabelText('Case Name:').clear()
         cy.findByLabelText('Case Name:').type('Alias Investigations')
         cy.findByRole('button', {name: 'Create'}).click()
+        // Set Custodians
         cy.findByLabelText('Custodians').type('Denton')
         cy.findByRole('button', {name: 'Next'}).click()
+        // Get certs
         cy.intercept('/sigs/upload/*').as('uploadSigPST')
         cy.intercept('post', '/sigs').as('sigsRun')
         cy.get('input[type=file]').selectFile('fixtures/TEST.pst')
@@ -75,6 +78,7 @@ describe('End to End App test', () => {
         cy.findByRole('button', {name: 'Run'}).click()
         cy.wait('@sigsRun')
         cy.findByRole('certs').should('contain.text', cert)
+        // Extract Keys
         cy.findByRole('link', {name: 'Extract Keys'}).click()
         cy.wait(500)
         cy.intercept('post', '/keys/*').as('keysRun')
@@ -84,6 +88,7 @@ describe('End to End App test', () => {
         cy.findByRole('button', {name: 'Upload'}).click()
         cy.wait('@keysRun')
         cy.findByText(keyfile).should('exist')
+        // Decipher
         cy.findByRole('link', {name: 'Decipher'}).click()
         cy.wait(500)
         cy.intercept('/decipher/upload/pst/*').as('uploadCTPST')
