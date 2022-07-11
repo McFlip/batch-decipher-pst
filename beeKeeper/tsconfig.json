@@ -26,7 +26,8 @@
       "@types": ["types/*"],
       "@constants": ["constants/*"],
       "@fixtures": ["fixtures/*"]
-    }
+    },
+    "types": ["cypress", "@testing-library/cypress"]
   },
   "include": [
     "next-env.d.ts",

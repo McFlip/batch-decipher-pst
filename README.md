@@ -54,9 +54,22 @@ The test is configured to bail on the 1st failure.
 
 Change to the beeKeeper directory. This will run tests in watch mode. Press `q` to quit.
 
-```
+```bash
 podman run -it --rm --name beekeeper_test -v $(pwd):/app:Z -w /app node:current npm test
 ```
+
+### End to End Testing with Cypress
+
+Reset the dev stack to a clean state
+
+```bash
+podman pod stop batch-decipher-pst
+podman volume rm batch-decipher-pst_hive
+./compose.dev.bash
+```
+
+Run Cypress from inside the beeKeeper folder `npx cypress open`
+
 
 ## Dev
 

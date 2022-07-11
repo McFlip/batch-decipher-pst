@@ -143,28 +143,13 @@ export default function Certs (props: propsType) {
         <ClipBtn txtToCopy={certs} />
         {' '}
         <hr />
-        {/* <Button variant='info' onClick={() => setShowTerminal(true)}>
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-          <path d="M22 6v16h-20v-16h20zm2-6h-24v24h24v-24zm-11 11v1.649l3.229 1.351-3.229 1.347v1.653l5-2.201v-1.599l-5-2.2zm-7 2.201v1.599l5 2.2v-1.653l-3.229-1.347 3.229-1.351v-1.649l-5 2.201z"/>
-        </svg>
-        Show Terminal
-        </Button> */}
         <ol>
           {processedPSTs.map((pst,i) => (<li key={i}>{pst}</li>))}
         </ol>
         <hr />
         <ProgressBar  now={result} />
         { result === 100 && isRunning === false && <Alert variant='success'>DONE!</Alert>}
-        <pre><code>{certs}</code></pre>
-        {/* <Modal show={showTerminal} onHide={() => setShowTerminal(false)} size='lg' centered>
-          <Modal.Header closeButton>
-            Terminal Output
-          </Modal.Header>
-          <Modal.Body><pre><code>{terminalTxt}</code></pre></Modal.Body>
-          <Modal.Footer>
-            <Button variant='primary' onClick={() => setShowTerminal(false)}>Close</Button>
-          </Modal.Footer>
-        </Modal> */}
+        <pre><code role='certs'>{certs}</code></pre>
       </main>
     </div>
   )
