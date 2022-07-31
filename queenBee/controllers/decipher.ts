@@ -6,7 +6,9 @@ import debug from 'debug'
 import { pathValidator } from '../util/pathvalidator'
 
 const dockerAPI = new dockerode({socketPath: '/var/run/docker.sock'})
-const sharePath = '/srv/public'
+const sharePath = process.env.NODE_ENV === 'test' ? 'test_share' : '/srv/public'
+const hive = process.env.NODE_ENV === 'test' ? 'test_hive' : 'batch-decipher-pst_hive'
+const decipherDebug = debug('decipher')
 
 export const uploadCtPst = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
@@ -22,63 +24,62 @@ export const uploadCtPst = async (req: Request, res: Response, next: NextFunctio
           res.status(201).send('PST(s) uploaded')
       }
   } catch (error) {
+    	/* istanbul ignore next */
       next(error)
   }
 }
 
 export const decipher = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-      const decipherDebug = debug('decipher')
       const {caseId}: {caseId: string} = req.body
-      const {secrets}: {secrets: string} = req.body
+      const {password}: {password: string} = req.body
       if (!caseId) throw new Error("no case ID");
       const basePath = path.join('/app/workspace', caseId)
       const pstPath = path.join(basePath, 'ctPSTs')
-      const ptPath = path.join(sharePath, caseId, 'pt')
-      const exceptionsPath = path.join(sharePath, caseId, 'exceptions')
+      const ptPath = path.join('/srv/public', caseId, 'pt')
+      const exceptionsPath = path.join('/srv/public', caseId, 'exceptions')
       const keysPath = path.join(basePath, 'keys')
-      if(!secrets) {
-        res.status(404).json({error: 'missing secret'})
+      if(!password) {
+        res.status(403).json({error: 'missing password'})
       } else if (!pathValidator(pstPath) || !pathValidator(ptPath) || !pathValidator(exceptionsPath) || !pathValidator(keysPath)) {
-          res.status(500).json({error: 'unable to access one of the paths'})
+        /* istanbul ignore next */
+          throw new Error('unable to access one of the paths')
       } else {
-          // create the secret
-          // validate pw exists for each key
-          // const keyRegEx = /\.key$/
-          // decipherDebug(secrets)
-          // decipherDebug(fs.readdirSync(keysPath).filter(f => keyRegEx.test(f)))
-          // decipherDebug(fs.readdirSync(keysPath))
-          // Pass secrets as env array in form 'PW_TEST=MrGlitter'
-          const Env = [`PW_KEY=${secrets}`]
-          decipherDebug(Env)
-          // hack to avoid CORS failure from timeout - send init progress update of 1%
-          res.writeHead(200, {
-            'Content-Type': 'text/plain',
-            'Transfer-Encoding': 'chunked'
-          })
-          res.write('1%\n')
-          // use 'Mounts' subsection of 'HostConfig' to create tmpfs mount
-          const container = await dockerAPI.run(
-                'batch-decipher-pst_busybee',
-                ['./decipher.bash', pstPath, ptPath, keysPath, exceptionsPath],
-                res,
-                { 
-                  HostConfig: { 
-                    Binds: [
-                    'batch-decipher-pst_hive:/app/workspace:z',
-                    `${sharePath}:${sharePath}:z`,
-                    ],
-                    Tmpfs: {
-                      '/tmp/PST': 'rw,noexec'
-                    }
-                  },
-                  Env
-                })
-                .then(data => data[1])
-          await container.remove()
-          res.end()
+        // pass the pw in as an ENV var to the container
+        const Env = [`PW_KEY=${password}`]
+        decipherDebug(Env)
+        // hack to avoid CORS failure from timeout - send init progress update of 1%
+        res.writeHead(200, {
+          'Content-Type': 'text/plain',
+          'Transfer-Encoding': 'chunked'
+        })
+        res.write('1%\n')
+        // use 'Mounts' subsection of 'HostConfig' to create tmpfs mount
+        const container = await dockerAPI.run(
+              'localhost/batch-decipher-pst_busybee',
+              ['./decipher.bash', pstPath, ptPath, keysPath, exceptionsPath],
+              res,
+              { 
+                HostConfig: { 
+                  Binds: [
+                  `${hive}:/app/workspace:z`,
+                  `${sharePath}:/srv/public:z`,
+                  ],
+                  Tmpfs: {
+                    '/tmp/PST': 'rw,noexec'
+                  }
+                },
+                Env
+              })
+              /* istanbul ignore next */
+              .then(data => data[1])
+        /* istanbul ignore next */
+        await container.remove()
+        /* istanbul ignore next */
+        res.end()
       } 
   } catch (err) {
+    /* istanbul ignore next */
       next(err) 
   }
 }

@@ -1,33 +1,78 @@
 import { NextFunction, Request, Response } from 'express'
 import fs from 'fs'
 import path from 'path'
-import { Case } from '../models/case'
+import crypto from 'crypto'
 import debug from 'debug'
+import CaseType from '../types/case'
 
 const debugCase  = debug('cases')
 
+// Helper func to get all cases as an array of obj
+const getCases = (): CaseType[] => {
+  const rootPath = '/app/workspace'
+  return fs.readdirSync(rootPath)
+    .map(myDir => path.join(rootPath, myDir, 'case.json'))
+    .map(myPath => JSON.parse(fs.readFileSync(myPath).toString()))
+}
+// Helper func to get one case
+const getCase = (caseId: string): CaseType => {
+  if (!caseId.match(/[0-9,a-f]{24}/)) {
+    throw new Error('Invalid Case ID')
+  }
+  const myCase = path.join('/app/workspace', caseId, 'case.json')
+  if (!fs.existsSync(myCase)) {
+    throw new Error('Case ID not found')
+  } else {
+    return JSON.parse(fs.readFileSync(myCase).toString())
+  }
+}
+
 export const create = (req: Request, res: Response, next: NextFunction): void => {
-  // const { name, forensicator, status } = req.body
-  // const myCase = new Case({ name, forensicator, status })
+  const { name, forensicator, custodians } = req.body
+  // validation
+  if (!name) {
+    const error = new Error('ValidationError: Case name is required')
+    return next(error)
+  } else if (!forensicator) {
+    const error = new Error('ValidationError: Forensicator is required')
+    return next(error)
+  }
+  // path structure
+  // const sharePath = process.env.NODE_ENV === 'test' ? 'test_share' : '/srv/public'
   const sharePath = '/srv/public'
-  const myCase = new Case(req.body)
-  myCase.save()
-    .then(c => {
-      const caseId = c._id.toString() as string
-      const casePath = path.join('/app/workspace', caseId)
-      const subDirs = ['sigs', 'sigsPSTs', 'ctPSTs', 'p12', 'keys']
-      const shareSubDirs = ['pt', 'exceptions']
-      fs.mkdirSync(casePath)
-      subDirs.forEach(s => fs.mkdirSync(path.join(casePath, s))) 
-      shareSubDirs.forEach(s => fs.mkdirSync(path.join(sharePath, caseId, s), {recursive: true}))
-      res.status(201).json({ caseId: c._id })
-    })
-    .catch(err => next(err))
+  const subDirs = ['sigs', 'sigsPSTs', 'ctPSTs', 'p12', 'keys']
+  const shareSubDirs = ['pt', 'exceptions']
+  // generate a unique id for the case
+  let _id = crypto.randomBytes(12).toString('hex')
+  let casePath = path.join('/app/workspace', _id)
+  /* istanbul ignore next */
+  while (fs.existsSync(casePath)) {
+    _id = crypto.randomBytes(12).toString('hex')
+    casePath = path.join('/app/workspace', _id)
+  }
+  // create the case file and scaffold folders
+  const myCase: CaseType = {
+    _id,
+    name,
+    forensicator,
+    dateCreated: Date(),
+    custodians
+  }
+  try {
+    fs.mkdirSync(casePath)
+    subDirs.forEach(s => fs.mkdirSync(path.join(casePath, s))) 
+    shareSubDirs.forEach(s => fs.mkdirSync(path.join(sharePath, _id, s), {recursive: true}))
+    fs.writeFileSync(`${casePath}/case.json`, JSON.stringify(myCase))
+  } catch (error) {
+    /* istanbul ignore next */
+    return next(error)
+  }
+  res.status(201).json({ caseId: _id })
 }
 export const getAll = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const cases = await Case.find({})
-    // debugCase(cases)
+    const cases = getCases()
+    // debugCase(JSON.stringify(cases))
     res.send(cases)
   } catch (error) {
     /* istanbul ignore next */
@@ -37,23 +82,32 @@ export const getAll = async (req: Request, res: Response, next: NextFunction): P
 export const getOne = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { caseId } = req.params
-    const myCase = await Case.findById(caseId)
-    if (!myCase) {
+    res.send(getCase(caseId))
+  } catch (error) {
+    /* istanbul ignore next */
+    const message = error instanceof Error ? error.message : String(error)
+    if (message === 'Case ID not found') {
       res.status(404).json({error: 'Case ID not found'})
     } else {
-      res.send(myCase)
+      next(error)
     }
-  } catch (error) {
-    next(error)
   }
 }
 export const search = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
+    // search by either name(default) or forensicator
+    // empty query returns all
     // debugCase(req.query)
-    const qKeyVal = Object.entries(req.query)[0]
-    const query = {[qKeyVal[0]]: { $regex: qKeyVal[1], $options: 'i' } }
-    const cases = await Case.find(query)
-    res.send(cases)
+    const { name, forensicator } = req.query
+    const cases = getCases()
+    const searchStr = name || forensicator
+    const searchProp = name ? "name" : "forensicator"
+    if (searchStr) {
+      const searchRegEx = new RegExp(searchStr as string, 'i')
+      res.send(cases.filter(c => searchRegEx.test(c[searchProp])))
+    } else {
+      res.send(cases)
+    }
   } catch (error) {
     /* istanbul ignore next */
     next(error)
@@ -61,30 +115,47 @@ export const search = async (req: Request, res: Response, next: NextFunction): P
 }
 export const modify = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    // debugCase(req.params.caseId)
-    // debugCase(req.body)
-    const updatedCase = await Case.findByIdAndUpdate(req.params.caseId, { $set: req.body }, { new: true, runValidators: true })
-    // debugCase(updatedCase)
-    if(!updatedCase) {
+    const { caseId } = req.params
+    const { name, forensicator, custodians } = req.body
+    const myCase = getCase(caseId)
+    const { _id, dateCreated } = myCase
+    const casePath = path.join('/app/workspace', caseId, 'case.json')
+    const newData = {
+      _id,
+      dateCreated,
+      name: name || myCase.name,
+      forensicator: forensicator || myCase.forensicator,
+      custodians: custodians || myCase.custodians
+    }
+    // debugCase(newData)
+    fs.writeFileSync(casePath, JSON.stringify(newData))
+    res.send(newData)
+  } catch (error) {
+    /* istanbul ignore next */
+    const message = error instanceof Error ? error.message : String(error)
+    if (message === 'Case ID not found') {
       res.status(404).json({error: 'Case ID not found'})
     } else {
-      res.send(updatedCase)
+      /* istanbul ignore next */
+      next(error)
     }
-  } catch (error) {
-    next(error)
   }
 }
 export const remove = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const delCase = await Case.findByIdAndDelete(req.params.caseId)
-    if(!delCase) {
+    const { caseId } = req.params
+    // verify case exists & sanitize input
+    const myCase = getCase(caseId)
+    fs.rmSync(path.join('/app/workspace', myCase._id), {recursive: true})
+    res.status(200).json({ caseId })
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error)
+    /* istanbul ignore next */
+    if (message === 'Case ID not found') {
       res.status(404).json({error: 'Case ID not found'})
     } else {
-      fs.rmdirSync(path.join('/app/workspace', delCase._id.toString()), {recursive: true})
-      res.status(200).json({ caseId: delCase._id })
+      /* istanbul ignore next */
+      next(error)
     }
-  } catch (error) {
-    /* istanbul ignore next */
-    next(error)
   }
 }

@@ -1,6 +1,7 @@
 import { FormEvent, useState, Dispatch, SetStateAction } from "react"
 import debug from "debug"
-import { apiExternal } from "../constants"
+import axios from "axios"
+import { apiExternal } from "constants/"
 import ClipBtn from 'components/clipbtn'
 
 const uploadDebug = debug('uploader')
@@ -31,11 +32,7 @@ export default function Uploader (props: propsType) {
     const url = `${apiExternal}:3000/${destination}/upload/pst/${caseId}`
     if (!confirm('Are you sure? This cannot be undone!')) return
     setDeletingPSTs(true)
-    const res = await fetch(url, {
-      method: 'DELETE',
-      mode: 'cors',
-      cache: 'no-cache'
-    })
+    const res = await axios.delete(url)
     if (res.status !== 200) alert('Deleting PSTs failed :(')
     setDeletingPSTs(false)
   }
@@ -68,16 +65,12 @@ export default function Uploader (props: propsType) {
 			}
 			try {
 				// const headers = {'Content-Type': 'application/json'}
-				const res = await fetch(url, {
-					method: 'POST',
-					mode: 'cors',
-					body: form
-				})
+				const res = await axios.post(url, form)
 				if (fileType === "p12") {
-					setSerials(await res.json())
+					setSerials(res.data)
 					alert('key extracted')
 				} else {
-					const resTxt = await res.text()
+					const resTxt = res.data
 					alert(resTxt)
 				}
 				setIsRunning(false)
@@ -96,6 +89,20 @@ export default function Uploader (props: propsType) {
 				<input id="p12pw" type="password" className="form-control" onChange={e => setP12PW(e.target.value)} value={p12PW} />
 				<label htmlFor="keypw">Use a password manager to create a new password for the extacted key:</label>
 				<input id="keypw" type="password" className="form-control" onChange={e => setKeyPW(e.target.value)} value={keyPW} />
+			</div>
+		)
+	}
+
+	const deleteForm = () => {
+		return(
+			<div className="container">
+				<hr/>
+				<h3>Delete previous uploads</h3>
+				<p>If working in batches, delete previous input before uploading next batch</p>
+				<button className='btn btn-danger' disabled={deletingPSTs} onClick={() => handleDelete()}>
+					{ deletingPSTs ? 'Deleting...' : 'Delete Uploads'}
+				</button>
+				<hr/>
 			</div>
 		)
 	}
@@ -126,19 +133,13 @@ export default function Uploader (props: propsType) {
 
 	return(
 		<div>
-			<hr/>
-			<h3>Delete previous uploads</h3>
-			<p>If working in batches, delete previous input before uploading next batch</p>
-			<button className='btn btn-danger' disabled={deletingPSTs} onClick={() => handleDelete()}>
-				{ deletingPSTs ? 'Deleting...' : 'Delete PSTs'}
-			</button>
-			<hr/>
+			{fileType === "pst" ? deleteForm() : ''}
 			<p>Use the following URL if uploading with a script:<ClipBtn txtToCopy={url} /></p>
       <p><code>{url}</code></p>
-			<form onSubmit={handleUpload}>
+			<form onSubmit={handleUpload} role='form'>
 				<div className='form-group'>
 					<label htmlFor='files'>Select {fileType === "pst" ? 'all PSTs' : 'one p12 at a time'}</label>
-					<input id='files' type='file' multiple={fileType != "p12"} className='form-control-file' onChange={e => setFilesVerified(e.target.files)} />
+					<input id='files' type='file' multiple={fileType != "p12"} role='button' aria-label="File Upload" className='form-control-file' onChange={e => setFilesVerified(e.target.files)} />
 				</div>
 				{fileType === "p12" ? pwForm() : ''}
 				<button className='btn btn-primary' type='submit' disabled={isRunning}>Upload{isRunning? 'ing...' : ''}</button>

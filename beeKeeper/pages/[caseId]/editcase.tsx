@@ -4,23 +4,12 @@ import debug from 'debug'
 import { FormEvent, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import { apiExternal, apiInternal } from '../../constants'
+import { apiExternal, apiInternal } from 'constants/'
+import CaseType from 'types/case'
+import axios from 'axios'
 
 const EditDebug = debug('editCase')
 debug.enable('editCase')
-
-interface CaseType {
-  _id: string,
-  name: string,
-  forensicator: string,
-  dateCreated: string,
-  status: 'active' | 'inactive',
-  pstPath: string,
-  p12Path: string,
-  ptPath: string,
-  exceptionsPath: string,
-  custodians: string
-}
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const {caseId} = context.params
@@ -45,15 +34,16 @@ export default function EditCase({myCase}: {myCase: CaseType}) {
 
   const [name, setName] = useState(myCase.name)
   const [forensicator, setForensicator] = useState(myCase.forensicator)
-  const [exceptionsPath, setExceptionsPath] = useState(myCase.exceptionsPath)
   const [custodians, setCustodians] = useState(myCase.custodians)
   
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
+    // validation - name & forensicator are required
+    if(!name) return alert('Case Name is required')
+    if(!forensicator) return alert('Forensicator is required')
     const values = [
       ['name', name, myCase.name],
       ['forensicator', forensicator, myCase.forensicator],
-      ['exceptionsPath', exceptionsPath, myCase.exceptionsPath],
       ['custodians', custodians, myCase.custodians]
     ]
     let updates = {}
@@ -62,14 +52,15 @@ export default function EditCase({myCase}: {myCase: CaseType}) {
     EditDebug(updates)
     const url = `${apiExternal}:3000/cases/${myCase._id}`
     try {
-      const res = await fetch(url, {
+      const res = await axios.patch(url, updates)
+      /*fetch(url, {
         method: 'PATCH',
         mode: 'cors',
         // cache: 'no-cache',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(updates)
-      })
-      const updatedCase = await res.json()
+      })*/
+      const updatedCase = res.data
       EditDebug(updatedCase)
       if (updatedCase) {
         router.push(`/${myCase._id}/custodians`)

@@ -7,38 +7,18 @@ import cases from './suites/cases.test'
 import sigs from './suites/sigs.test'
 import keys from './suites/keys.test'
 import decipher from './suites/decipher.test'
-import { MongoClient } from 'mongodb'
 import fs from 'fs'
 import path from 'path'
 
 chai.use(chaiHttp)
 const expect = chai.expect
-const dbName = 'decipherDB'
-const mongoURI = `mongodb://localhost:27017/${dbName}`
-const dbOpts = { useUnifiedTopology: true }
-const client = new MongoClient(mongoURI, dbOpts)
 
 describe('API tests', function () {
-  before(async function () {
-    // In DEV, set apiURL to actual app
-    // If using Staging env, add logic to check env & get URL string for staging
-    // this.apiURL = apiURL as Express.Application
-    // set up database connection
-    await client.connect()
-    await client.db("admin").command({ ping: 1 })
-    this.client = client
-  })
   after(async function () {
-    // close db connection
-    client.close()
     // clean up filesystem
-    interface rmOpts {
-      recursive: boolean,
-      force: boolean
-    }
     const caseDirs = fs.readdirSync('/app/workspace')
     caseDirs.forEach((folder) => {
-      fs.rmSync(path.join('/app/workspace', folder), { recursive: true, force: true } as rmOpts)
+      fs.rmSync(path.join('/app/workspace', folder), { recursive: true, force: true })
     })
   })
   it('should return hello', async function () {

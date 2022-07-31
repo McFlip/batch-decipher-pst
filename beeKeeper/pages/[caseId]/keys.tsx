@@ -4,7 +4,7 @@ import {useRouter} from 'next/router'
 import {GetServerSideProps} from 'next'
 import { useState } from 'react'
 import debug from 'debug'
-import { apiExternal, apiInternal } from '../../constants'
+import { apiExternal, apiInternal } from 'constants/'
 import Uploader from 'components/uploader'
 
 const KeysDebug = debug('keys')
@@ -22,17 +22,17 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     })
     const serials: [string] = fetchSerials.ok ? await fetchSerials.json() : ['']
     return {
-      props: { serialsProp: serials }
+      props: { serialsProp: serials, caseId }
     }
   } catch (err) {
     KeysDebug(err)
-    return { props: { serialsProp: [''] }}
+    return { props: { serialsProp: [''], caseId }}
   }
 }
 
-export default function Keys ({serialsProp}: { serialsProp: string[] }) {
-  const router = useRouter()
-  const {caseId}: {caseId?: string} = router.query
+export default function Keys ({serialsProp, caseId}: { serialsProp: string[], caseId: string }) {
+  // const router = useRouter()
+  // const {caseId}: {caseId?: string} = router.query
   const [serials, setSerials] = useState(serialsProp)
   const [files, setFiles] = useState<FileList>(null)
 

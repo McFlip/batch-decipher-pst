@@ -17,13 +17,23 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "preserve",
-    "baseUrl": "."
+    "baseUrl": ".",
+    "incremental": true,
+    "paths": {
+      "@pages": ["pages/*"],
+      "@components": ["components/*"],
+      "@mocks": ["mocks/*"],
+      "@types": ["types/*"],
+      "@constants": ["constants/*"],
+      "@fixtures": ["fixtures/*"]
+    },
+    "types": ["cypress", "@testing-library/cypress"]
   },
   "include": [
     "next-env.d.ts",
     "**/*.ts",
-    "**/*.tsx"
-  ],
+    "**/*.tsx",
+    "cypress/support/*.ts"  ],
   "exclude": [
     "node_modules"
   ]

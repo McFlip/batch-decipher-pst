@@ -110,7 +110,7 @@ do
   # Iterate through the dir using parallel processing
   export -f getSig pipeline parseCert getCert decodeSignedData getSignedData
   export inDIR outDIR
-  find "$tmpfsPath" -type f -print0 | parallel --null getSig {} $outDIR
+  find "$tmpfsPath" -type f -print0 | parallel --null --bar getSig {} $outDIR
 
   # Cleanup
   find "$tmpfsPath" -maxdepth 1 -mindepth 1 -type d -exec rm -rf {} \;
