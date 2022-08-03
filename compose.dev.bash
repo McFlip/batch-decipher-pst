@@ -23,12 +23,12 @@ podman pod exists $PROJ
 if [ $? -eq 1 ]
 then
     # create pod and publish web server and API
-    podman pod create --name $PROJ -p 8080:8080 -p 3000:3000 -p 27017:27017
+    podman pod create --name $PROJ -p 8080:8080 -p 3000:3000 -p 3001:3001
 else
     # recycle
     podman pod stop $PROJ
     podman pod rm $PROJ
-    podman pod create --name $PROJ -p 8080:8080 -p 3000:3000 -p 27017:27017
+    podman pod create --name $PROJ -p 8080:8080 -p 3000:3000 -p 3001:3001
 fi
 
 # front end
@@ -50,6 +50,13 @@ podman run -dt --name "$PROJ"_queenbee \
     -v /srv/public:/srv/public:z,U \
     -v "$PROJ"_hive:/app/workspace:z,U \
     -v $(pwd)/podman/podman.sock:/var/run/docker.sock:Z \
-     --pod $PROJ \
+    --pod $PROJ \
     node:current \
     npm start
+
+# SAML ID provider
+podman run -dt --name "$PROJ"_saml \
+    --env SIMPLESAMLPHP_SP_ENTITY_ID=saml-poc \
+    --env SIMPLESAMLPHP_SP_ASSERTION_CONSUMER_SERVICE=http://localhost:8080/api/auth/login/saml \
+    --pod $PROJ \
+    test-saml-idp
