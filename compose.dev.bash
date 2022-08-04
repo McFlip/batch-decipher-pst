@@ -34,6 +34,8 @@ fi
 # front end
 podman run -dt --name "$PROJ"_beekeeper \
     --env NODE_ENV=development \
+    --env NEXTAUTH_URL=http://localhost:3001 \
+    --env NEXTAUTH_SECRET=secretSquirrel \
     -v $(pwd)/beeKeeper:/app:Z \
     -w /app \
      --pod $PROJ \
