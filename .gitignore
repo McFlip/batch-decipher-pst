@@ -109,8 +109,5 @@ dist
 # SAMBA share
 public/
 
-# podman OCI images
-images/
-
 # podman socket
 podman/

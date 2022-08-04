@@ -26,9 +26,11 @@ The web UI is set up in a wizard format and will walk you through the process.
 
 Build the project by cloning this repo and following the build instructions below. 
 Create a folder at `/srv/public` which is the location that output will be written to. Make sure your user account has `rwx` permissions on the folder.
-The app will run with user privileges.
+The app will run with user privileges. I run with port 8080 instead of the default 443 to avoid using root privileges. You can modify this by adding capabilities to the beeKeeper container if you wish to run on port 443.
 
-Stand up the project by running `./compose.dev.bash`.
+Stand up the project in production by running `./compose.bash`.
+
+Stand up the project in development by running `./compose.dev.bash`.
 
 Stand down the project by running
 
@@ -51,7 +53,21 @@ When a job is run the API spins up a container that runs the actual script that 
 If you prefer to work in a CLI environment, you can use the scripts directly from inside the `busyBee` folder.
 Build the busyBee container with the build script `./build.bash "busyBee"` or if using Docker simply use the provided Dockerfile inside busyBee.
 
-To build the complete project run `./build.bash "all"`. This script will also update dependancies and create a new `latest` image for each container.
+To build the complete project, create a config file in `beeKeeper` named `.env.production.local`. See below for an example. Next, run `./build.bash "all"`. This script will also update dependancies and create a new `latest` image for each container.
+Finally, upload the images from `images/*.tar` to your production server and load into your localhost registry with `podman load < *.tar`
+
+```
+# .env.production.local
+# Set web port to 8080 instead of 443
+PORT=8080
+# Client side fetch URL
+NEXT_PUBLIC_API_EXTERNAL="https://example.org"
+# Server side rendering
+API_INTERNAL="https://localhost"
+# Next-Auth
+NEXTAUTH_URL="https://example.org:8080"
+NEXTAUTH_SECRET="secretSquirrel"
+```
 
 ## Testing
 
@@ -104,7 +120,14 @@ The test is configured to bail on the 1st failure.
 
 ### Bee Keeper
 
-Change to the beeKeeper directory. This will run tests in watch mode. Press `q` to quit.
+Change to the beeKeeper directory.
+
+If you haven't installed the dependancies yet then run a clean install
+
+```bash
+podman run -it --rm --security-opt label=disable -v $(pwd):/app --workdir /app node:current npm ci
+```
+This will run tests in watch mode. Press `q` to quit.
 
 ```bash
 podman run -it --rm --name beekeeper_test -v $(pwd):/app:Z -w /app node:current npm test

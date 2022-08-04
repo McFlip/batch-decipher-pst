@@ -1,0 +1,3 @@
+# output dir for build script - contains tar archives of OCI images for loading into podman
+*
+!.gitignore
