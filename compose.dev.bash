@@ -59,6 +59,6 @@ podman run -dt --name "$PROJ"_queenbee \
 # SAML ID provider
 podman run -dt --name "$PROJ"_saml \
     --env SIMPLESAMLPHP_SP_ENTITY_ID=saml-poc \
-    --env SIMPLESAMLPHP_SP_ASSERTION_CONSUMER_SERVICE=http://localhost:8080/api/auth/login/saml \
+    --env SIMPLESAMLPHP_SP_ASSERTION_CONSUMER_SERVICE=http://localhost:3001/api/auth/login/response \
     --pod $PROJ \
     test-saml-idp

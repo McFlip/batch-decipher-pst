@@ -111,3 +111,6 @@ public/
 
 # podman socket
 podman/
+
+# code stats
+.VSCodeCounter
