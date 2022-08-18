@@ -56,9 +56,8 @@ export default function Custodians({custodians, caseId}: {custodians: string, ca
       </Head>
       <main>
         <Menu currentPg='Custodians' caseId={caseId} />
-        <h1>Enter Custodians one per line</h1>
+        <h1>Enter Custodian emails one per line</h1>
         <p>Each line is a REGEX that will be used to filter the results of parsing the certs from signed email.</p>
-        <p><em>PRO TIP:</em> I strongly recommend you use the EDIPI number, or use the last name in <strong>ALL CAPS</strong> with only letters</p>
         <p>Use a single period <code>.</code> to not conduct any filtering at all</p>
         <form onSubmit={handleSubmit}>
           <div className='form-group'>

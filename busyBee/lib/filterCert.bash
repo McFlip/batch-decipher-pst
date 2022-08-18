@@ -14,7 +14,7 @@ do
   delete=1
   for custodian in $(echo "$custodians")
   do
-    grep -m 1 -P "$custodian" "$cert" &> /dev/null
+    grep -i -m 1 -P "$custodian" "$cert" &> /dev/null
     if [[ $? -eq 0 ]]
     then
       delete=0

@@ -1,7 +1,7 @@
 #!/bin/bash
 # Gets certificate info from signed emails. This info is sent in the request email to RA/CA.
 # Usage: getSigs.bash inputDirectory outputDirectory custodianFile
-# Custodian file is last name of each custodian in ALL CAPS; 1 per line
+# Custodian file is email of each custodian; 1 per line, case insensitive
 
 inDIR="$1"
 outDIR="$2"
