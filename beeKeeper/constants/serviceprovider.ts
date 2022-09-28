@@ -1,13 +1,12 @@
 // SAML Service Provider config
-// TODO: use env vars for entityID and Location
 const saml = require('samlify')
 
 const sp = saml.ServiceProvider({
-	entityID: 'saml-poc',
+	entityID: process.env.SP_ENTITY_ID,
 	assertionConsumerService: [{
 		isDefault: true,
 		Binding: saml.Constants.BindingNamespace.Post,
-		Location: 'http://localhost:3001/api/auth/login/response'
+		Location: process.env.SP_LOCATION
 	}]
 })
 

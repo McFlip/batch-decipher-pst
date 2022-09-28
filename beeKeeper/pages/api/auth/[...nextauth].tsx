@@ -1,6 +1,6 @@
 import NextAuth from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
-import axios from 'axios'
+import fs from 'fs'
 const saml = require('samlify')
 const validator = require('@authenio/samlify-node-xmllint') // validates SAML response xml
 import sp from 'constants/serviceprovider' // SAML service provider
@@ -15,7 +15,9 @@ export default NextAuth({
 			},
 			async authorize(credentials, req) {
 				// SAML ID Provider
-				const { data: ipMeta } = await axios.get('http://localhost:8080/simplesaml/saml2/idp/metadata.php')
+				const idpXmlPath = process.env.NODE_ENV === 'development' ? 'idp.dev.xml' : 'idp.prod.xml'
+				const ipMeta = fs.readFileSync(`public/${idpXmlPath}`)
+				console.log(ipMeta)
 				const idp = saml.IdentityProvider({ metadata: ipMeta })
 				// parse SAML response
 				// TODO: define interface to 'extract'
