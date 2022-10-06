@@ -28,7 +28,12 @@ Build the project by cloning this repo and following the build instructions belo
 Create a folder at `/srv/public` which is the location that output will be written to. Make sure your user account has `rwx` permissions on the folder.
 The app will run with user privileges. I run with port 8080 instead of the default 443 to avoid using root privileges. You can modify this by adding capabilities to the beeKeeper container if you wish to run on port 443.
 
-Stand up the project in production by running `./compose.bash`.
+Stand up the project in production by running `./compose.bash`. You must place a x509 cert in the `tlscert` folder using the filenames `cert.pem` and `key.pem`.
+The key must be in PKCS1 format if you use SAML auth. To convert from PKCS8 to PKCS1 use
+
+```
+openssl pkcs8 -in pk8key.pem -traditional -nocrypt -out key.pem
+```
 
 Stand up the project in development by running `./compose.dev.bash`.
 
@@ -44,6 +49,10 @@ podman pod rm batch-decipher-pst
 No keys are stored to disk unencrypted, but it is your responsibility to use a strong password for extracted keys.
 The output emails are in plain text so ensure you have properly managed permissions on the output folder at `/srv/public`.
 Secrets are passed in to the scripts using environment variables. This assumes they are running inside a container that only lives long enough to run the script.
+
+### SAML Auth
+
+This project uses Next-Auth and Samlify to provide SAML 3rd party auth suitable for enterprise use on an intranet.
 
 ## Build
 
@@ -152,6 +161,11 @@ Run Cypress from inside the beeKeeper folder `npx cypress open`
 
 Reset the stack again if desired i.e. to run the tests again in Firefox.
 
+You can use a self-signed cert if you want to test a production build
+
+```
+openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -sha256 -days 365
+```
 
 ## Dev
 
