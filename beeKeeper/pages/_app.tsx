@@ -1,11 +1,16 @@
 import '../styles/globals.css'
 import 'bootstrap/dist/css/bootstrap.css'
+import { Session } from 'next-auth'
 import { AppProps } from 'next/app'
 import { SessionProvider } from "next-auth/react"
 
-function App({ Component, pageProps: { session, pageProps } }: AppProps) {
+function App({
+	Component,
+	pageProps}: AppProps<{
+		session: Session
+	}>) {
   return (
-    <SessionProvider session={session}>
+    <SessionProvider session={pageProps.session}>
       <Component {...pageProps} />
     </SessionProvider>
   )
