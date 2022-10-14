@@ -4,6 +4,9 @@ import fs from 'fs'
 const saml = require('samlify')
 const validator = require('@authenio/samlify-node-xmllint') // validates SAML response xml
 import sp from 'constants/serviceprovider' // SAML service provider
+import type Iuser from 'types/user'
+// import type Isession from 'types/session'
+// import type { JWT } from 'next-auth/jwt'
 
 export default NextAuth({
 	providers: [
@@ -42,8 +45,9 @@ export default NextAuth({
 		signIn: '/api/auth/login/request'
 	},
 	callbacks: {
-		async signIn({ user, account, profile, email, credentials }) {
-			return true
+		async signIn({ user }: { user: Iuser}) {
+			// Role-Based auth
+			return user.Role.includes('enigma_users')
 		},
 		async redirect({ url, baseUrl }) {
 			return url

@@ -1,30 +1,12 @@
 import Link from "next/link"
 import styles from 'styles/menu.module.scss'
 import { useSession, signIn, signOut } from 'next-auth/react' // for login\out button
+import type Isession from 'types/session'
 
 type currentPgType = 'Home' | 'Case Details' | 'Custodians' | 'Get Cert Info' | 'Extract Keys' | 'Decipher' 
 export default function Menu({currentPg, caseId}: {currentPg: currentPgType, caseId?: string}) {
-  // log in & out button not necessary with middleware - keeping just in case I want to add sign out later
-  const { data: session } = useSession()
-  // // const callbackUrl = process.env.NODE_ENV === 'development' ?
-  // //   { callbackUrl: 'http://localhost:3001/' } :
-  // //   {}
-  // const callbackUrl = {}
-  // const logInBtn = () => {
-  //   if(session) {
-  //     return(
-  //       <span>
-  //         Hello {session.user.email} <br />
-  //         <button onClick={() => signOut(callbackUrl)}>Log off</button>
-  //       </span>
-  //     )
-  //   }
-  //     return(
-  //       <span>
-  //         <button onClick={() => signIn("credentials", callbackUrl)}>Log in</button>
-  //       </span>
-  //     )
-  // }
+  const { data: session }: { data: Isession} = useSession()
+
   const listPages = (currentPg: string) => {
     const pages = [
       ['Home', '/'],
@@ -44,13 +26,15 @@ export default function Menu({currentPg, caseId}: {currentPg: currentPgType, cas
       )
     })
   }
+
+  // TODO: Change from local signOut to Single Logoff w/ SAML
   return(
     <nav className='navbar  navbar-dark'>
       <ol className='breadcrumb'>
         {listPages(currentPg)}
       </ol>
-      {/* {logInBtn()} */}
       {session?.user.email}
+      {session ? <button className="btn btn-warning" onClick={() => signOut()}>Log off</button> : ''}
     </nav>
   )
 }
