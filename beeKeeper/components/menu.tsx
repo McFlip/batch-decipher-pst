@@ -1,6 +1,6 @@
 import Link from "next/link"
 import styles from 'styles/menu.module.scss'
-import { useSession, signIn, signOut } from 'next-auth/react' // for login\out button
+import { signOut, useSession } from 'next-auth/react' // for login\out button
 import type Isession from 'types/session'
 
 type currentPgType = 'Home' | 'Case Details' | 'Custodians' | 'Get Cert Info' | 'Extract Keys' | 'Decipher' 
@@ -27,14 +27,23 @@ export default function Menu({currentPg, caseId}: {currentPg: currentPgType, cas
     })
   }
 
-  // TODO: Change from local signOut to Single Logoff w/ SAML
+  const logoutBtn = (email: string) => {
+    // Link to SAML single logout request
+    const handleClick = (email: string) => {
+      signOut({ callbackUrl: `/api/auth/logout/request?email=${encodeURIComponent(email)}`})
+    }
+    return(
+      <button className="btn btn-warning" onClick={() => handleClick(email)}>Log off</button>
+    )
+  }
+
   return(
     <nav className='navbar  navbar-dark'>
       <ol className='breadcrumb'>
         {listPages(currentPg)}
       </ol>
       {session?.user.email}
-      {session ? <button className="btn btn-warning" onClick={() => signOut()}>Log off</button> : ''}
+      {session ? logoutBtn(session?.user.email) : ''}
     </nav>
   )
 }

@@ -10,6 +10,7 @@ const privateKey = fs.readFileSync("/app/tlscert/key.pem");
 const sp = saml.ServiceProvider({
   entityID: process.env.SP_ENTITY_ID,
   authnRequestsSigned: true,
+  wantLogoutRequestSigned: true,
   signingCert,
   privateKey,
   requestSignatureAlgorithm:
@@ -21,6 +22,12 @@ const sp = saml.ServiceProvider({
       Location: process.env.SP_LOCATION,
     },
   ],
+  singlogoutService: [
+    {
+      Binding: saml.Constants.BindingNamespace.Post,
+      Location: process.env.SP_LOGOUT
+    }
+  ]
 });
 
 export default sp;
