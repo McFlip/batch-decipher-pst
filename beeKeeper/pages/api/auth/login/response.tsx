@@ -7,9 +7,8 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 
 export default async (req: NextApiRequest, res: NextApiResponse) => {
 	// get CSRF token required by next-auth
-	const proto = process.env.NODE_ENV === 'production' ? 'https' : 'http'
 	const { data, headers } = await axios.get("/api/auth/csrf", {
-		baseURL: `${proto}://localhost:${process.env.PORT}`,
+		baseURL: process.env.NEXTAUTH_URL,
 	})
 	const { csrfToken } = data
 	// parse SAML response from ID Provider

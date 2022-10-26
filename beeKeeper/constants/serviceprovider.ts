@@ -1,6 +1,6 @@
 // SAML Service Provider config
-const saml = require("samlify");
-const fs = require("fs");
+import * as saml from "samlify";
+import fs from "fs";
 
 const signingCert = fs.readFileSync("/app/tlscert/cert.pem");
 // DEBUG: maybe use 2 key formats - PKCS8 for browser and PKCS1 for SAML?
@@ -22,12 +22,12 @@ const sp = saml.ServiceProvider({
       Location: process.env.SP_LOCATION,
     },
   ],
-  singlogoutService: [
+  singleLogoutService: [
     {
       Binding: saml.Constants.BindingNamespace.Post,
-      Location: process.env.SP_LOGOUT
-    }
-  ]
+      Location: process.env.SP_LOGOUT,
+    },
+  ],
 });
 
 export default sp;

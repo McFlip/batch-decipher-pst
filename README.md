@@ -35,6 +35,8 @@ The key must be in PKCS1 format if you use SAML auth. To convert from PKCS8 to P
 openssl pkcs8 -in pk8key.pem -traditional -nocrypt -out key.pem
 ```
 
+You also need to add your enterprise cert chain of trust in PEM format as `tlscert/ca.crt`. Otherwise, https requests on the backend will fail.
+
 Stand up the project in development by running `./compose.dev.bash`.
 
 Stand down the project by running

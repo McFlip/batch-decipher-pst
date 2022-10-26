@@ -1,9 +1,9 @@
 import NextAuth from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
-import fs from 'fs'
-const saml = require('samlify')
-const validator = require('@authenio/samlify-node-xmllint') // validates SAML response xml
+import * as saml from 'samlify'
+import * as validator from '@authenio/samlify-node-xmllint' // validates SAML response xml
 import sp from 'constants/serviceprovider' // SAML service provider
+import idp from 'constants/idprovider' // SAML ID provider
 import type Iuser from 'types/user'
 // import type Isession from 'types/session'
 // import type { JWT } from 'next-auth/jwt'
@@ -17,10 +17,6 @@ export default NextAuth({
 			// 	password: {  label: "Password", type: "password" }
 			},
 			async authorize(_credentials, req) {
-				// SAML ID Provider
-				const idpXmlPath = process.env.NODE_ENV === 'development' ? 'idp.dev.xml' : 'idp.prod.xml'
-				const ipMeta = fs.readFileSync(`public/${idpXmlPath}`)
-				const idp = saml.IdentityProvider({ metadata: ipMeta })
 				// parse SAML response
 				// TODO: define interface to 'extract'
 				try {

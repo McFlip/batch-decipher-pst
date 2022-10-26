@@ -1,28 +1,26 @@
 // Receive SAML logout response
 // Verify SAML token and display success page
-import fs from 'fs'
-const saml = require('samlify')
-const validator = require('@authenio/samlify-node-xmllint') // validates SAML response xml
+import * as saml from 'samlify'
+import * as validator from '@authenio/samlify-node-xmllint' // validates SAML response xml
 import sp from 'constants/serviceprovider' // SAML service provider
+import idp from 'constants/idprovider' // SAML ID provider
 
 import type { NextApiRequest, NextApiResponse } from 'next'
 
 export default async (req: NextApiRequest, res: NextApiResponse) => {
-	// SAML ID provider
-	const idpXmlPath = process.env.NODE_ENV === 'development' ? 'idp.dev.xml' : 'idp.prod.xml'
-	const ipMeta = fs.readFileSync(`public/${idpXmlPath}`)
-	const idp = saml.IdentityProvider({ metadata: ipMeta })
 	// DEBUG
 	console.log(idp)
 	// parse SAML response from ID Provider
 	try {
 		saml.setSchemaValidator(validator)
-		// FIXME: this is supposed to parse response not request
-		// const { extract } = await sp.parseLogoutRequest(idp, 'post', { body: req.body })
+		const { extract } = await sp.parseLogoutResponse(idp, 'post', req)
 		// DEBUG
 		console.log("Parsing SLO request")
 		console.log(req.body)
-		// console.log(extract)
+		console.log(extract)
+		// TODO: validate issuer and destination
+		console.log(extract.issuer)
+		console.log(extract.response.destination)
 		// display logout success
 		res.status(200).send(`
 		<!DOCTYPE html>
