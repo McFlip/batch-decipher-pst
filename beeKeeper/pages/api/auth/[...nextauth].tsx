@@ -43,7 +43,7 @@ export default NextAuth({
 	callbacks: {
 		async signIn({ user }: { user: Iuser}) {
 			// Role-Based auth
-			return user.Role.includes('enigma_users')
+			return user.role.includes('enigma_users')
 		},
 		async redirect({ url, baseUrl }) {
 			return url

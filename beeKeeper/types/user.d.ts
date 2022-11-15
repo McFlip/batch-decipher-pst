@@ -4,5 +4,5 @@ export default interface Iuser extends User {
 	last_name ?: string,
 	first_name ?: string,
 	username ?: string,
-	Role?: string[]
+	role?: string[]
 }
