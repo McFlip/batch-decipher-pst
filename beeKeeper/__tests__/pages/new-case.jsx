@@ -1,7 +1,6 @@
 import NewCase from 'pages/new-case'
-import { render, fireEvent , within, waitForElementToBeRemoved , waitFor, logRoles, getByRole } from '@testing-library/react'
+import { render, fireEvent , within, waitForElementToBeRemoved , waitFor, logRoles, getByRole, act } from '../../utils'
 import '@testing-library/jest-dom'
-import { act } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useRouter } from "next/router"
 

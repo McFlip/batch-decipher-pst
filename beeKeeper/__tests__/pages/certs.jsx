@@ -1,5 +1,5 @@
 import Certs from 'pages/[caseId]/certs'
-import { render, fireEvent , within, waitForElementToBeRemoved , waitFor, logRoles, getByRole } from '@testing-library/react'
+import { render, fireEvent , within, waitForElementToBeRemoved , waitFor, logRoles, getByRole } from '../../utils'
 import '@testing-library/jest-dom'
 import userEvent from '@testing-library/user-event'
 import testCert from 'fixtures/cert'

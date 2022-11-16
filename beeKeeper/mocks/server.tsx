@@ -41,6 +41,15 @@ interface CasePatchParams {
 }
 
 const server = setupServer(
+	rest.get('http://localhost/api/auth/session', (req, res, ctx) => {
+		return res(ctx.json(
+			{
+				user: {
+					email: "tester@test.org"
+				}
+			}
+		))
+	}),
   rest.get('http://localhost:3000/cases/search', (req, res, ctx) => {
 		const forensicator = req.url.searchParams.get('forensicator')
 		const name = req.url.searchParams.get('name')

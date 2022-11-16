@@ -7,6 +7,9 @@ import fetch from 'whatwg-fetch' // polyfill for fetch in jsdom env - doesn't su
 
 // ref: https://jestjs.io/docs/manual-mocks#mocking-methods-which-are-not-implemented-in-jsdom
 // ref: https://github.com/jsdom/jsdom/issues/2524
+
+global.IS_REACT_ACT_ENVIRONMENT = true
+
 Object.defineProperty(window, 'TextEncoder', {
   writable: true,
   value: util.TextEncoder

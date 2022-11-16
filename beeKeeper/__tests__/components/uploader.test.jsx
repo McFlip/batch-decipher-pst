@@ -1,7 +1,6 @@
 import Uploader from 'components/uploader'
 import '@testing-library/jest-dom'
-import { render, waitFor, logRoles, fireEvent } from '@testing-library/react'
-import { act } from '@testing-library/react'
+import { render, waitFor, logRoles, fireEvent, act } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import server from 'mocks/server'
 import {rest} from 'msw'

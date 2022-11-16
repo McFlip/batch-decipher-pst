@@ -1,8 +1,7 @@
 // Testing the Home Page
 import Home from 'pages/index'
-import { render, fireEvent , within, waitForElementToBeRemoved , waitFor, logRoles } from '@testing-library/react'
+import { render, fireEvent , within, waitForElementToBeRemoved , waitFor, logRoles, act } from '../../utils'
 import '@testing-library/jest-dom'
-import { act } from '@testing-library/react'
 
 let alertMsg = ''
 window.alert = jest.fn(msg => alertMsg = msg)

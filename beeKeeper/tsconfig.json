@@ -25,7 +25,8 @@
       "@mocks": ["mocks/*"],
       "@types": ["types/*"],
       "@constants": ["constants/*"],
-      "@fixtures": ["fixtures/*"]
+      "@fixtures": ["fixtures/*"],
+			"@utils": ["utils/*"]
     },
     "types": ["cypress", "@testing-library/cypress"]
   },

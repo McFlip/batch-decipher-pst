@@ -1,6 +1,6 @@
 import Menu from 'components/menu'
 import '@testing-library/jest-dom'
-import { render } from '@testing-library/react'
+import { render } from '../../utils'
 
 describe('Menu Component', () => {
 	it('renders nav links except for the current page', () => {
