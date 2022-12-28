@@ -33,11 +33,12 @@ else
 fi
 
 # front end
+    # --env API_INTERNAL=localhost \ # set to HOST name - can't be 'localhost' for https connections
+		# The API_INTERNAL env var should be set by '.env.production.local'
 podman run -dt --pod $PROJ --name "$PROJ"_beekeeper \
     --env NODE_ENV=production \
     --env NODE_TLS_REJECT_UNAUTHORIZED=1 \
 		--env NODE_EXTRA_CA_CERTS=/app/tlscert/ca.crt \
-    --env apiInternal=localhost \
     -v $(pwd)/tlscert:/app/tlscert:z,U \
     "$PROJ"_beekeeper
 
