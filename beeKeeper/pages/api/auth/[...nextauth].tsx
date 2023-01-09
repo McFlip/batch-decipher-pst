@@ -5,6 +5,8 @@ import * as validator from '@authenio/samlify-node-xmllint' // validates SAML re
 import sp from 'constants/serviceprovider' // SAML service provider
 import idp from 'constants/idprovider' // SAML ID provider
 import type Iuser from 'types/user'
+import type Iattributes from 'types/attributes'
+import type Iconditions from 'types/conditions'
 // import type Isession from 'types/session'
 // import type { JWT } from 'next-auth/jwt'
 
@@ -18,17 +20,26 @@ export default NextAuth({
 			},
 			async authorize(_credentials, req) {
 				// parse SAML response
-				// TODO: define interface to 'extract'
 				try {
 					saml.setSchemaValidator(validator)
 					const samlBody = JSON.parse(decodeURIComponent(req.body.SAMLResponse))
 					const { extract } = await sp.parseLoginResponse(idp, 'post', { body: samlBody })
+					const { attributes, conditions }: { attributes: Iattributes, conditions: Iconditions} = extract
 					console.log("Login Attributes")
-					console.log(extract.attributes)
-					// TODO: assert extract.conditions are valid
+					console.log(attributes)
+					// assert extract.conditions are valid
+					const timeMeow = Date.now()
+					const timeStart = Date.parse(conditions.notBefore)
+					const timeEnd = Date.parse(conditions.notOnOrAfter)
+					if(timeMeow < timeStart || timeMeow >= timeEnd) {
+						// returning null lets next-auth know auth failed
+						return null
+					}
 					// return user attributes to next-auth
-					return extract.attributes
-					// return { email: 'fu@bar.wtf'}
+					return {
+						...attributes,
+						id: attributes.username
+					}
 				} catch (error) {
 					console.error(error)
 					// returning null lets next-auth know auth failed

@@ -69,15 +69,25 @@ Finally, upload the images from `images/*.tar` to your production server and loa
 
 ```
 # .env.production.local
+
 # Set web port to 8080 instead of 443
 PORT=8080
+# Set Host URL for custom server using middleware
+HOST="https://example.org"
 # Client side fetch URL
 NEXT_PUBLIC_API_EXTERNAL="https://example.org"
 # Server side rendering
-API_INTERNAL="https://localhost"
+API_INTERNAL="https://example.org"
 # Next-Auth
 NEXTAUTH_URL="https://example.org:8080"
 NEXTAUTH_SECRET="secretSquirrel"
+# SAML Service Provider
+SP_ENTITY_ID="https://example.org:8080/api/auth/login/request"
+SP_LOCATION="https://example.org:8080/api/auth/login/response"
+SP_LOGOUT="https://example.org:8080/api/auth/logout/slo"
+SP_SIG_ALGO="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256"
+# SAML ID Provider
+IDP_ISSUER="https://keycloak.example.org/auth/realms/saml"
 ```
 
 ## Testing
