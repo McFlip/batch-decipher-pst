@@ -7,22 +7,22 @@ import { useSession } from "next-auth/react"
 import { useRouter } from 'next/router'
 
 function App({
-	Component,
-	pageProps}: AppProps<{
-		session: Isession
-	}>) {
+  Component,
+  pageProps }: AppProps<{
+    session: Isession
+  }>) {
   return (
     <SessionProvider session={pageProps.session}>
-        <Auth>
-          <Component {...pageProps} />
-        </Auth>
+      <Auth>
+        <Component {...pageProps} />
+      </Auth>
     </SessionProvider>
   )
 }
 
 // redirect to login pg w/ consent to monitor & signIn button
 // only auth in production
-function Auth({children}) {
+function Auth({ children }) {
   const rtr = useRouter()
   const { status } = useSession({required: process.env.NODE_ENV === 'production' && rtr.pathname !== '/api/auth/login/request'})
 

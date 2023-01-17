@@ -47,6 +47,7 @@ podman run -dt --name "$PROJ"_queenbee \
     --privileged \
     --env DEBUG=* \
     --env NODE_ENV=development \
+    --env NEXTAUTH_SECRET=secretSquirrel \
     -v $(pwd)/queenBee:/app:Z \
     -w /app \
     -v /srv/public:/srv/public:z,U \
