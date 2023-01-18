@@ -11,7 +11,7 @@ import { getSession } from 'next-auth/react'
 import Isession from 'types/session'
 
 const HomeDebug = debug('home')
-debug.enable('home')
+// debug.enable('home')
 
 export default function Home() {
   const [cases, setCases] = useState()

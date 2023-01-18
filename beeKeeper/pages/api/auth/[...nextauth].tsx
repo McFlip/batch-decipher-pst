@@ -49,6 +49,11 @@ export default NextAuth({
   },
   callbacks: {
     async signIn({ user }: { user: Iuser }) {
+      // TODO: create a user table config for the SAML IDP
+      // hub.docker.com/r/kristophjunge/test-saml-idp
+      if (process.env.NODE_ENV === 'development') {
+        return true
+      }
       // Role-Based auth
       return user.role.includes('enigma_users')
     },
@@ -56,12 +61,12 @@ export default NextAuth({
       return url
     },
     async session({ session, user, token }: { session: Isession, user: Iuser, token: JWT }) {
-      // TODO: customize JWT for queenBee REST API
+      // expose API key to the client
       session.apiKey = token.apiKey as string
       return session
     },
     async jwt({ token, user, account, profile, isNewUser }) {
-      // TODO: customize JWT for queenBee REST API
+      // customize JWT for queenBee REST API
       const apiKey = jwt.sign({ email: token.email, iat: Date.now() }, process.env.NEXTAUTH_SECRET, { expiresIn: '24h' })
       return { ...token, apiKey }
     }

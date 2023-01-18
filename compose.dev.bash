@@ -34,6 +34,7 @@ fi
 # front end
 podman run -dt --name "$PROJ"_beekeeper \
     --env NODE_ENV=development \
+    --env DEBUG=* \
     --env NEXTAUTH_URL=http://localhost:3001 \
     --env NEXTAUTH_SECRET=secretSquirrel \
     -v $(pwd)/beeKeeper:/app:Z \
@@ -61,5 +62,6 @@ podman run -dt --name "$PROJ"_queenbee \
 podman run -dt --name "$PROJ"_saml \
     --env SIMPLESAMLPHP_SP_ENTITY_ID=saml-poc \
     --env SIMPLESAMLPHP_SP_ASSERTION_CONSUMER_SERVICE=http://localhost:3001/api/auth/login/response \
+    --env SIMPLESAMLPHP_SP_SINGLE_LOGOUT_SERVICE=http://localhost:3001/api/auth/logout/slo \
     --pod $PROJ \
     test-saml-idp

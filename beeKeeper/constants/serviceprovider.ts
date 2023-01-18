@@ -8,9 +8,9 @@ const privateKey = fs.readFileSync("/app/tlscert/key.pem");
 
 const sp = saml.ServiceProvider({
   entityID: process.env.SP_ENTITY_ID,
-  authnRequestsSigned: true,
-  wantLogoutRequestSigned: true,
-  wantLogoutResponseSigned: true,
+  authnRequestsSigned: process.env.NODE_ENV === 'production',
+  wantLogoutRequestSigned: process.env.NODE_ENV === 'production',
+  wantLogoutResponseSigned: process.env.NODE_ENV === 'production',
   signingCert,
   privateKey,
   requestSignatureAlgorithm: process.env.SP_SIG_ALGO,

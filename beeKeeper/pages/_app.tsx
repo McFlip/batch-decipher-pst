@@ -24,7 +24,8 @@ function App({
 // only auth in production
 function Auth({ children }) {
   const rtr = useRouter()
-  const { status } = useSession({required: process.env.NODE_ENV === 'production' && rtr.pathname !== '/api/auth/login/request'})
+  // const { status } = useSession({ required: process.env.NODE_ENV === 'production' && rtr.pathname !== '/api/auth/login/request' })
+  const { status } = useSession({ required: rtr.pathname !== '/api/auth/login/request' })
 
   if (status === "loading") {
     return <div className='container'>Authenticating. Stand by...</div>

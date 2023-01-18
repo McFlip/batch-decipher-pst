@@ -1,24 +1,31 @@
 import Menu from 'components/menu'
 import Head from 'next/head'
-import {useRouter} from 'next/router'
-import {GetServerSideProps} from 'next'
+import { useRouter } from 'next/router'
+import { GetServerSideProps } from 'next'
 import { useState } from 'react'
 import debug from 'debug'
 import { apiExternal, apiInternal } from 'constants/'
 import Uploader from 'components/uploader'
+import { unstable_getServerSession } from "next-auth/next"
+import Isession from 'types/session'
+import authOptions from 'pages/api/auth/[...nextauth]'
+import jwt from 'jsonwebtoken'
+import type { User } from 'next-auth'
 
 const KeysDebug = debug('keys')
 debug.enable('keys')
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
-  const {caseId} = context.params
+  const { caseId } = context.params
   const urlKeys = `${apiInternal}:3000/keys/${caseId}`
   try {
+    const { user }: { user: User } = await unstable_getServerSession(context.req, context.res, authOptions)
+    const apiKey = jwt.sign({ email: user.email, iat: Date.now() }, process.env.NEXTAUTH_SECRET, { expiresIn: '24h' })
     const fetchSerials = await fetch(urlKeys, {
       method: 'GET',
       mode: 'cors',
       cache: 'default',
-      headers: {'Content-Type': 'application/json'}
+      headers: { 'Content-Type': 'application/json', 'authorization': `Bearer ${apiKey}` }
     })
     const serials: [string] = fetchSerials.ok ? await fetchSerials.json() : ['']
     return {
@@ -26,11 +33,11 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     }
   } catch (err) {
     KeysDebug(err)
-    return { props: { serialsProp: [''], caseId }}
+    return { props: { serialsProp: [''], caseId } }
   }
 }
 
-export default function Keys ({serialsProp, caseId}: { serialsProp: string[], caseId: string }) {
+export default function Keys({ serialsProp, caseId }: { serialsProp: string[], caseId: string }) {
   // const router = useRouter()
   // const {caseId}: {caseId?: string} = router.query
   const [serials, setSerials] = useState(serialsProp)
@@ -38,7 +45,7 @@ export default function Keys ({serialsProp, caseId}: { serialsProp: string[], ca
 
   const listSerials = (serials: string[]) => {
     KeysDebug(serials)
-    return(
+    return (
       <ol>
         {serials.map((serial) => {
           return (<li key={serial}> {serial} </li>)
@@ -47,7 +54,7 @@ export default function Keys ({serialsProp, caseId}: { serialsProp: string[], ca
     )
   }
 
-  return(
+  return (
     <div className='container'>
       <Head>
         <title>Extract Keys</title>
