@@ -1,7 +1,6 @@
 import ClipBtn from 'components/clipbtn'
 import '@testing-library/jest-dom'
-import { fireEvent, render } from '@testing-library/react'
-import { act } from '@testing-library/react'
+import { fireEvent, render, act } from '@testing-library/react'
 
 // store clipboard contents
 let clipboard = ''

@@ -1,13 +1,15 @@
 import Head from 'next/head'
 import Link from 'next/link'
-import {useRouter} from 'next/router'
-import {FormEvent, useState} from 'react'
+import { useRouter } from 'next/router'
+import { FormEvent, useState } from 'react'
 import debug from 'debug'
 import Menu from 'components/menu'
 import { apiExternal } from 'constants/'
 import axios from 'axios'
+import { getSession } from 'next-auth/react'
+import Isession from 'types/session'
 
-export default function NewCase () {
+export default function NewCase() {
   const router = useRouter()
   const newCaseDebug = debug('newcase')
   const [forensicator, setForensicator] = useState('Player1')
@@ -16,18 +18,22 @@ export default function NewCase () {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     const url = `${apiExternal}:3000/cases`
-    if(!forensicator) return alert('Missing Forensicator')
-    if(!caseName) return alert('Missing Case Name')
+    if (!forensicator) return alert('Missing Forensicator')
+    if (!caseName) return alert('Missing Case Name')
     try {
-      const res = await axios.post(url, {name: caseName, forensicator})
-      const {caseId} = await res.data
+      const { apiKey } = await getSession() as Isession
+      const config = {
+        headers: { 'Authorization': `Bearer ${apiKey}` }
+      }
+      const res = await axios.post(url, { name: caseName, forensicator }, config)
+      const { caseId } = await res.data
       newCaseDebug(caseId)
       router.push(`${caseId}/custodians`)
     } catch (err) {
       newCaseDebug(err)
     }
   }
-  return(
+  return (
     <div className='container'>
       <Head>
         <title>Create case</title>
@@ -39,7 +45,7 @@ export default function NewCase () {
         <form onSubmit={handleSubmit}>
           <div className='form-group'>
             <label htmlFor='forensicator'>Forensicator: </label>
-            <input id='forensicator' type='text' className='form-control' value={forensicator} onChange={e => setForensicator(e.target.value)}/>
+            <input id='forensicator' type='text' className='form-control' value={forensicator} onChange={e => setForensicator(e.target.value)} />
           </div>
           <div className='form-group'>
             <label htmlFor='casename'>Case Name: </label>

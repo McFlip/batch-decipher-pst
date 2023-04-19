@@ -1,7 +1,6 @@
 import Custodians from 'pages/[caseId]/custodians'
-import { render, fireEvent , within, waitForElementToBeRemoved , waitFor, logRoles, getByRole } from '@testing-library/react'
+import { render, fireEvent , within, waitForElementToBeRemoved , waitFor, logRoles, getByRole, act, getByText } from '../../utils'
 import '@testing-library/jest-dom'
-import { act } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useRouter } from "next/router"
 
@@ -26,7 +25,7 @@ describe('Custodians Page', () => {
 		const { getByRole } = render(<Custodians custodians={testCustodians} caseId='1' />)
 		await userEvent.clear(getByRole('textbox'))
 		await userEvent.type(getByRole('textbox'), 'Ragnar\nBjorn\nFloki')
-		await act(() => userEvent.click(getByRole('button')))
+		await act(() => userEvent.click(getByRole('button', {name: 'Next'})))
 		await waitFor(() => expect(push).toHaveBeenCalledTimes(1))
 	})
 })

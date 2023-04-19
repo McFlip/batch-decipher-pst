@@ -1,7 +1,6 @@
 import EditCase from "pages/[caseId]/editcase"
-import { render, fireEvent , within, waitForElementToBeRemoved , waitFor, logRoles, getByRole } from '@testing-library/react'
+import { render, fireEvent , within, waitForElementToBeRemoved , waitFor, logRoles, getByRole, act } from '../../utils'
 import '@testing-library/jest-dom'
-import { act } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useRouter } from "next/router"
 import testCases from 'fixtures/cases'
@@ -27,20 +26,20 @@ describe('Edit Case Page', () => {
   }),
   it('FAILS to update with no name', async () => {
     const { getByLabelText, getByRole } = render(<EditCase myCase={testCase} />)
-    await userEvent.clear(getByLabelText("Case Name:"))
-    await act(() => userEvent.click(getByRole('button', { name: 'Update' })))
+    await act(() => {userEvent.clear(getByLabelText("Case Name:"))})
+    await act(() => {userEvent.click(getByRole('button', { name: 'Update' }))})
     expect(mockRouter.length).toBe(0)
   }),
   it('FAILS to update with no forensicator', async () => {
     const { getByLabelText, getByRole } = render(<EditCase myCase={testCase} />)
-    await userEvent.clear(getByLabelText('Forensicator:'))
-    await act(() => userEvent.click(getByRole('button', { name: 'Update' })))
+    await act(() => {userEvent.clear(getByLabelText('Forensicator:'))})
+    await act(() => {userEvent.click(getByRole('button', { name: 'Update' }))})
     expect(mockRouter.length).toBe(0)
   }),
   it('updates the custodian list', async () => {
     const { getByLabelText, getByRole } = render(<EditCase myCase={testCase} />)
-    await userEvent.type(getByLabelText('Custodians:'), 'Pooh\nPiglet\nTigger')
-    await act(() => userEvent.click(getByRole('button', { name: 'Update' })))
+    await act(() => {userEvent.type(getByLabelText('Custodians:'), 'Pooh\nPiglet\nTigger')})
+    await act(() => {userEvent.click(getByRole('button', { name: 'Update' }))})
 		await waitFor(() => expect(push).toHaveBeenCalledTimes(1))
   })
 })

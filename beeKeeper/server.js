@@ -5,9 +5,12 @@ const { parse } = require('url')
 const next = require('next')
 const port = parseInt(process.env.PORT) || 443
 const dev = false
+const host = process.env.HOST
 const app = next({
   dev,
   dir: __dirname,
+	host,
+	port
 })
 const handle = app.getRequestHandler()
 

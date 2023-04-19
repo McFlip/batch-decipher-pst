@@ -26,9 +26,18 @@ The web UI is set up in a wizard format and will walk you through the process.
 
 Build the project by cloning this repo and following the build instructions below. 
 Create a folder at `/srv/public` which is the location that output will be written to. Make sure your user account has `rwx` permissions on the folder.
-The app will run with user privileges.
+The app will run with user privileges. I run with port 8080 instead of the default 443 to avoid using root privileges. You can modify this by adding capabilities to the beeKeeper container if you wish to run on port 443.
 
-Stand up the project by running `./compose.dev.bash`.
+Stand up the project in production by running `./compose.bash`. You must place a x509 cert in the `tlscert` folder using the filenames `cert.pem` and `key.pem`.
+The key must be in PKCS1 format if you use SAML auth. To convert from PKCS8 to PKCS1 use
+
+```
+openssl pkcs8 -in pk8key.pem -traditional -nocrypt -out key.pem
+```
+
+You also need to add your enterprise cert chain of trust in PEM format as `tlscert/ca.crt`. Otherwise, https requests on the backend will fail.
+
+Stand up the project in development by running `./compose.dev.bash`.
 
 Stand down the project by running
 
@@ -43,6 +52,10 @@ No keys are stored to disk unencrypted, but it is your responsibility to use a s
 The output emails are in plain text so ensure you have properly managed permissions on the output folder at `/srv/public`.
 Secrets are passed in to the scripts using environment variables. This assumes they are running inside a container that only lives long enough to run the script.
 
+### SAML Auth
+
+This project uses Next-Auth and Samlify to provide SAML 3rd party auth suitable for enterprise use on an intranet.
+
 ## Build
 
 This tool is meant to be run on a Linux system running Podman. It has a Web UI, REST API, and a set of scripts packaged in a container.
@@ -51,7 +64,31 @@ When a job is run the API spins up a container that runs the actual script that 
 If you prefer to work in a CLI environment, you can use the scripts directly from inside the `busyBee` folder.
 Build the busyBee container with the build script `./build.bash "busyBee"` or if using Docker simply use the provided Dockerfile inside busyBee.
 
-To build the complete project run `./build.bash "all"`. This script will also update dependancies and create a new `latest` image for each container.
+To build the complete project, create a config file in `beeKeeper` named `.env.production.local`. See below for an example. Next, run `./build.bash "all"`. This script will also update dependancies and create a new `latest` image for each container.
+Finally, upload the images from `images/*.tar` to your production server and load into your localhost registry with `podman load < *.tar`
+
+```
+# .env.production.local
+
+# Set web port to 8080 instead of 443
+PORT=8080
+# Set Host URL for custom server using middleware
+HOST="https://example.org"
+# Client side fetch URL
+NEXT_PUBLIC_API_EXTERNAL="https://example.org"
+# Server side rendering
+API_INTERNAL="https://example.org"
+# Next-Auth
+NEXTAUTH_URL="https://example.org:8080"
+NEXTAUTH_SECRET="secretSquirrel"
+# SAML Service Provider
+SP_ENTITY_ID="https://example.org:8080/api/auth/login/request"
+SP_LOCATION="https://example.org:8080/api/auth/login/response"
+SP_LOGOUT="https://example.org:8080/api/auth/logout/slo"
+SP_SIG_ALGO="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256"
+# SAML ID Provider
+IDP_ISSUER="https://keycloak.example.org/auth/realms/saml"
+```
 
 ## Testing
 
@@ -104,7 +141,14 @@ The test is configured to bail on the 1st failure.
 
 ### Bee Keeper
 
-Change to the beeKeeper directory. This will run tests in watch mode. Press `q` to quit.
+Change to the beeKeeper directory.
+
+If you haven't installed the dependancies yet then run a clean install
+
+```bash
+podman run -it --rm --security-opt label=disable -v $(pwd):/app --workdir /app node:current npm ci
+```
+This will run tests in watch mode. Press `q` to quit.
 
 ```bash
 podman run -it --rm --name beekeeper_test -v $(pwd):/app:Z -w /app node:current npm test
@@ -129,6 +173,11 @@ Run Cypress from inside the beeKeeper folder `npx cypress open`
 
 Reset the stack again if desired i.e. to run the tests again in Firefox.
 
+You can use a self-signed cert if you want to test a production build
+
+```
+openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -sha256 -days 365
+```
 
 ## Dev
 

@@ -1,15 +1,17 @@
 import Head from 'next/head'
 import Link from 'next/link'
-import {useState} from 'react'
+import { useState } from 'react'
 import debug from 'debug'
 import Menu from 'components/menu'
 import SearchBar from 'components/searchbar'
 import ListCases from 'components/listcases'
 import { apiExternal } from 'constants/'
 import axios from 'axios'
+import { getSession } from 'next-auth/react'
+import Isession from 'types/session'
 
 const HomeDebug = debug('home')
-debug.enable('home')
+// debug.enable('home')
 
 export default function Home() {
   const [cases, setCases] = useState()
@@ -17,7 +19,12 @@ export default function Home() {
     HomeDebug(`Search by ${searchCategory} for ${searchTerm}`)
     const url = `${apiExternal}:3000/cases/search?${searchCategory}=${encodeURI(searchTerm)}`
     try {
-      const {data} = await axios.get(url)
+      const { apiKey } = await getSession() as Isession
+      HomeDebug(`API Key: ${apiKey}`)
+      const config = {
+        headers: { 'Authorization': `Bearer ${apiKey}` }
+      }
+      const { data } = await axios.get(url, config)
       if (data.length === 0) alert('no cases found')
       HomeDebug(data)
       setCases(data)
@@ -47,7 +54,7 @@ export default function Home() {
         </p>
         <SearchBar onSearch={handlSearch} />
         <ListCases cases={cases} />
-        <hr/>
+        <hr />
         <h2>How to use this app</h2>
         <p>
           This app uses a wizard format. The menu at the top indicates your step in the pipleine going from left to right.

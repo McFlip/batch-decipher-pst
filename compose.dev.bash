@@ -23,17 +23,20 @@ podman pod exists $PROJ
 if [ $? -eq 1 ]
 then
     # create pod and publish web server and API
-    podman pod create --name $PROJ -p 8080:8080 -p 3000:3000 -p 27017:27017
+    podman pod create --name $PROJ -p 8080:8080 -p 3000:3000 -p 3001:3001
 else
     # recycle
     podman pod stop $PROJ
     podman pod rm $PROJ
-    podman pod create --name $PROJ -p 8080:8080 -p 3000:3000 -p 27017:27017
+    podman pod create --name $PROJ -p 8080:8080 -p 3000:3000 -p 3001:3001
 fi
 
 # front end
 podman run -dt --name "$PROJ"_beekeeper \
     --env NODE_ENV=development \
+    --env DEBUG=* \
+    --env NEXTAUTH_URL=http://localhost:3001 \
+    --env NEXTAUTH_SECRET=secretSquirrel \
     -v $(pwd)/beeKeeper:/app:Z \
     -w /app \
      --pod $PROJ \
@@ -45,11 +48,20 @@ podman run -dt --name "$PROJ"_queenbee \
     --privileged \
     --env DEBUG=* \
     --env NODE_ENV=development \
+    --env NEXTAUTH_SECRET=secretSquirrel \
     -v $(pwd)/queenBee:/app:Z \
     -w /app \
     -v /srv/public:/srv/public:z,U \
     -v "$PROJ"_hive:/app/workspace:z,U \
     -v $(pwd)/podman/podman.sock:/var/run/docker.sock:Z \
-     --pod $PROJ \
+    --pod $PROJ \
     node:current \
     npm start
+
+# SAML ID provider
+podman run -dt --name "$PROJ"_saml \
+    --env SIMPLESAMLPHP_SP_ENTITY_ID=saml-poc \
+    --env SIMPLESAMLPHP_SP_ASSERTION_CONSUMER_SERVICE=http://localhost:3001/api/auth/login/response \
+    --env SIMPLESAMLPHP_SP_SINGLE_LOGOUT_SERVICE=http://localhost:3001/api/auth/logout/slo \
+    --pod $PROJ \
+    test-saml-idp
