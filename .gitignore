@@ -114,3 +114,6 @@ podman/
 
 # code stats
 .VSCodeCounter
+
+# keys
+*.pem
