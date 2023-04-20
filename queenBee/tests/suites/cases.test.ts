@@ -13,6 +13,7 @@ import { testCase } from '../data/cases'
 // import types
 import type {} from 'mocha'
 import type {} from 'chai-http'
+import jwt from '../data/jwt'
 
 const debugCaseTest = debug('cases')
 const getCase = () => {
@@ -30,6 +31,7 @@ export default function cases (this: Mocha.Suite): void {
     }
     const res: ChaiHttp.Response = await chai.request(apiURL)
       .post('/cases/')
+      .set({'Authorization': `Bearer ${jwt}`})
       .send(sentCase)
     expect(res).to.have.status(201)
     const c = getCase()
@@ -44,33 +46,43 @@ export default function cases (this: Mocha.Suite): void {
     const badCase = { forensicator: 'Sherlock Holmes' }
     const res: ChaiHttp.Response = await chai.request(apiURL)
       .post('/cases')
+      .set({'Authorization': `Bearer ${jwt}`})
       .send(badCase)
     expect(res).to.have.status(500)
     expect(res.text).to.match(/ValidationError: Case name is required/)
     const badCase2 = { name: 'missing forensicator' }
     const res2: ChaiHttp.Response = await chai.request(apiURL)
       .post('/cases')
+      .set({'Authorization': `Bearer ${jwt}`})
       .send(badCase2)
     expect(res2).to.have.status(500)
     expect(res2.text).to.match(/ValidationError: Forensicator is required/)
   })
   it('should get all cases', async function () {
-    const res: ChaiHttp.Response = await chai.request(apiURL).get('/cases/')
+    const res: ChaiHttp.Response = await chai.request(apiURL)
+    .get('/cases/')
+    .set({'Authorization': `Bearer ${jwt}`})
     expect(res).to.have.status(200)
     // debugCaseTest(res.body)
     checkCase(res.body[0], testCase)
   })
   it('should get a case by ID', async function () {
     const c = getCase()
-    const res: ChaiHttp.Response = await chai.request(apiURL).get(`/cases/${c?._id}`)
+    const res: ChaiHttp.Response = await chai.request(apiURL)
+      .get(`/cases/${c?._id}`)
+      .set({'Authorization': `Bearer ${jwt}`})
     expect(res).to.have.status(200)
     checkCase(res.body, testCase)
   })
   it('should FAIL to get a case by bad ID', async function () {
-    const res500: ChaiHttp.Response = await chai.request(apiURL).get('/cases/FUBAR')
+    const res500: ChaiHttp.Response = await chai.request(apiURL)
+      .get('/cases/FUBAR')
+      .set({'Authorization': `Bearer ${jwt}`})
     expect(res500).to.have.status(500)
     expect(res500.text).to.contain("Invalid Case ID")
-    const res404: ChaiHttp.Response = await chai.request(apiURL).get('/cases/aaaaaaaaaaaaaaaaaaaaaaaa')
+    const res404: ChaiHttp.Response = await chai.request(apiURL)
+      .get('/cases/aaaaaaaaaaaaaaaaaaaaaaaa')
+      .set({'Authorization': `Bearer ${jwt}`})
     expect(res404).to.have.status(404)
   })
   it('should search & find the test case', async function () {
@@ -81,14 +93,17 @@ export default function cases (this: Mocha.Suite): void {
     const results = queries.map(async (q) => {
       // debugCaseTest(`/cases/search?${q}`)
       const res: ChaiHttp.Response = await chai.request(apiURL)
-      .get(`/cases/search?${q}`)
+        .get(`/cases/search?${q}`)
+        .set({'Authorization': `Bearer ${jwt}`})
       expect(res).to.have.status(200)
       checkCase(res.body[0], testCase)
     })
     await Promise.all(results)
   })
   it('should get all cases with an empty query', async function () {
-    const res: ChaiHttp.Response = await chai.request(apiURL).get('/cases/search')
+    const res: ChaiHttp.Response = await chai.request(apiURL)
+      .get('/cases/search')
+      .set({'Authorization': `Bearer ${jwt}`})
     expect(res).to.have.status(200)
     expect(res.body).to.have.length(1)
   })
@@ -99,7 +114,8 @@ export default function cases (this: Mocha.Suite): void {
     ]
     queries.forEach(async (q) => {
       const res: ChaiHttp.Response = await chai.request(apiURL)
-      .get(`/cases/search?${q}`)
+        .get(`/cases/search?${q}`)
+        .set({'Authorization': `Bearer ${jwt}`})
       expect(res).to.have.status(200)
       expect(res.body).to.eql([])
     })
@@ -107,6 +123,7 @@ export default function cases (this: Mocha.Suite): void {
   it('should FAIL to update a case with bad ID', async function () {
     const res: ChaiHttp.Response = await chai.request(apiURL)
       .patch('/cases/aaaaaaaaaaaaaaaaaaaaaaaa')
+      .set({'Authorization': `Bearer ${jwt}`})
       .send({status: 'inactive'})
     expect(res).to.have.status(404)
   })
@@ -114,6 +131,7 @@ export default function cases (this: Mocha.Suite): void {
     const c = getCase()
     const resUpdate: ChaiHttp.Response = await chai.request(apiURL)
       .patch(`/cases/${c?._id}`)
+      .set({'Authorization': `Bearer ${jwt}`})
       .send({forensicator: ''})
     expect(resUpdate).to.have.status(200)
     const { name, forensicator } = resUpdate.body
@@ -123,10 +141,14 @@ export default function cases (this: Mocha.Suite): void {
   })
   it('should delete a case by ID', async function () {
     const c = getCase()
-    const resDel: ChaiHttp.Response = await chai.request(apiURL).delete(`/cases/${c?._id}`)
+    const resDel: ChaiHttp.Response = await chai.request(apiURL)
+      .delete(`/cases/${c?._id}`)
+      .set({'Authorization': `Bearer ${jwt}`})
     expect(resDel).to.have.status(200)
     const { caseId: deletedId } = resDel.body
-    const resGet: ChaiHttp.Response = await chai.request(apiURL).get(`/cases/${deletedId}`)
+    const resGet: ChaiHttp.Response = await chai.request(apiURL)
+      .get(`/cases/${deletedId}`)
+      .set({'Authorization': `Bearer ${jwt}`})
     expect(resGet).to.have.status(404)
     // Delete workspace
     const subDirs = ['sigs', 'p12', 'keys']
@@ -135,7 +157,9 @@ export default function cases (this: Mocha.Suite): void {
     expect(isDirExist).to.eql(false)
   })
   it('should FAIL to delete a case with a bad ID', async function () {
-    const res: ChaiHttp.Response = await chai.request(apiURL).delete('/cases/aaaaaaaaaaaaaaaaaaaaaaaa')
+    const res: ChaiHttp.Response = await chai.request(apiURL)
+      .delete('/cases/aaaaaaaaaaaaaaaaaaaaaaaa')
+      .set({'Authorization': `Bearer ${jwt}`})
     expect(res).to.have.status(404)
   })
 }

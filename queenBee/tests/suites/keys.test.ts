@@ -7,6 +7,7 @@ import { cleanup } from '../util/cleanup'
 import type {} from 'mocha'
 import type {} from 'chai-http'
 import CaseType from '../../types/case'
+import jwt from '../data/jwt'
 
 const debugKeys = debug('keys')
 
@@ -18,7 +19,10 @@ export default function keys(this: Mocha.Suite): void {
       forensicator: 'Sherlock Holmes',
     }
     // create test case
-    const caseRes: ChaiHttp.Response = await chai.request(apiURL).post('/cases').send(testCase)
+    const caseRes: ChaiHttp.Response = await chai.request(apiURL)
+      .post('/cases')
+      .set({'Authorization': `Bearer ${jwt}`})
+      .send(testCase)
     expect(caseRes).to.have.status(201)
     const { caseId }: { caseId: CaseType["_id"] } = caseRes.body
     // upload p12
@@ -29,6 +33,7 @@ export default function keys(this: Mocha.Suite): void {
     }
     const uploadRes: ChaiHttp.Response = await chai.request(apiURL)
       .post(`/keys/${caseId}`)
+      .set({'Authorization': `Bearer ${jwt}`})
       .type('form')
       .attach('p12', fs.readFileSync('/app/tests/data/p12/TEST.p12'), 'TEST.p12')
       .field(formData)
@@ -37,10 +42,14 @@ export default function keys(this: Mocha.Suite): void {
     expect(uploadRes.body).to.eql(['12C3905B55296E401270C0CEB18B5BA660DB9A1F.key'])
   })
   it('should read key serial #s from a previous run', async function () {
-    const caseRes: ChaiHttp.Response = await chai.request(apiURL).get('/cases')
+    const caseRes: ChaiHttp.Response = await chai.request(apiURL)
+      .get('/cases')
+      .set({'Authorization': `Bearer ${jwt}`})
     debugKeys(caseRes.body)
     const caseId: CaseType["_id"] = caseRes.body[0]?._id
-    const getkeysRes: ChaiHttp.Response = await chai.request(apiURL).get(`/keys/${caseId}`)
+    const getkeysRes: ChaiHttp.Response = await chai.request(apiURL)
+      .get(`/keys/${caseId}`)
+      .set({'Authorization': `Bearer ${jwt}`})
     expect(getkeysRes).to.have.status(200)
     expect(getkeysRes.body).to.eql(['12C3905B55296E401270C0CEB18B5BA660DB9A1F.key'])
   })
@@ -50,7 +59,10 @@ export default function keys(this: Mocha.Suite): void {
       forensicator: 'Nicolas Cage',
     }
     // create test case
-    const caseRes: ChaiHttp.Response = await chai.request(apiURL).post('/cases').send(testCase)
+    const caseRes: ChaiHttp.Response = await chai.request(apiURL)
+      .post('/cases')
+      .set({'Authorization': `Bearer ${jwt}`})
+      .send(testCase)
     expect(caseRes).to.have.status(201)
     const { caseId }: { caseId: CaseType["_id"] } = caseRes.body
     // upload p12
@@ -61,6 +73,7 @@ export default function keys(this: Mocha.Suite): void {
     }
     const uploadRes: ChaiHttp.Response = await chai.request(apiURL)
       .post(`/keys/${caseId}`)
+      .set({'Authorization': `Bearer ${jwt}`})
       .type('form')
       .attach('p12', fs.readFileSync('/app/tests/data/p12/TEST.p12'), 'TEST.p12')
       .field(formData)
@@ -76,6 +89,7 @@ export default function keys(this: Mocha.Suite): void {
     }
     const res: ChaiHttp.Response = await chai.request(apiURL)
       .post('/keys/fubar')
+      .set({'Authorization': `Bearer ${jwt}`})
       .type('form')
       .attach('p12', fs.readFileSync('/app/tests/data/p12/TEST.p12'), 'TEST.p12')
       .field(formData)
@@ -83,7 +97,9 @@ export default function keys(this: Mocha.Suite): void {
     expect(res).to.have.status(500)
   })
   it('should FAIL to get serails with a BAD caseId', async function () {
-    const getkeysRes: ChaiHttp.Response = await chai.request(apiURL).get(`/keys/fubar}`)
+    const getkeysRes: ChaiHttp.Response = await chai.request(apiURL)
+      .get(`/keys/fubar}`)
+      .set({'Authorization': `Bearer ${jwt}`})
     expect(getkeysRes).to.have.status(500)
   })
   it('should FAIL to extract a key with missing form data', async function () {
@@ -92,7 +108,10 @@ export default function keys(this: Mocha.Suite): void {
       forensicator: 'Sherlock Holmes',
     }
     // create test case
-    const caseRes: ChaiHttp.Response = await chai.request(apiURL).post('/cases').send(testCase)
+    const caseRes: ChaiHttp.Response = await chai.request(apiURL)
+    .post('/cases')
+    .set({'Authorization': `Bearer ${jwt}`})
+    .send(testCase)
     expect(caseRes).to.have.status(201)
     const { caseId }: { caseId: CaseType["_id"] } = caseRes.body
     const fakeId = 'fubar'
@@ -105,6 +124,7 @@ export default function keys(this: Mocha.Suite): void {
     forms.forEach(async (f) => {
       const res: ChaiHttp.Response = await chai.request(apiURL)
         .post(`/keys/${caseId}`)
+        .set({'Authorization': `Bearer ${jwt}`})
         .type('form')
         .field(f)
       expect(res).to.have.status(500)

@@ -7,6 +7,7 @@ import cases from './suites/cases.test'
 import sigs from './suites/sigs.test'
 import keys from './suites/keys.test'
 import decipher from './suites/decipher.test'
+import certs from './suites/certs.test'
 import fs from 'fs'
 import path from 'path'
 
@@ -25,8 +26,15 @@ describe('API tests', function () {
     const res = await chai.request(apiURL).get('/')
     expect(res).to.have.status(200)
   })
+  it('should return Unauthorized with bad token on protected route', async function () {
+    const res: ChaiHttp.Response = await chai.request(apiURL)
+    .get('/cases/')
+    .set({'Authorization': `Bearer FUBAR`})
+    expect(res).to.have.status(401)
+  })
   describe('CASES', cases.bind(this))
   describe('Get CERTS from signed email', sigs.bind(this))
   describe('Extract and decrypt KEYS from p12', keys.bind(this))
   describe('Decipher', decipher.bind(this))
+  describe('Certs archive', certs.bind(this))
 })
