@@ -125,6 +125,11 @@ Create the podman socket at `batch-decipher-pst/podman`
 ```bash
 podman system service -t 0 unix:$(pwd)/podman.sock &
 ```
+Run test database
+
+```bash
+podman run -d --rm --pod test -e POSTGRES_PASSWORD=test --name pg postgres
+```
 
 Run the test container
 
@@ -134,7 +139,7 @@ podman run -it --privileged --pod test --env NODE_ENV='test' --env NEXTAUTH_SECR
 # Suppress stderr for less noise on tests that 'fail' succussfuly 
 podman run --privileged --pod test --env NODE_ENV='test' --env NEXTAUTH_SECRET=test --attach stdout --rm -v $(pwd):/app:z -v test_hive:/app/workspace -v test_share:/srv/public -v $(pwd)/../podman/podman.sock:/var/run/docker.sock:z test-queenbee npm test
 # Get debug output
-podman run -it --pod test --privileged --env NODE_ENV='test' --env NEXTAUTH_SECRET=test --env DEBUG='decipher' --rm -v $(pwd):/app:z -v test_hive:/app/workspace -v test_share:/srv/public -v $(pwd)/../podman/podman.sock:/var/run/docker.sock:z test-queenbee npm test
+podman run -it --pod test --privileged --env NODE_ENV='test' --env NEXTAUTH_SECRET=test --env DEBUG='cert' --rm -v $(pwd):/app:z -v test_hive:/app/workspace -v test_share:/srv/public -v $(pwd)/../podman/podman.sock:/var/run/docker.sock:z test-queenbee npm test
 ```
 
 The test is configured to bail on the 1st failure.

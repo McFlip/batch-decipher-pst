@@ -40,6 +40,7 @@
     "debug": "^2.6.9",
     "dockerode": "^3.3.4",
     "drizzle-orm": "^0.24.4",
+    "drizzle-zod": "^0.3.2",
     "express": "^4.18.2",
     "helmet": "^4.6.0",
     "morgan": "^1.10.0",
