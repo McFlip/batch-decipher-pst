@@ -1,19 +1,16 @@
 {
-    "compilerOptions": {
-      "target": "es6",
-      "module": "commonjs",
-      "rootDir": "./",
-      "outDir": "./dist",
-      "esModuleInterop": true,
-      "strict": true,
-      "baseUrl": ".",
-      "paths": {
-        "@/*": ["*"]
-      }
+  "compilerOptions": {
+    "target": "es6",
+    "module": "commonjs",
+    "rootDir": "./",
+    "outDir": "./dist",
+    "esModuleInterop": true,
+    "strict": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["*"]
     },
-    "exclude": [
-      "./tests/",
-      "./node_modules/",
-      "./dist/"
-    ]
+    "skipLibCheck": true
+  },
+  "exclude": ["./tests/", "./node_modules/", "./dist/"]
 }

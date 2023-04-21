@@ -54,11 +54,11 @@ buildah run $ctr chown node:node /srv/public
 # install dep
 buildah config --workingdir='/app' $ctr
 buildah config --env NODE_ENV=production $ctr
-buildah copy $ctr package.json package-lock.json /app/
+buildah copy $ctr package.json package-lock.json tsconfig.json /app/
 buildah run $ctr npm ci
 buildah copy $ctr dist /app/
 buildah config --port 3000 $ctr
-buildah config --entrypoint '"node" "index.js"' $ctr
+buildah config --entrypoint '"node" "-r" "tsconfig-paths/register" "index.js"' $ctr
 # inside a pod inter-container networking is over 'localhost'
 buildah config --env HOST_IP=localhost $ctr
 buildah commit --format oci $ctr batch-decipher-pst_queenbee
