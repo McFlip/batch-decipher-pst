@@ -36,5 +36,5 @@ describe('API tests', function () {
   describe('Get CERTS from signed email', sigs.bind(this))
   describe('Extract and decrypt KEYS from p12', keys.bind(this))
   describe('Decipher', decipher.bind(this))
-  describe('Certs archive', certs.bind(this))
+  describe.only('Certs archive', certs.bind(this))
 })

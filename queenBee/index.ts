@@ -5,6 +5,7 @@ import bodyParser from "body-parser"
 import { caseRte } from "./routes/cases"
 import { sigsRte } from "./routes/sigs"
 import { keysRte } from "./routes/keys"
+import { certsRte } from "./routes/certs"
 import debug from "debug"
 import { decipherRte } from "./routes/decipher"
 import passport from "passport"
@@ -56,6 +57,7 @@ passport.use(
 )
 
 // Routes
+app.use("/certs", passport.authenticate("jwt", { session: false }), certsRte)
 app.use("/cases", passport.authenticate("jwt", { session: false }), caseRte)
 app.use("/sigs", passport.authenticate("jwt", { session: false }), sigsRte)
 app.use("/keys", passport.authenticate("jwt", { session: false }), keysRte)

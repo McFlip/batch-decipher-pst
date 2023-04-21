@@ -7,7 +7,7 @@
   "description": "REST API between the client and the busyBee worker",
   "main": "index.js",
   "scripts": {
-    "test": "env TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' nyc mocha tests/index.test.ts --require ts-node/register --extensions ts,tsx --exit --bail",
+    "test": "env nyc mocha tests/index.test.ts --require ts-node/register --require tsconfig-paths/register --extensions ts,tsx --exit --bail",
     "start": "nodemon --watch index.ts --watch controllers --watch models --watch routes --watch util --watch types index.ts"
   },
   "repository": {
@@ -39,12 +39,16 @@
     "compression": "^1.7.4",
     "debug": "^2.6.9",
     "dockerode": "^3.3.4",
+    "drizzle-orm": "^0.24.4",
     "express": "^4.18.2",
     "helmet": "^4.6.0",
     "morgan": "^1.10.0",
     "multer": "^1.4.5-lts.1",
     "passport": "^0.6.0",
-    "passport-jwt": "^4.0.1"
+    "passport-jwt": "^4.0.1",
+    "pg": "^8.10.0",
+    "tsconfig-paths": "^4.2.0",
+    "zod": "^3.21.4"
   },
   "devDependencies": {
     "@types/body-parser": "^1.19.2",
@@ -58,10 +62,12 @@
     "@types/node": "^14.18.36",
     "@types/passport": "^1.0.11",
     "@types/passport-jwt": "^3.0.8",
+    "@types/pg": "^8.6.6",
     "@typescript-eslint/eslint-plugin": "^4.33.0",
     "@typescript-eslint/parser": "^4.33.0",
     "chai": "^4.3.7",
     "chai-http": "^4.3.0",
+    "drizzle-kit": "^0.17.5",
     "eslint": "^7.32.0",
     "eslint-plugin-node": "^11.1.0",
     "mocha": "^10.2.0",
