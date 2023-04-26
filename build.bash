@@ -4,7 +4,7 @@
 # Save images to archive for deployment on intranet server
 
 # update base images
-podman pull debian:stable-slim && podman pull node:alpine && podman pull node:current && podman pull node:16
+podman pull debian:stable-slim && podman pull node:alpine && podman pull node:current && podman pull node:16 && podman pull postgres
 
 if [ "$1" = "beeKeeper" ] || [ "$1" = "all" ]
 then

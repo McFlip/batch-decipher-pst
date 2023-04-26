@@ -1,11 +1,10 @@
 import chai, { expect } from "chai"
 import debug from "debug"
 import apiURL from "../../index"
-// import types
 import type {} from "mocha"
 import type {} from "chai-http"
 import { db } from "../../db/conn"
-import { smimeCerts } from "../../db/schema"
+import { smimeCerts, SmimeCerts } from "../../db/schema"
 import { sql } from "drizzle-orm/sql"
 import jwt from "../data/jwt"
 
@@ -18,23 +17,28 @@ const debugCerts = debug("cert")
  * @todo import db connection & schema types
  */
 export default function certs(this: Mocha.Suite): void {
-  const certFixture = {
-    sha1: "4da52c9731a03c858a2153c6defd5786f95e5882",
+  const certFixture: SmimeCerts = {
+    serial: "A1B2C3",
+    sha1: "4DA52C9731A03C858A2153C6DEFD5786F95E5882",
     email: "joe.schmo@fu.bar",
     issuer: "testIssuer",
     subject: "testSubj",
-    validFrom: "2023-04-20",
-    validTo: "2024-04-20",
+    userPrincipleName: "1234@com",
+    notBefore: "2023-04-20",
+    notAfter: "2024-04-20",
   }
   this.beforeAll(async () => {
     await db.execute(
-      sql`CREATE TABLE IF NOT EXISTS "smime_cert" ( "sha1" text PRIMARY KEY NOT NULL, "issuer" text, "valid_from" date, "valid_to" date, "subject" text, "email" text);`
+      sql`CREATE TABLE IF NOT EXISTS "smime_cert" ("sha1" text PRIMARY KEY NOT NULL,"serial" text NOT NULL,"email" text NOT NULL,"subject" text NOT NULL,"upn" text NOT NULL,"issuer" text NOT NULL,"not_before" date NOT NULL,"not_after" date NOT NULL);`
     )
-    await db.execute(sql`TRUNCATE smime_cert`)
+    await db.execute(
+      sql`CREATE INDEX IF NOT EXISTS "email_idx" ON "smime_cert" ("email");`
+    )
+    await db.execute(sql`TRUNCATE smime_cert;`)
     await db.insert(smimeCerts).values(certFixture)
   })
   it("should return status 200 if a cert exists in the DB when searching by hash", async function () {
-    const sha1 = "4da52c9731a03c858a2153c6defd5786f95e5882"
+    const sha1 = "4DA52C9731A03C858A2153C6DEFD5786F95E5882"
     const res: ChaiHttp.Response = await chai
       .request(apiURL)
       .get(`/certs/sha1/${sha1}`)
@@ -50,13 +54,15 @@ export default function certs(this: Mocha.Suite): void {
     expect(res).to.have.status(404)
   })
   it("should create a cert", async function () {
-    const cert = {
-      sha1: "00002c9731a03c858a2153c6defd5786f95e0000",
+    const cert: SmimeCerts = {
+      serial: "1A2B3C",
+      sha1: "00002C9731A03C858A2153C6DEFD5786F95E0000",
       email: "hooty.hoo@fu.bar",
       issuer: "testIssuer",
       subject: "testSubj",
-      validFrom: "2023-04-20",
-      validTo: "2024-04-20",
+      userPrincipleName: "4321@com",
+      notBefore: "2023-04-20",
+      notAfter: "2024-04-20",
     }
     const res: ChaiHttp.Response = await chai
       .request(apiURL)
@@ -73,12 +79,12 @@ export default function certs(this: Mocha.Suite): void {
   })
   it("should return status 400 while creating a malformed cert", async function () {
     const cert = {
-      sha1: "z0002c9731a03c858a2153c6defd5786f95e0000",
+      sha1: "00002c9731a03c858a2153c6defd5786f95e0000", // hash hex letters must be uppercase
       email: "hooty.hoo@fu.bar",
       issuer: "testIssuer",
       subject: "testSubj",
-      validFrom: "2023-04-20",
-      validTo: "2024-04-20",
+      notBefore: "2023-04-20",
+      notAfter: "2024-04-20",
     }
     const res: ChaiHttp.Response = await chai
       .request(apiURL)
