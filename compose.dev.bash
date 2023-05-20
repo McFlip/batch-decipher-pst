@@ -39,7 +39,7 @@ podman run -dt --name "$PROJ"_beekeeper \
     --env NEXTAUTH_SECRET=secretSquirrel \
     -v $(pwd)/beeKeeper:/app:Z \
     -w /app \
-     --pod $PROJ \
+    --pod $PROJ \
     node:16 \
     npm run dev
 
@@ -65,3 +65,8 @@ podman run -dt --name "$PROJ"_saml \
     --env SIMPLESAMLPHP_SP_SINGLE_LOGOUT_SERVICE=http://localhost:3001/api/auth/logout/slo \
     --pod $PROJ \
     test-saml-idp
+
+# Postgres DB
+podman run -dt --name pg \
+    --env POSTGRES_PASSWORD=test \
+    --pod $PROJ  postgres

@@ -8,7 +8,7 @@
   "main": "index.js",
   "scripts": {
     "test": "env nyc mocha tests/index.test.ts --require ts-node/register --require tsconfig-paths/register --extensions ts,tsx --exit --bail",
-    "start": "nodemon --watch index.ts --watch controllers --watch models --watch routes --watch util --watch types index.ts"
+    "start": "nodemon --require tsconfig-paths/register --watch index.ts --watch controllers --watch models --watch routes --watch util --watch types index.ts"
   },
   "repository": {
     "type": "git",
