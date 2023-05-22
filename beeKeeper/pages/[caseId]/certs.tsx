@@ -1,16 +1,11 @@
 import Menu from "components/menu"
-// import SetPath from 'components/setpath'
-import Uploader from "components/uploader"
 import Head from "next/head"
 import { GetServerSideProps } from "next"
-import { FormEvent, useState } from "react"
+import { useState } from "react"
 import debug from "debug"
-import Modal from "react-bootstrap/Modal"
 import Button from "react-bootstrap/Button"
 import { apiExternal, apiInternal } from "constants/"
 import ClipBtn from "components/clipbtn"
-import ProgressBar from "react-bootstrap/ProgressBar"
-import Alert from "react-bootstrap/Alert"
 import { getServerSession } from "next-auth/next"
 import { getSession } from "next-auth/react"
 import Isession from "types/session"
@@ -24,9 +19,7 @@ debug.enable("certs")
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const { caseId } = context.params
-  const urlCerts = `${apiInternal}:3000/sigs/${caseId}`
   const caseUrl = `${apiInternal}:3000/cases/${caseId}`
-  let certTxt = ""
   let custodians = ""
   try {
     const { user }: { user: User } = await getServerSession(
@@ -39,14 +32,6 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       process.env.NEXTAUTH_SECRET,
       { expiresIn: "24h" }
     )
-    const resCerts = await fetch(urlCerts, {
-      method: "GET",
-      mode: "cors",
-      cache: "default",
-      headers: { authorization: `Bearer ${apiKey}` },
-    })
-    if (resCerts.ok) certTxt = await resCerts.text()
-    CertsDebug(certTxt)
     const resCustodians = await fetch(caseUrl, {
       method: "GET",
       mode: "cors",
@@ -64,13 +49,12 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     CertsDebug(err)
   }
   return {
-    props: { certTxt, caseId, custodians },
+    props: { caseId, custodians },
   }
 }
 
 interface propsType {
   caseId: string
-  certTxt?: string
   custodians?: string
 }
 
@@ -87,12 +71,11 @@ interface ICert {
 
 export default function Certs(props: propsType) {
   const { caseId, custodians } = props
-  const [certs, setCerts] = useState(props?.certTxt || "")
+  const [certs, setCerts] = useState("")
   const [isRunning, setIsRunning] = useState(false)
   const [custodianEmail, setCustodianEmail] = useState("")
 
   const prettyPrintCert = (certs: ICert[]) => {
-    console.log(certs)
     return certs
       .map((cert) => {
         const {
@@ -147,9 +130,6 @@ export default function Certs(props: propsType) {
     const results = custodiansList
       .split("\n")
       .map((custodian) => findCert(custodian))
-
-    // .join("\n")
-    // setCerts(results)
     const allCerts = await Promise.all(results)
     setCerts(allCerts.join("\n"))
     setIsRunning(false)
