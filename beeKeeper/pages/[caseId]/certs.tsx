@@ -51,11 +51,51 @@ interface propsType {
   custodians?: string
 }
 
+interface ICert {
+  sha1: string
+  serial: string
+  email: string
+  subject: string
+  userPrincipleName: string
+  issuer: string
+  notBefore: string
+  notAfter: string
+}
+
 export default function Certs(props: propsType) {
   const { caseId, custodians } = props
   const [certs, setCerts] = useState(props?.certTxt || "")
   const [isRunning, setIsRunning] = useState(false)
   const [custodianEmail, setCustodianEmail] = useState("")
+
+  const prettyPrintCert = (certs: ICert[]) => {
+    console.log(certs)
+    return certs
+      .map((cert) => {
+        const {
+          subject,
+          email,
+          userPrincipleName,
+          serial,
+          issuer,
+          notBefore,
+          notAfter,
+        } = cert
+        const commonName = subject.split(",")[0].split("=")[1].split(".")
+        const name = commonName.slice(0, -1)
+        return `Name:           ${name[0]}, ${name[1]} ${
+          name.length > 2 ? name[2] : ""
+        }\nEmail:          ${email}\nEDIPI:          ${commonName.slice(
+          -1
+        )}\nPrinciple Name: ${userPrincipleName}\nSerial:         ${serial}\nIssuer:         ${issuer.replaceAll(
+          "\n",
+          ""
+        )}\nCA:             ${
+          issuer.split(",")[0].split("=")[1]
+        }\nNot Before:     ${notBefore}\nNot After:      ${notAfter}\n`
+      })
+      .join("\n")
+  }
 
   const handleSingleSearch = async (custodianEmail: string) => {
     setIsRunning(true)
@@ -67,7 +107,8 @@ export default function Certs(props: propsType) {
       headers: { authorization: `Bearer ${apiKey}` },
     })
     // TODO: Need Function to pretty-print certs
-    if (resCerts.ok) setCerts(await resCerts.text())
+    const resJSON = await resCerts.json()
+    if (resCerts.ok) setCerts(prettyPrintCert(resJSON))
     setIsRunning(false)
   }
 
