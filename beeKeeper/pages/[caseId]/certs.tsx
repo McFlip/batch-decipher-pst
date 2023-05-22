@@ -15,6 +15,9 @@ import { getServerSession } from "next-auth/next"
 import { getSession } from "next-auth/react"
 import Isession from "types/session"
 import authOptions from "pages/api/auth/[...nextauth]"
+import caseType from "types/case"
+import jwt from "jsonwebtoken"
+import { User } from "next-auth"
 
 const CertsDebug = debug("certs")
 debug.enable("certs")
@@ -22,13 +25,20 @@ debug.enable("certs")
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const { caseId } = context.params
   const urlCerts = `${apiInternal}:3000/sigs/${caseId}`
+  const caseUrl = `${apiInternal}:3000/cases/${caseId}`
   let certTxt = ""
+  let custodians = ""
   try {
-    const { apiKey } = (await getServerSession(
+    const { user }: { user: User } = await getServerSession(
       context.req,
       context.res,
       authOptions
-    )) as Isession
+    )
+    const apiKey = jwt.sign(
+      { email: user.email, iat: Date.now() },
+      process.env.NEXTAUTH_SECRET,
+      { expiresIn: "24h" }
+    )
     const resCerts = await fetch(urlCerts, {
       method: "GET",
       mode: "cors",
@@ -37,11 +47,24 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     })
     if (resCerts.ok) certTxt = await resCerts.text()
     CertsDebug(certTxt)
+    const resCustodians = await fetch(caseUrl, {
+      method: "GET",
+      mode: "cors",
+      cache: "default",
+      headers: { authorization: `Bearer ${apiKey}` },
+    })
+    if (resCustodians.ok) {
+      const custodiansJSON = (await resCustodians.json()) as caseType
+      custodians = custodiansJSON.custodians
+    } else {
+      CertsDebug(resCustodians.statusText)
+    }
+    CertsDebug(custodians)
   } catch (err) {
     CertsDebug(err)
   }
   return {
-    props: { certTxt, caseId },
+    props: { certTxt, caseId, custodians },
   }
 }
 
@@ -97,8 +120,7 @@ export default function Certs(props: propsType) {
       .join("\n")
   }
 
-  const handleSingleSearch = async (custodianEmail: string) => {
-    setIsRunning(true)
+  const findCert = async (custodianEmail: string) => {
     const url = `${apiExternal}:3000/certs/email/${custodianEmail}`
     const { apiKey } = (await getSession()) as Isession
     const resCerts = await fetch(url, {
@@ -106,14 +128,31 @@ export default function Certs(props: propsType) {
       mode: "cors",
       headers: { authorization: `Bearer ${apiKey}` },
     })
-    // TODO: Need Function to pretty-print certs
-    const resJSON = await resCerts.json()
-    if (resCerts.ok) setCerts(prettyPrintCert(resJSON))
+    if (resCerts.ok) {
+      const resJSON = await resCerts.json()
+      return prettyPrintCert(resJSON)
+    } else {
+      return `Error searching for ${custodianEmail}: ${resCerts.statusText}`
+    }
+  }
+
+  const handleSingleSearch = async (custodianEmail: string) => {
+    setIsRunning(true)
+    setCerts(await findCert(custodianEmail))
     setIsRunning(false)
   }
 
   const handleBatchSearch = async (custodiansList: string) => {
-    // map over custodians
+    setIsRunning(true)
+    const results = custodiansList
+      .split("\n")
+      .map((custodian) => findCert(custodian))
+
+    // .join("\n")
+    // setCerts(results)
+    const allCerts = await Promise.all(results)
+    setCerts(allCerts.join("\n"))
+    setIsRunning(false)
   }
 
   return (
