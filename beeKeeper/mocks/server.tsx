@@ -2,8 +2,18 @@ import { DefaultBodyType, rest } from "msw"
 import { setupServer } from "msw/node"
 // import CaseType from 'types/case'
 import testCases from "fixtures/cases"
-import cert from "fixtures/cert"
+// import cert from "fixtures/cert"
 
+const cert = {
+  sha1: "abcdef1234567890",
+  serial: "12C3905B55296E401270C0CEB18B5BA660DB9A1F",
+  email: "ragnar@vikings.com",
+  subject: "commonName = LAST.FIRST.MIDDLE.12345678",
+  userPrincipleName: "testUPN",
+  issuer: "testIssuer",
+  notBefore: "Jan 1 2020",
+  notAfter: "Jan 1 2023",
+}
 const testCase1 = {
   _id: "1234",
   name: "test case 1",
@@ -119,11 +129,11 @@ const server = setupServer(
   rest.post("http://localhost:3000/sigs", (req, res, ctx) => {
     return res(ctx.body("test terminal output"))
   }),
-  rest.get("http://localhost:3000/sigs/:caseId", (req, res, ctx) => {
-    const caseId = req.params.caseId
-    console.log(caseId)
-    return res(ctx.text(cert))
-  }),
+  // rest.get("http://localhost:3000/sigs/:caseId", (req, res, ctx) => {
+  //   const caseId = req.params.caseId
+  //   console.log(caseId)
+  //   return res(ctx.text(cert))
+  // }),
   rest.post("http://localhost:3000/keys/:caseId", (req, res, ctx) => {
     return res(ctx.json(["1a2b3c"]))
   }),
@@ -133,8 +143,12 @@ const server = setupServer(
   rest.get("http://localhost:3000/certs/email/:email", (req, res, ctx) => {
     const email = req.params.email
     if (!email) return res(ctx.status(401))
-    if (email === "ragnar@vikings.com") return res(ctx.delay(), ctx.text(cert))
+    if (email === "ragnar@vikings.com")
+      return res(ctx.delay(), ctx.json([cert]))
     return res(ctx.status(404), ctx.json({ err: "certs not found" }))
+  }),
+  rest.get("http://localhost:3000/certs/email/", (req, res, ctx) => {
+    return res(ctx.status(401))
   })
 )
 
