@@ -50,7 +50,7 @@ export const getCerts = async (
 ): Promise<void> => {
   const parsedEmail = z.string().email().safeParse(req.params.email)
   if (parsedEmail.success) {
-    const email = parsedEmail.data
+    const email = parsedEmail.data.toLowerCase()
     debugCert("getCerts email:", email)
     try {
       const certs = await db

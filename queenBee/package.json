@@ -8,7 +8,7 @@
   "main": "index.js",
   "scripts": {
     "test": "env nyc mocha tests/index.test.ts --require ts-node/register --require tsconfig-paths/register --extensions ts,tsx --exit --bail",
-    "start": "nodemon --watch index.ts --watch controllers --watch models --watch routes --watch util --watch types index.ts"
+    "start": "nodemon --require tsconfig-paths/register --watch index.ts --watch controllers --watch models --watch routes --watch util --watch types index.ts"
   },
   "repository": {
     "type": "git",
@@ -47,23 +47,23 @@
     "multer": "^1.4.5-lts.1",
     "passport": "^0.6.0",
     "passport-jwt": "^4.0.1",
-    "pg": "^8.10.0",
+    "pg": "^8.11.0",
     "tsconfig-paths": "^4.2.0",
     "zod": "^3.21.4"
   },
   "devDependencies": {
     "@types/body-parser": "^1.19.2",
-    "@types/chai": "^4.3.4",
-    "@types/debug": "^4.1.7",
-    "@types/dockerode": "^3.3.16",
+    "@types/chai": "^4.3.5",
+    "@types/debug": "^4.1.8",
+    "@types/dockerode": "^3.3.18",
     "@types/errorhandler": "^1.5.0",
     "@types/express": "^4.17.17",
     "@types/mocha": "^8.2.3",
     "@types/multer": "^1.4.7",
-    "@types/node": "^14.18.43",
+    "@types/node": "^14.18.48",
     "@types/passport": "^1.0.12",
     "@types/passport-jwt": "^3.0.8",
-    "@types/pg": "^8.6.6",
+    "@types/pg": "^8.10.2",
     "@typescript-eslint/eslint-plugin": "^4.33.0",
     "@typescript-eslint/parser": "^4.33.0",
     "chai": "^4.3.7",
