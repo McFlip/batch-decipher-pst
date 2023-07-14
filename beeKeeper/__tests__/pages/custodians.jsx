@@ -1,8 +1,8 @@
-import Custodians from "pages/[caseId]/custodians"
 import { render, waitFor, act } from "../../utils"
 import "@testing-library/jest-dom"
 import userEvent from "@testing-library/user-event"
 import { useRouter } from "next/router"
+import Custodians from "components/custodiansPg"
 
 // mocking router
 let mockRouter = []

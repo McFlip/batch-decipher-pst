@@ -1,14 +1,9 @@
-import Head from "next/head"
-import { useRouter } from "next/router"
+import Custodians from "components/custodiansPg"
 import { GetServerSideProps } from "next"
-import { FormEvent, useState } from "react"
-import Menu from "components/menu"
 import debug from "debug"
 import { apiExternal, apiInternal } from "constants/"
 import axios from "axios"
 import { getServerSession } from "next-auth/next"
-import { getSession } from "next-auth/react"
-import Isession from "types/session"
 import authOptions from "pages/api/auth/[...nextauth]"
 import jwt from "jsonwebtoken"
 import type { User } from "next-auth"
@@ -45,58 +40,14 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   }
 }
 
-export default function Custodians({
+export default ({
   custodians,
   caseId,
 }: {
   custodians: string
   caseId: string
-}) {
-  const [myCustodians, setMyCustodians] = useState(custodians)
-  const router = useRouter()
-  custodiansDebug(caseId)
-
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault()
-    const url = `${apiExternal}:3000/cases/${caseId}`
-    try {
-      const { apiKey } = (await getSession()) as Isession
-      const config = {
-        headers: { Authorization: `Bearer ${apiKey}` },
-      }
-      const res = await axios.patch(url, { custodians: myCustodians }, config)
-      if (res.status == 200) {
-        router.push(`/${caseId}/certs`)
-      }
-    } catch (err) {
-      custodiansDebug(err)
-    }
-  }
-
-  return (
-    <div className="container">
-      <Head>
-        <title>Custodians</title>
-      </Head>
-      <main>
-        <Menu currentPg="Custodians" caseId={caseId} />
-        <h1>Enter Custodian emails one per line</h1>
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label htmlFor="myCustodians">Custodians</label>
-            <textarea
-              id="myCustodians"
-              className="form-control"
-              rows={12}
-              value={myCustodians}
-              onChange={(e) => setMyCustodians(e.target.value)}
-            />
-          </div>
-          <button className="btn btn-primary" type="submit">
-            Next
-          </button>
-        </form>
-      </main>
-    </div>
-  )
-}
+}) => (
+  <>
+    <Custodians custodians={custodians} caseId={caseId} />
+  </>
+)
