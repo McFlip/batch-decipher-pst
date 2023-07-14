@@ -1,4 +1,4 @@
-import EditCase from "pages/[caseId]/editcase"
+import EditCase from "components/editcasePg"
 import { render, waitFor, act } from "../../utils"
 import "@testing-library/jest-dom"
 import userEvent from "@testing-library/user-event"
