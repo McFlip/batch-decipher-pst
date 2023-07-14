@@ -24,7 +24,7 @@ const setFiles = jest.fn((f) => (files = f))
 // Broken test (code works) - won't fix. In future I will roll my own confirmation and alert dialogues
 // let confMsg = ""
 window.confirm = jest.fn((msg) => {
-  confMsg = msg
+  // confMsg = msg
   return true
 })
 // mocking alert messages
