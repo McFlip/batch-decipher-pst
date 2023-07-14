@@ -1,9 +1,7 @@
 import Decipher from "components/decipherPg"
 import "@testing-library/jest-dom"
-import { render, waitFor, logRoles, fireEvent, act } from "../../utils"
+import { render } from "../../utils"
 import userEvent from "@testing-library/user-event"
-import server from "mocks/server"
-import { rest } from "msw"
 
 // mocking alert messages
 let alertMsg = []
